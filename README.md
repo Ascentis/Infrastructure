@@ -1,0 +1,1 @@
+# Ascentis.ExternalCache Component
