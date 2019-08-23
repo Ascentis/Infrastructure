@@ -1,8 +1,9 @@
 ﻿using System.Reflection;
-using Ascentis.Infrastructure;
+using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
+    [Guid("049a63fb-bb7c-48e5-b0cc-dedc69234df4")]
     public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent
     {
         private readonly Dynamo _container;

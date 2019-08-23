@@ -1,13 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ascentis.Infrastructure;
 
-namespace Ascentis.ExternalCache.Test
+namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     public class UnitTestExternalCacheItem
     {
         [TestMethod]
-        public void TestMethodCreateExternalCacheItem()
+        public void TestCreateExternalCacheItem()
         {
             var item = new ExternalCacheItem();
             Assert.IsNotNull(item);

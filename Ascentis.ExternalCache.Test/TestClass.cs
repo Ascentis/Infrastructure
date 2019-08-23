@@ -1,4 +1,4 @@
-﻿namespace Ascentis.ExternalCache.Test
+﻿namespace Ascentis.Infrastructure.Test
 {
     public class TestClass
     {
