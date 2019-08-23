@@ -4,16 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B1D90B19-60BD-4959-ACAA-BFE4F567DF7C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ascentis.ExternalCacheItem</RootNamespace>
-    <AssemblyName>Ascentis.ExternalCacheItem</AssemblyName>
+    <ProjectGuid>{50CD1997-5A89-4E28-A0DD-640361A10FEC}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Ascentis.ExternalCache.TesterConsole</RootNamespace>
+    <AssemblyName>Ascentis.ExternalCache.TesterConsole</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
@@ -42,15 +44,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dynamo.cs" />
-    <Compile Include="ExternalCacheItem.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ascentis.ExternalCacheItem\Ascentis.ExternalCacheItem.csproj">
+      <Project>{b1d90b19-60bd-4959-acaa-bfe4f567df7c}</Project>
+      <Name>Ascentis.ExternalCacheItem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ascentis.ExternalCache\Ascentis.ExternalCache.csproj">
+      <Project>{35d66854-b6a0-4155-9302-ecebddf171e8}</Project>
+      <Name>Ascentis.ExternalCache</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>gacutil /u ExternalCacheItem &gt; nul &amp; set ERRORLEVEL=0
-powershell $(SolutionDir)COMRegUnregAssembly\COMUnregisterAssembly.ps1 $(AssemblyName) &gt; nul &amp; set ERRORLEVEL=0
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\regsvcs $(TargetPath)
-"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\gacutil" /i $(TargetPath)</PostBuildEvent>
-  </PropertyGroup>
 </Project>

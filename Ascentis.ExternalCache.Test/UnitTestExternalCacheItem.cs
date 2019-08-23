@@ -62,6 +62,20 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual("P2", obj.Prop2);
             Assert.AreEqual("P3", obj.Prop3);
             Assert.AreEqual(-1, obj.Prop4);
+            var item2 = new ExternalCacheItem();
+            item.CopyTo(item2);
+            Assert.AreEqual(4, item2.Container.Count);
+            Assert.AreEqual("P1", item2.Container.Prop1);
+            Assert.AreEqual("P2", item2.Container.Prop2);
+            Assert.AreEqual("P3", item2.Container.Prop3);
+            Assert.AreEqual(-1, item2.Container.Prop4);
+            var item3 = new ExternalCacheItem();
+            item3.CopyFrom(item2);
+            Assert.AreEqual(4, item3.Container.Count);
+            Assert.AreEqual("P1", item3.Container.Prop1);
+            Assert.AreEqual("P2", item3.Container.Prop2);
+            Assert.AreEqual("P3", item3.Container.Prop3);
+            Assert.AreEqual(-1, item3.Container.Prop4);
         }
     }
 }

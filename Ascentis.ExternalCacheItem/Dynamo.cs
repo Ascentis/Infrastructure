@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 
 namespace Ascentis.Infrastructure
 {
+    [Serializable]
     public class Dynamo : DynamicObject
     {
         private IDictionary<string, object> Properties { get; }

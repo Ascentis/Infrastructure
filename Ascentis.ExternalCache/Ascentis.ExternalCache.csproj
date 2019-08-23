@@ -44,7 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExternalCache.cs" />
+    <Compile Include="ExternalCacheManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ascentis.ExternalCacheItem\Ascentis.ExternalCacheItem.csproj">
+      <Project>{b1d90b19-60bd-4959-acaa-bfe4f567df7c}</Project>
+      <Name>Ascentis.ExternalCacheItem</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
