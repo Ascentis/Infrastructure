@@ -34,6 +34,16 @@ namespace Ascentis.ExternalCache.Test
         }
 
         [TestMethod]
+        public void TestSetPropertiesUsingArray()
+        {
+            var item = new ExternalCacheItem();
+            item["Prop1"] = 1;
+            item["Prop2"] = "Hello";
+            Assert.AreEqual(1, item["Prop1"]);
+            Assert.AreEqual("Hello", item["Prop2"]);
+        }
+
+        [TestMethod]
         public void TestCopyFromAndTo()
         {
             var item = new ExternalCacheItem();
