@@ -56,6 +56,11 @@ namespace Ascentis.Infrastructure
             return Cache.Add(new CacheItem(key, BuildCacheItem(item)), null);
         }
 
+        public bool Add(string key, string item)
+        {
+            return Cache.Add(new CacheItem(key, item), null);
+        }
+
         public bool Add(string key, object item, DateTimeOffset absoluteExpiration)
         {
             return Cache.Add(key, BuildCacheItem(item), absoluteExpiration);
