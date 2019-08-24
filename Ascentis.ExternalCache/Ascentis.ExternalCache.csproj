@@ -46,6 +46,7 @@
     <Compile Include="ExternalCache.cs" />
     <Compile Include="ExternalCacheManager.cs" />
     <Compile Include="IExternalCache.cs" />
+    <Compile Include="IExternalCacheManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
