@@ -186,53 +186,75 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestContains()
         {
-            var externalCache = new ExternalCache();
-            Assert.IsFalse(externalCache.Contains("Item 1"));
-            var item = new ExternalCacheItem();
-            item["P1"] = "Property 1";
-            externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-            Assert.IsTrue(externalCache.Contains("Item 1"));
+            using (var externalCache = new ExternalCache())
+            {
+                Assert.IsFalse(externalCache.Contains("Item 1"));
+                using (var item = new ExternalCacheItem())
+                {
+                    item["P1"] = "Property 1";
+                    externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                }
+
+                Assert.IsTrue(externalCache.Contains("Item 1"));
+            }
         }
 
         [TestMethod]
         public void TestRemove()
         {
-            var externalCache = new ExternalCache();
-            var item = new ExternalCacheItem();
-            item["P1"] = "Property 1";
-            externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-            Assert.IsTrue(externalCache.Contains("Item 1"));
-            externalCache.Remove("Item 1");
-            Assert.IsFalse(externalCache.Contains("Item 1"));
+            using (var externalCache = new ExternalCache())
+            {
+                using (var item = new ExternalCacheItem())
+                {
+                    item["P1"] = "Property 1";
+                    externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                }
+
+                Assert.IsTrue(externalCache.Contains("Item 1"));
+                externalCache.Remove("Item 1");
+                Assert.IsFalse(externalCache.Contains("Item 1"));
+            }
         }
 
         [TestMethod]
         public void TestSetObjectAndLetItExpireByTicks()
         {
-            var externalCache = new ExternalCache();
-            var item = new ExternalCacheItem();
-            item["P1"] = "Property 1";
-            externalCache.Set("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-            CheckItem1(externalCache);
+            using (var externalCache = new ExternalCache())
+            {
+                using (var item = new ExternalCacheItem())
+                {
+                    item["P1"] = "Property 1";
+                    externalCache.Set("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                }
+
+                CheckItem1(externalCache);
+            }
         }
 
         [TestMethod]
         public void TestSetObjectAndLetItExpireByAbsoluteTime()
         {
-            var externalCache = new ExternalCache();
-            var item = new ExternalCacheItem();
-            item["P1"] = "Property 1";
-            externalCache.Set("Item 1", item, new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
-            CheckItem1(externalCache);
+            using (var externalCache = new ExternalCache())
+            {
+                using (var item = new ExternalCacheItem())
+                {
+                    item["P1"] = "Property 1";
+                    externalCache.Set("Item 1", item, new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                }
+
+                CheckItem1(externalCache);
+            }
         }
 
         [TestMethod]
         public void TestAddStringAndGet()
         {
-            var externalCache = new ExternalCache();
-            externalCache.Add("Item 1", "Value 1");
-            var item = (string)externalCache.Get("Item 1");
-            Assert.AreEqual("Value 1", item);
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Add("Item 1", "Value 1");
+                var item = (string) externalCache.Get("Item 1");
+                Assert.AreEqual("Value 1", item);
+            }
         }
 
         private void CheckItem1AsString(ExternalCache externalCache)
@@ -247,26 +269,32 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestAddStringAndLetItExpireByTicks()
         {
-            var externalCache = new ExternalCache();
-            externalCache.Add("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
-            CheckItem1AsString(externalCache);
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Add("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                CheckItem1AsString(externalCache);
+            }
         }
 
         [TestMethod]
         public void TestAddStringAndLetItExpireByAbsoluteTime()
         {
-            var externalCache = new ExternalCache();
-            externalCache.Add("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
-            CheckItem1AsString(externalCache);
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Add("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                CheckItem1AsString(externalCache);
+            }
         }
 
         [TestMethod]
         public void TestAddOrGetExistingString()
         {
-            var externalCache = new ExternalCache();
-            externalCache.Add("Item 1", "Value 1");
-            var item = (string)externalCache.AddOrGetExisting("Item 1", "Value 2");
-            Assert.AreEqual("Value 1", item);
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Add("Item 1", "Value 1");
+                var item = (string) externalCache.AddOrGetExisting("Item 1", "Value 2");
+                Assert.AreEqual("Value 1", item);
+            }
         }
 
         [TestMethod]
@@ -282,9 +310,11 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSetStringAndLetItExpireByAbsoluteTime()
         {
-            var externalCache = new ExternalCache();
-            externalCache.Set("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
-            CheckItem1AsString(externalCache);
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Set("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                CheckItem1AsString(externalCache);
+            }
         }
     }
 }
