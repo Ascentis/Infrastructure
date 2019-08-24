@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ascentis.Infrastructure
 {
     [Guid("78088bd8-739f-4397-adba-cc7ea259e654")]
-    public class ExternalCache : System.EnterpriseServices.ServicedComponent
+    public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
     {
         public static readonly ConcurrentDictionary<string, MemoryCache> Caches;
 
@@ -66,15 +66,31 @@ namespace Ascentis.Infrastructure
             return Cache.Add(key, BuildCacheItem(item), absoluteExpiration);
         }
 
+        public bool Add(string key, string item, DateTimeOffset absoluteExpiration)
+        {
+            return Cache.Add(key, item, absoluteExpiration);
+        }
+
         public bool Add(string key, object item, TimeSpan slidingExpiration)
         {
             var cacheItemPolicy = new CacheItemPolicy { SlidingExpiration = slidingExpiration };
             return Cache.Add(key, BuildCacheItem(item), cacheItemPolicy);
         }
 
+        public bool Add(string key, string item, TimeSpan slidingExpiration)
+        {
+            var cacheItemPolicy = new CacheItemPolicy { SlidingExpiration = slidingExpiration };
+            return Cache.Add(key, item, cacheItemPolicy);
+        }
+
         public object AddOrGetExisting(string key, object value)
         {
             return Cache.AddOrGetExisting(key, BuildCacheItem(value), null);
+        }
+
+        public object AddOrGetExisting(string key, string value)
+        {
+            return Cache.AddOrGetExisting(key, value, null);
         }
 
         public bool Contains(string key)
@@ -101,6 +117,17 @@ namespace Ascentis.Infrastructure
         {
             var cacheItemPolicy = new CacheItemPolicy { SlidingExpiration = slidingExpiration };
             Cache.Set(key, BuildCacheItem(value), cacheItemPolicy);
+        }
+
+        public void Set(string key, string value, DateTimeOffset absoluteExpiration)
+        {
+            Cache.Set(key, value, absoluteExpiration);
+        }
+
+        public void Set(string key, string value, TimeSpan slidingExpiration)
+        {
+            var cacheItemPolicy = new CacheItemPolicy { SlidingExpiration = slidingExpiration };
+            Cache.Set(key, value, cacheItemPolicy);
         }
 
         public void Clear()

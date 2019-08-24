@@ -16,16 +16,9 @@ namespace Ascentis.Infrastructure
             var initialTickCount = Environment.TickCount;
             Console.WriteLine("Start:" + initialTickCount);
             for (var i = 0; i < 1000; i++)
-            {
-                var externalCacheItem = new ExternalCacheItem();
-                externalCacheItem.Container.Prop1 = "Hello" + i;
-                externalCache.Add("Item" + i, "hello");
-            }
+                externalCache.Add("Item" + i, "Hello" + i);
             for (var i = 0; i < 1000; i++)
-            {
-                var externalCacheItem = externalCache.Get("Item" + i);
-                //string s = externalCacheItem.Container.Prop1;
-            }
+                externalCache.Get("Item" + i);
             Console.WriteLine("Finish:" + Environment.TickCount);
             Console.WriteLine("Speed (insert/retrieves per second): " + (1000 / (((float)(Environment.TickCount - initialTickCount)) / 1000)));
             var externalCacheManager = new ExternalCacheManager();

@@ -2,6 +2,7 @@
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
@@ -191,6 +192,65 @@ namespace Ascentis.Infrastructure.Test
             item["P1"] = "Property 1";
             externalCache.Set("Item 1", item, new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
             CheckItem1(externalCache);
+        }
+
+        [TestMethod]
+        public void TestAddStringAndGet()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Add("Item 1", "Value 1");
+            var item = (string)externalCache.Get("Item 1");
+            Assert.AreEqual("Value 1", item);
+        }
+
+        private void CheckItem1AsString(ExternalCache externalCache)
+        {
+            var item = (string)externalCache.Get("Item 1");
+            Assert.IsNotNull(item);
+            Thread.Sleep(2000);
+            item = (string)externalCache.Get("Item 1");
+            Assert.IsNull(item);
+        }
+
+        [TestMethod]
+        public void TestAddStringAndLetItExpireByTicks()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Add("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
+            CheckItem1AsString(externalCache);
+        }
+
+        [TestMethod]
+        public void TestAddStringAndLetItExpireByAbsoluteTime()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Add("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+            CheckItem1AsString(externalCache);
+        }
+
+        [TestMethod]
+        public void TestAddOrGetExistingString()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Add("Item 1", "Value 1");
+            var item = (string)externalCache.AddOrGetExisting("Item 1", "Value 2");
+            Assert.AreEqual("Value 1", item);
+        }
+
+        [TestMethod]
+        public void TestSetStringAndLetItExpireByTicks()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Set("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
+            CheckItem1AsString(externalCache);
+        }
+
+        [TestMethod]
+        public void TestSetStringAndLetItExpireByAbsoluteTime()
+        {
+            var externalCache = new ExternalCache();
+            externalCache.Set("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+            CheckItem1AsString(externalCache);
         }
     }
 }
