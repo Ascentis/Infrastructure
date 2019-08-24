@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Ascentis.Infrastructure
 {
     [Guid("049a63fb-bb7c-48e5-b0cc-dedc69234df4")]
-    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent, IExternalCacheItem
+    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent, IExternalCacheItem, IDisposable
     {
         // ReSharper disable once InconsistentNaming
         public readonly Dynamo _container; // keep name as if private but needs to be public. Need this for remoting serialization to work
@@ -48,6 +48,11 @@ namespace Ascentis.Infrastructure
                     prop.SetValue(target, _container[prop.Name]);
                 }
             }
+        }
+
+        public new void Dispose()
+        {
+            Console.WriteLine("Disposing");
         }
     }
 }

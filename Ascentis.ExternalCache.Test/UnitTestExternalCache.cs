@@ -28,6 +28,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Property 1";
@@ -90,6 +91,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Property 1";
@@ -100,6 +102,7 @@ namespace Ascentis.Infrastructure.Test
                 externalCache.Select("Second Cache");
                 item = (ExternalCacheItem) externalCache.Get("Item 1");
                 Assert.IsNull(item);
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Property 1";
@@ -120,6 +123,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Property 1";
@@ -139,6 +143,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Property 1";
@@ -171,6 +176,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
+                // ReSharper disable once InconsistentNaming
                 using (var _item = new ExternalCacheItem())
                 {
                     _item["P1"] = "Item 1";
@@ -207,7 +213,7 @@ namespace Ascentis.Infrastructure.Test
                 using (var item = new ExternalCacheItem())
                 {
                     item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                    externalCache.Add("Item 1", item);
                 }
 
                 Assert.IsTrue(externalCache.Contains("Item 1"));

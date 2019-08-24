@@ -13,3 +13,4 @@
 /UpgradeLog.htm
 /Ascentis.ExternalCache.TesterConsole/bin/
 /Ascentis.ExternalCache.TesterConsole/obj/
+*.nupkg

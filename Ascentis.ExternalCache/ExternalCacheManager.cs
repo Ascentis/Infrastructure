@@ -10,7 +10,10 @@ namespace Ascentis.Infrastructure
         {
             MemoryCache.Default.Trim(100);
             foreach (var cache in ExternalCache.Caches)
+            {
                 cache.Value.Trim(100);
+                cache.Value.Dispose();
+            }
             ExternalCache.Caches.Clear();
         }
     }

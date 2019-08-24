@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Ascentis.ExternalCache</id>
-    <version>1.0.0.2</version>
+    <version>1.0.0.3</version>
     <authors>jsbattig</authors>
     <owners>jsbattig</owners>
     <license type="expression">MIT</license>
@@ -10,7 +10,7 @@
     <repository type="git" url="https://github.com/Ascentis/net-complus-external-cache.git" branch="master" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Out of process cache operating as a COM+ server based on MemoryCache class</description>
-    <releaseNotes>Added unit tests covering all methods of ExternalCacheItem and ExternalCache classes</releaseNotes>
+    <releaseNotes>Refactored the code to property support IDisposable objects (COM objects) when inserted into caches</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+</tags>
     <dependencies>
