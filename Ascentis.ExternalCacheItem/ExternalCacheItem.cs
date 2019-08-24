@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Ascentis.Infrastructure
 {
     [Guid("049a63fb-bb7c-48e5-b0cc-dedc69234df4")]
-    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent
+    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent, IExternalCacheItem
     {
         // ReSharper disable once InconsistentNaming
         public readonly Dynamo _container; // keep name as if private but needs to be public. Need this for remoting serialization to work
