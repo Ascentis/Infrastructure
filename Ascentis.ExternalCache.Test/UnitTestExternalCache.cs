@@ -322,5 +322,16 @@ namespace Ascentis.Infrastructure.Test
                 CheckItem1AsString(externalCache);
             }
         }
+
+        [TestMethod]
+        public void TestAddDecimalAndGet()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Add("Item 1", (decimal) 10.5);
+                var item = (decimal)externalCache.Get("Item 1");
+                Assert.AreEqual((decimal)10.5, item);
+            }
+        }
     }
 }

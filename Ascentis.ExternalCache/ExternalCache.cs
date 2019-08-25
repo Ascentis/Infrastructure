@@ -70,8 +70,11 @@ namespace Ascentis.Infrastructure
             Select(DefaultMemoryCacheName);
         }
 
-        private static ExternalCacheItem BuildCacheItem(object source)
+        private static object BuildCacheItem(object source)
         {
+            var itemType = source.GetType();
+            if (itemType.IsPrimitive || itemType == typeof(decimal) || itemType == typeof(string))
+                return source;
             var cacheItem = new ExternalCacheItem();
             cacheItem.CopyFrom(source);
             return cacheItem;

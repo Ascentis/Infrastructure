@@ -8,7 +8,8 @@ If you have a model where you run in one machine a farm of processes and want a 
 
 Some details to consider:
 
-Strongly recommended to store data using primitive types (only string supported for now).
+Strongly recommended to store data using primitive types.
+String supported more efficiently using the overloaded methods that receive string as parameter. The rest of primitives supported using the other overload that receives an object (OleVariant if pure COM calls are made) as parameter.
 The class supports serialized COM objects but performance is about 10x slower than serializing your object as text (JSON o XML) and then caching the text.
 When passing a COM object to store in cache, a shallow copy will be performed and the resulting copied object will be stored. Currently only public properties are copied over and there's no test to verify the behavior if within those properties there's a subobject.
 Current tests cover only the case of a COM DTO containing only primitive public properties.
