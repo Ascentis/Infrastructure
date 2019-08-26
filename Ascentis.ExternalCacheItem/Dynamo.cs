@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Reflection;
 
 namespace Ascentis.Infrastructure
 {
@@ -58,6 +59,36 @@ namespace Ascentis.Infrastructure
         {
             get => Properties[key];
             set => Properties[key] = value;
+        }
+
+        public void CopyFrom(object value)
+        {
+            if (value is Dynamo item)
+                foreach (var prop in item.GetDynamicMemberNames())
+                    this[prop] = item[prop];
+            else
+            {
+                var type = value.GetType();
+                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                    this[prop.Name] = prop.GetValue(value);
+            }
+        }
+
+        public void CopyTo(object target)
+        {
+            if (target is Dynamo targetItem)
+                foreach (var prop in GetDynamicMemberNames())
+                    targetItem[prop] = this[prop];
+            else
+            {
+                var type = target.GetType();
+                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    if (!PropertyExists(prop.Name))
+                        continue;
+                    prop.SetValue(target, this[prop.Name]);
+                }
+            }
         }
     }
 }

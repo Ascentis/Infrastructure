@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using System.Threading;
+using Ascentis.Framework;
 
 namespace Ascentis.Infrastructure
 {
@@ -12,32 +12,26 @@ namespace Ascentis.Infrastructure
         private const string DefaultMemoryCacheName = "default";
         public static readonly ConcurrentDictionary<string, MemoryCache> Caches;
         private static readonly CacheItemPolicy DefaultCacheItemPolicy;
-        private static readonly Timer DisposalTimer;
-        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
-        private static readonly ConcurrentQueue<IDisposable> Disposables;
 
         static ExternalCache()
         {
-            const int disposeInterval = 5000;
-            Disposables = new ConcurrentQueue<IDisposable>();
             Caches = new ConcurrentDictionary<string, MemoryCache>();
             DefaultCacheItemPolicy = new CacheItemPolicy
             {
+                /* We need to use an async "disposer" with IDisposable items in the cache because the MemoryCache.Remove() apparently
+                   keeps a reference to the removed item and tries to do something with it even after the removal callback is called.
+                   This causes an exception when Remove() method is called if calling Dispose() method directly in RemovedCallback.
+                   Something worth nothing to is that the pattern used to actually dequeue and dispose items is one where the full
+                   queue is copied over to the disposing thread and new queue initialized. This is to avoid the problem of a call to
+                   RemovedCallback causing an item getting inserted into the queue and getting picked up right away before the callback
+                   returns. If that were to happen the result will be the same as if calling Dispose() within the RemovedCallback delegate */
                 RemovedCallback = arguments =>
                 {
                     if (!(arguments.CacheItem.Value is IDisposable disposableItem))
                         return;
-                    DisposalTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    DisposalTimer.Change(disposeInterval, disposeInterval);
-                    Disposables.Enqueue(disposableItem);
+                    AsyncDisposer.Enqueue(disposableItem);
                 }
             };
-
-            (DisposalTimer = new Timer(state =>
-            {
-                while(Disposables.TryDequeue(out var item))
-                    item.Dispose();
-            })).Change(disposeInterval, disposeInterval);
         }
 
         private MemoryCache _cache;

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Reflection;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
     [Guid("049a63fb-bb7c-48e5-b0cc-dedc69234df4")]
-    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent, IExternalCacheItem, IDisposable
+    public class ExternalCacheItem : System.EnterpriseServices.ServicedComponent, IExternalCacheItem
     {
         // ReSharper disable once InconsistentNaming
         public readonly Dynamo _container; // keep name as if private but needs to be public. Need this for remoting serialization to work
@@ -24,35 +22,18 @@ namespace Ascentis.Infrastructure
 
         public void CopyFrom(object value)
         {
-            if (value is ExternalCacheItem item)
-                foreach (var prop in item._container.GetDynamicMemberNames())
-                    _container[prop] = item._container[prop];
-            else {
-                var type = value.GetType();
-                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                    _container[prop.Name] = prop.GetValue(value);
-            }
+            if(value is ExternalCacheItem externalCacheItem)
+                _container.CopyFrom(externalCacheItem._container);
+            else 
+                _container.CopyFrom(value);
         }
 
         public void CopyTo(object target)
         {
-            if (target is ExternalCacheItem targetItem)
-                foreach (var prop in _container.GetDynamicMemberNames())
-                    targetItem[prop] = _container[prop];
-            else {
-                var type = target.GetType();
-                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (!_container.PropertyExists(prop.Name))
-                        continue;
-                    prop.SetValue(target, _container[prop.Name]);
-                }
-            }
-        }
-
-        public new void Dispose()
-        {
-            Console.WriteLine("Disposing");
+            if(target is ExternalCacheItem externalCacheItem)
+                _container.CopyTo(externalCacheItem._container);
+            else 
+                _container.CopyTo(target);
         }
     }
 }

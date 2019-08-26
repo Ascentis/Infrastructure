@@ -1,4 +1,6 @@
-﻿using System.Runtime.Caching;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
@@ -9,12 +11,13 @@ namespace Ascentis.Infrastructure
         public void ClearAllCaches()
         {
             MemoryCache.Default.Trim(100);
-            foreach (var cache in ExternalCache.Caches)
-            {
-                cache.Value.Trim(100);
-                cache.Value.Dispose();
-            }
+            var localCaches = ExternalCache.Caches.Select(item => item.Value).ToList();
             ExternalCache.Caches.Clear();
+            foreach (var cache in localCaches)
+            {
+                cache.Trim(100);
+                cache.Dispose();
+            }
         }
     }
 }

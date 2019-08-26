@@ -1,4 +1,5 @@
 ﻿using System;
+using Ascentis.ExternalCache.TesterConsole;
 
 namespace Ascentis.Infrastructure
 {
@@ -14,7 +15,7 @@ namespace Ascentis.Infrastructure
             var initialTickCount = Environment.TickCount;
             Console.WriteLine("Start:" + initialTickCount);
             for (var i = 0; i < count; i++)
-                externalCache.Add("Item" + i, "Hello" + i);
+                externalCache.Add("Item" + i, TextResource.SampleXML);
             for (var i = 0; i < count; i++)
                 externalCache.Get("Item" + i);
             Console.WriteLine("Finish:" + Environment.TickCount);
