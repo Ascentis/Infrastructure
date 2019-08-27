@@ -84,7 +84,7 @@ namespace Ascentis.Infrastructure
             return Cache.Add(new CacheItem(key, item), DefaultCacheItemPolicy);
         }
 
-        public bool Add(string key, object item, DateTimeOffset absoluteExpiration)
+        public bool Add(string key, object item, DateTime absoluteExpiration)
         {
             var policy = new CacheItemPolicy
             {
@@ -94,7 +94,7 @@ namespace Ascentis.Infrastructure
             return Cache.Add(key, BuildCacheItem(item), policy);
         }
 
-        public bool Add(string key, string item, DateTimeOffset absoluteExpiration)
+        public bool Add(string key, string item, DateTime absoluteExpiration)
         {
             var policy = new CacheItemPolicy
             {
@@ -149,7 +149,7 @@ namespace Ascentis.Infrastructure
             return Cache.Remove(key);
         }
 
-        public void Set(string key, object value, DateTimeOffset absoluteExpiration)
+        public void Set(string key, object value, DateTime absoluteExpiration)
         {
             var policy = new CacheItemPolicy
             {
@@ -169,7 +169,7 @@ namespace Ascentis.Infrastructure
             Cache.Set(key, BuildCacheItem(value), cacheItemPolicy);
         }
 
-        public void Set(string key, string value, DateTimeOffset absoluteExpiration)
+        public void Set(string key, string value, DateTime absoluteExpiration)
         {
             var policy = new CacheItemPolicy
             {

@@ -9,8 +9,8 @@ namespace Ascentis.Infrastructure
         void Select(string cacheName);
         bool Add(string key, object item);
         bool Add(string key, string item);
-        bool Add(string key, object item, DateTimeOffset absoluteExpiration);
-        bool Add(string key, string item, DateTimeOffset absoluteExpiration);
+        bool Add(string key, object item, DateTime absoluteExpiration);
+        bool Add(string key, string item, DateTime absoluteExpiration);
         bool Add(string key, object item, TimeSpan slidingExpiration);
         bool Add(string key, string item, TimeSpan slidingExpiration);
         object AddOrGetExisting(string key, object value);
@@ -18,9 +18,9 @@ namespace Ascentis.Infrastructure
         bool Contains(string key);
         object Get(string key);
         object Remove(string key);
-        void Set(string key, object value, DateTimeOffset absoluteExpiration);
+        void Set(string key, object value, DateTime absoluteExpiration);
         void Set(string key, object value, TimeSpan slidingExpiration);
-        void Set(string key, string value, DateTimeOffset absoluteExpiration);
+        void Set(string key, string value, DateTime absoluteExpiration);
         void Set(string key, string value, TimeSpan slidingExpiration);
         void Clear();
     }

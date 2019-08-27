@@ -80,7 +80,7 @@ namespace Ascentis.Infrastructure.Test
                 using (var item = new ExternalCacheItem())
                 {
                     item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item, new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                    externalCache.Add("Item 1", item, DateTime.Now.AddMilliseconds(1000));
                     CheckItem1(externalCache);
                 }
             }
@@ -245,7 +245,7 @@ namespace Ascentis.Infrastructure.Test
                 using (var item = new ExternalCacheItem())
                 {
                     item["P1"] = "Property 1";
-                    externalCache.Set("Item 1", item, new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                    externalCache.Set("Item 1", item, DateTime.Now.AddMilliseconds(1000));
                 }
 
                 CheckItem1(externalCache);
@@ -287,7 +287,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                externalCache.Add("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                externalCache.Add("Item 1", "Value 1", DateTime.Now.AddMilliseconds(1000));
                 CheckItem1AsString(externalCache);
             }
         }
@@ -318,7 +318,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                externalCache.Set("Item 1", "Value 1", new DateTimeOffset(DateTime.Now.AddMilliseconds(1000)));
+                externalCache.Set("Item 1", "Value 1", DateTime.Now.AddMilliseconds(1000));
                 CheckItem1AsString(externalCache);
             }
         }
