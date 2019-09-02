@@ -13,18 +13,29 @@ namespace Ascentis.Infrastructure
             externalCache.Clear();
 
             var initialTickCount = Environment.TickCount;
-            Console.WriteLine("Start:" + initialTickCount);
+            Console.WriteLine($@"Start:{initialTickCount}");
             for (var i = 0; i < count; i++)
-                externalCache.Add("Item" + i, TextResource.SampleXML);
+                externalCache.Add($"Item{i}", TextResource.SampleXML);
             for (var i = 0; i < count; i++)
-                externalCache.Get("Item" + i);
-            Console.WriteLine("Finish:" + Environment.TickCount);
-
-            Console.WriteLine("Speed (insert/retrieves per second): " + (count / (((float)(Environment.TickCount - initialTickCount)) / 1000)));
+                externalCache.Get($"Item{i}");
+            Console.WriteLine($@"Finish:{Environment.TickCount}");
+            Console.WriteLine($@"Speed (insert/retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");
             var externalCacheManager = new ExternalCacheManager();
             externalCacheManager.ClearAllCaches();
 
-            Console.WriteLine("Press any key to finish");
+            Console.WriteLine(@"--- Executing serializing complex object ---");
+            initialTickCount = Environment.TickCount;
+            Console.WriteLine($@"Start:{initialTickCount}");
+            var obj = new Dynamo {["Prop1"] = TextResource.SampleXML};
+            for (var i = 0; i < count; i++)
+                externalCache.Add($"Item{i}", obj);
+            for (var i = 0; i < count; i++)
+                externalCache.Get($"Item{i}");
+            Console.WriteLine($@"Finish:{Environment.TickCount}");
+            Console.WriteLine($@"Speed (insert/retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");
+            externalCacheManager.ClearAllCaches();
+
+            Console.WriteLine(@"Press any key to finish");
             Console.ReadLine();
         }
     }
