@@ -50,6 +50,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ascentis.Dynamo\Ascentis.Dynamo.csproj">
+      <Project>{212f2e16-1872-4cd0-9084-286c2f73bf35}</Project>
+      <Name>Ascentis.Dynamo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ascentis.ExternalCache\Ascentis.ExternalCache.csproj">
       <Project>{35d66854-b6a0-4155-9302-ecebddf171e8}</Project>
       <Name>Ascentis.ExternalCache</Name>

@@ -1,16 +1,15 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.EnterpriseServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Ascentis.ExternalCacheItem")]
-[assembly: AssemblyDescription("COM class used to transfer objects between a client application and MemoryCache residing in out of process COM Server")]
+[assembly: AssemblyTitle("Ascentis.Dynamo")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ascentis")]
-[assembly: AssemblyProduct("Ascentis.ExternalCacheItem")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Ascentis.Dynamo")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -18,10 +17,10 @@ using System.EnterpriseServices;
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(true)]
+[assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b1d90b19-60bd-4959-acaa-bfe4f567df7c")]
+[assembly: Guid("212f2e16-1872-4cd0-9084-286c2f73bf35")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,10 +32,5 @@ using System.EnterpriseServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.1")]
-[assembly: AssemblyFileVersion("1.0.0.1")]
-
-[assembly: ApplicationName("Ascentis.ExternalCacheItem")]
-[assembly: ApplicationActivation(ActivationOption.Library)]
-[assembly: ApplicationAccessControl(false, Authentication = AuthenticationOption.None)]
-[assembly: AssemblyKeyFileAttribute("Ascentis.ExternalCacheItem.snk")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

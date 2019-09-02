@@ -29,21 +29,18 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
-                    _item["P1"] = "Property 1";
-                    _item["P2"] = "Property 2";
-                    externalCache.Add("Item 1", _item);
-                }
-                var item = (ExternalCacheItem) externalCache.Get("Item 1");
+                var _item = new Dynamo();
+                _item["P1"] = "Property 1";
+                _item["P2"] = "Property 2";
+                externalCache.Add("Item 1", _item);
+                var item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 1", item["P1"]);
                 Assert.AreEqual("Property 2", item["P2"]);
                 item["P1"] = "Property 3";
                 item["P2"] = "Property 4";
-                /* Contrary to documentation, method Add() will operate the same as
-                   AddOrGetExisting() yet return False if the item already exists */
-                Assert.IsFalse(externalCache.Add("Item 1", item));
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                Assert.IsNotNull(externalCache.Remove("Item 1"));
+                Assert.IsTrue(externalCache.Add("Item 1", item));
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 3", item["P1"]);
                 Assert.AreEqual("Property 4", item["P2"]);
             }
@@ -51,10 +48,10 @@ namespace Ascentis.Infrastructure.Test
 
         private void CheckItem1(ExternalCache externalCache)
         {
-            var item = (ExternalCacheItem) externalCache.Get("Item 1");
+            var item = (Dynamo) externalCache.Get("Item 1");
             Assert.IsNotNull(item);
             Thread.Sleep(2000);
-            item = (ExternalCacheItem) externalCache.Get("Item 1");
+            item = (Dynamo) externalCache.Get("Item 1");
             Assert.IsNull(item);
         }
 
@@ -63,12 +60,10 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-                    CheckItem1(externalCache);
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                CheckItem1(externalCache);
             }
         }
 
@@ -77,12 +72,10 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item, DateTime.Now.AddMilliseconds(1000));
-                    CheckItem1(externalCache);
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Add("Item 1", item, DateTime.Now.AddMilliseconds(1000));
+                CheckItem1(externalCache);
             }
         }
 
@@ -92,28 +85,25 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
-                    _item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", _item);
-                }
-                var item = (ExternalCacheItem) externalCache.Get("Item 1");
+                var _item = new Dynamo();
+                _item["P1"] = "Property 1";
+                externalCache.Add("Item 1", _item);
+                var item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNotNull(item);
                 externalCache.Select("Second Cache");
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNull(item);
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
-                    _item["P1"] = "Property 1";
-                    externalCache.Add("Item 2", _item);
-                }
-                item = (ExternalCacheItem) externalCache.Get("Item 2");
+                var _item2 = new Dynamo();
+                _item2["P1"] = "Property 1";
+                externalCache.Add("Item 2", _item2);
+
+                item = (Dynamo) externalCache.Get("Item 2");
                 Assert.IsNotNull(item);
                 externalCache.Select("default");
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNotNull(item);
-                item = (ExternalCacheItem) externalCache.Get("Item 2");
+                item = (Dynamo) externalCache.Get("Item 2");
                 Assert.IsNull(item);
             }
         }
@@ -124,16 +114,14 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
-                    _item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", _item);
-                }
+                var _item = new Dynamo();
+                _item["P1"] = "Property 1";
+                externalCache.Add("Item 1", _item);
 
-                var item = (ExternalCacheItem) externalCache.Get("Item 1");
+                var item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 1", item["P1"]);
                 externalCache.Clear();
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNull(item);
             }
         }
@@ -144,29 +132,27 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
-                    _item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", _item);
-                }
+                var _item = new Dynamo();
+                _item["P1"] = "Property 1";
+                externalCache.Add("Item 1", _item);
 
-                var item = (ExternalCacheItem) externalCache.Get("Item 1");
+                var item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 1", item["P1"]);
                 externalCache.Select("Cache 2");
                 externalCache.Add("Item 2", item);
-                item = (ExternalCacheItem) externalCache.Get("Item 2");
+                item = (Dynamo) externalCache.Get("Item 2");
                 Assert.AreEqual("Property 1", item["P1"]);
                 using (var externalCacheManager = new ExternalCacheManager())
                     externalCacheManager.ClearAllCaches();
                 Thread.Sleep(1000);
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNull(item);
-                item = (ExternalCacheItem) externalCache.Get("Item 2");
+                item = (Dynamo) externalCache.Get("Item 2");
                 Assert.IsNull(item);
                 externalCache.Select("default");
-                item = (ExternalCacheItem) externalCache.Get("Item 1");
+                item = (Dynamo) externalCache.Get("Item 1");
                 Assert.IsNull(item);
-                item = (ExternalCacheItem) externalCache.Get("Item 2");
+                item = (Dynamo) externalCache.Get("Item 2");
                 Assert.IsNull(item);
             }
         }
@@ -177,14 +163,12 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 // ReSharper disable once InconsistentNaming
-                using (var _item = new ExternalCacheItem())
-                {
+                var _item = new Dynamo();
                     _item["P1"] = "Item 1";
                     externalCache.Add("Item 1", _item);
-                }
-                ExternalCacheItem item = new ExternalCacheItem();
+                Dynamo item = new Dynamo();
                 item["P1"] = "Item 2";
-                item = (ExternalCacheItem) externalCache.AddOrGetExisting("Item 1", item);
+                item = (Dynamo) externalCache.AddOrGetExisting("Item 1", item);
                 Assert.AreEqual("Item 1", item["P1"]);
             }
         }
@@ -195,11 +179,9 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCache = new ExternalCache())
             {
                 Assert.IsFalse(externalCache.Contains("Item 1"));
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Add("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
 
                 Assert.IsTrue(externalCache.Contains("Item 1"));
             }
@@ -210,11 +192,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Add("Item 1", item);
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Add("Item 1", item);
 
                 Assert.IsTrue(externalCache.Contains("Item 1"));
                 externalCache.Remove("Item 1");
@@ -227,11 +207,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Set("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Set("Item 1", item, new TimeSpan(10000000)); // 10000 ticks = 1ms 
 
                 CheckItem1(externalCache);
             }
@@ -242,11 +220,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                using (var item = new ExternalCacheItem())
-                {
-                    item["P1"] = "Property 1";
-                    externalCache.Set("Item 1", item, DateTime.Now.AddMilliseconds(1000));
-                }
+                var item = new Dynamo();
+                item["P1"] = "Property 1";
+                externalCache.Set("Item 1", item, DateTime.Now.AddMilliseconds(1000));
 
                 CheckItem1(externalCache);
             }

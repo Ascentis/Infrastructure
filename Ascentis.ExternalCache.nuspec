@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Ascentis.ExternalCache</id>
-    <version>1.1.0.1</version>
+    <version>1.2.0.0</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
@@ -10,11 +10,11 @@
     <repository type="git" url="https://github.com/Ascentis/net-complus-external-cache.git" branch="master" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Out of process cache operating as a COM+ server based on MemoryCache class</description>
-    <releaseNotes>Moved async disposer to dependency package Ascentis.AsyncDisposer</releaseNotes>
+    <releaseNotes>Removed external cache item. No need COM object to transfer data, use simple Dynamic class</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+</tags>
     <dependencies>
-      <dependency id="Ascentis.AsyncDisposer" version="1.0.0.1" />
+      <dependency id="Ascentis.AsyncDisposer" version="1.0.0.3" />
     </dependencies>
     <contentFiles>
       <files include="COMRegUnregAssembly\COMUnregisterAssembly.ps1" buildAction="None"/>
@@ -24,8 +24,8 @@
   <files>
     <file src="bin\Release\Ascentis.ExternalCache.dll" target="lib\net40" />
     <file src="bin\Release\Ascentis.ExternalCache.pdb" target="lib\net40" />
-    <file src="bin\Release\Ascentis.ExternalCacheItem.dll" target="lib\net40" />
-    <file src="bin\Release\Ascentis.ExternalCacheItem.pdb" target="lib\net40" />
+    <file src="bin\Release\Ascentis.Dynamo.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.Dynamo.pdb" target="lib\net40" />
     <file src="COMRegUnregAssembly\COMUnregisterAssembly.ps1" target="COMRegUnregAssembly" />
     <file src="COMRegUnregAssembly\COMUnregisterComponent.ps1" target="COMRegUnregAssembly" />
   </files>

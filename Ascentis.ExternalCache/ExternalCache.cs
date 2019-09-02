@@ -69,7 +69,7 @@ namespace Ascentis.Infrastructure
             var itemType = source.GetType();
             if (itemType.IsPrimitive || itemType == typeof(decimal) || itemType == typeof(string))
                 return source;
-            var cacheItem = new ExternalCacheItem();
+            var cacheItem = new Dynamo();
             cacheItem.CopyFrom(source);
             return cacheItem;
         }

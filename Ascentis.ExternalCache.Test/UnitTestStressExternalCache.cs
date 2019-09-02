@@ -20,17 +20,15 @@ namespace Ascentis.Infrastructure.Test
                     {
                         for (var j = 0; j < loops; j++)
                         {
-                            using (var item = new ExternalCacheItem())
-                            {
-                                item["P1"] = "Property " + j;
-                                externalCache.Add($"Item {(int) context}-{j}", item);
-                            }
+                            var item = new Dynamo();
+                            item["P1"] = "Property " + j;
+                            externalCache.Add($"Item {(int) context}-{j}", item);
 
-                            Assert.IsTrue(externalCache.Contains($"Item {(int)context}-{j}"));
-                            var returnedItem = (ExternalCacheItem)externalCache.Get($"Item {(int) context}-{j}");
+                            Assert.IsTrue(externalCache.Contains($"Item {(int) context}-{j}"));
+                            var returnedItem = (Dynamo) externalCache.Get($"Item {(int) context}-{j}");
                             Assert.AreEqual("Property " + j, returnedItem["P1"]);
-                            externalCache.Remove($"Item {(int)context}-{j}");
-                            Assert.IsFalse(externalCache.Contains($"Item {(int)context}-{j}"));
+                            externalCache.Remove($"Item {(int) context}-{j}");
+                            Assert.IsFalse(externalCache.Contains($"Item {(int) context}-{j}"));
                             Interlocked.Increment(ref totalLoops);
                         }
                     }

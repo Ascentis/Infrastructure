@@ -54,7 +54,7 @@
   <ItemGroup>
     <Compile Include="TestClass.cs" />
     <Compile Include="UnitTestExternalCache.cs" />
-    <Compile Include="UnitTestExternalCacheItem.cs" />
+    <Compile Include="UnitTestDynamo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTestStressExternalCache.cs" />
   </ItemGroup>
@@ -62,9 +62,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ascentis.ExternalCacheItem\Ascentis.ExternalCacheItem.csproj">
-      <Project>{b1d90b19-60bd-4959-acaa-bfe4f567df7c}</Project>
-      <Name>Ascentis.ExternalCacheItem</Name>
+    <ProjectReference Include="..\Ascentis.Dynamo\Ascentis.Dynamo.csproj">
+      <Project>{212f2e16-1872-4cd0-9084-286c2f73bf35}</Project>
+      <Name>Ascentis.Dynamo</Name>
     </ProjectReference>
     <ProjectReference Include="..\Ascentis.ExternalCache\Ascentis.ExternalCache.csproj">
       <Project>{35d66854-b6a0-4155-9302-ecebddf171e8}</Project>
