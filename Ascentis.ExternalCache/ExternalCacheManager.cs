@@ -10,11 +10,9 @@ namespace Ascentis.Infrastructure
     {
         public void ClearAllCaches()
         {
-            var localCaches = ExternalCache.Caches.Select(item => item.Value).ToList();
-            ExternalCache.Caches.Clear();
-            foreach (var cacheContainer in localCaches)
+            foreach (var cacheContainer in ExternalCache.Caches)
             {
-                cacheContainer.SwapNewAndExecute(cache =>
+                cacheContainer.Value.SwapNewAndExecute(cache =>
                 {
                     cache.Trim(100);
                     cache.Dispose();

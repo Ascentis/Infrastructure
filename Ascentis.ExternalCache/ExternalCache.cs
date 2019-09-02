@@ -73,12 +73,12 @@ namespace Ascentis.Infrastructure
 
         public bool Add(string key, object item)
         {
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(new CacheItem(key, BuildCacheItem(item)), DefaultCacheItemPolicy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(new CacheItem(key, BuildCacheItem(item)), DefaultCacheItemPolicy));
         }
 
         public bool Add(string key, string item)
         {
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(new CacheItem(key, item), DefaultCacheItemPolicy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(new CacheItem(key, item), DefaultCacheItemPolicy));
         }
 
         public bool Add(string key, object item, DateTime absoluteExpiration)
@@ -88,7 +88,7 @@ namespace Ascentis.Infrastructure
                 RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(key, BuildCacheItem(item), policy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(key, BuildCacheItem(item), policy));
         }
 
         public bool Add(string key, string item, DateTime absoluteExpiration)
@@ -98,7 +98,7 @@ namespace Ascentis.Infrastructure
                 RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(key, item, policy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(key, item, policy));
         }
 
         public bool Add(string key, object item, TimeSpan slidingExpiration)
@@ -108,7 +108,7 @@ namespace Ascentis.Infrastructure
                 RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(key, BuildCacheItem(item), cacheItemPolicy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(key, BuildCacheItem(item), cacheItemPolicy));
         }
 
         public bool Add(string key, string item, TimeSpan slidingExpiration)
@@ -118,7 +118,7 @@ namespace Ascentis.Infrastructure
                 RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Add(key, item, cacheItemPolicy));
+            return Cache.ExecuteReadLocked( cache => cache.Add(key, item, cacheItemPolicy));
         }
 
         public object AddOrGetExisting(string key, object value)
@@ -133,7 +133,7 @@ namespace Ascentis.Infrastructure
 
         public bool Contains(string key)
         {
-            return (bool) Cache.ExecuteReadLocked( cache => cache.Contains(key));
+            return Cache.ExecuteReadLocked( cache => cache.Contains(key));
         }
 
         public object Get(string key)
