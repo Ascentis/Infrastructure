@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
@@ -12,7 +9,7 @@ namespace Ascentis.Infrastructure
         {
             foreach (var cacheContainer in ExternalCache.Caches)
             {
-                cacheContainer.Value.SwapNewAndExecute(cache =>
+                cacheContainer.Value.SwapNewAndExecute(cache => cache.GetCount() > 0, cache =>
                 {
                     cache.Trim(100);
                     cache.Dispose();
