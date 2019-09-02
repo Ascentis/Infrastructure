@@ -67,7 +67,7 @@ namespace Ascentis.Infrastructure
         private static object BuildCacheItem(object source)
         {
             var itemType = source.GetType();
-            if (itemType.IsPrimitive || itemType == typeof(decimal) || itemType == typeof(string))
+            if (Dynamo.IsPrimitive(itemType) || itemType == typeof(Dynamo))
                 return source;
             var cacheItem = new Dynamo();
             cacheItem.CopyFrom(source);

@@ -10,6 +10,11 @@ namespace Ascentis.Infrastructure
     {
         private IDictionary<string, object> Properties { get; }
 
+        public static bool IsPrimitive(Type type)
+        {
+            return type.IsPrimitive || type == typeof(decimal) || type == typeof(string);
+        }
+
         public Dynamo()
         {
             Properties = new Dictionary<string, object>();
@@ -64,21 +69,29 @@ namespace Ascentis.Infrastructure
         public void CopyFrom(object value)
         {
             if (value is Dynamo item)
+            {
                 foreach (var prop in item.GetDynamicMemberNames())
                     this[prop] = item[prop];
+            }
             else
             {
                 var type = value.GetType();
                 foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                    this[prop.Name] = prop.GetValue(value);
+                {
+                    var val = prop.GetValue(value);
+                    if (IsPrimitive(val.GetType()))
+                        this[prop.Name] = val;
+                }
             }
         }
 
         public void CopyTo(object target)
         {
             if (target is Dynamo targetItem)
+            {
                 foreach (var prop in GetDynamicMemberNames())
                     targetItem[prop] = this[prop];
+            }
             else
             {
                 var type = target.GetType();
