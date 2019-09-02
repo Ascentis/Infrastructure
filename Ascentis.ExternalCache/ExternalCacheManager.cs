@@ -10,13 +10,15 @@ namespace Ascentis.Infrastructure
     {
         public void ClearAllCaches()
         {
-            MemoryCache.Default.Trim(100);
             var localCaches = ExternalCache.Caches.Select(item => item.Value).ToList();
             ExternalCache.Caches.Clear();
-            foreach (var cache in localCaches)
+            foreach (var cacheContainer in localCaches)
             {
-                cache.Trim(100);
-                cache.Dispose();
+                cacheContainer.SwapNewAndExecute(cache =>
+                {
+                    cache.Trim(100);
+                    cache.Dispose();
+                });
             }
         }
     }

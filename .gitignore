@@ -16,3 +16,4 @@
 *.nupkg
 /Ascentis.Dynamo/bin/
 /Ascentis.Dynamo/obj/
+*.DotSettings.user

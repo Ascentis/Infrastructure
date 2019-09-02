@@ -20,6 +20,11 @@ namespace Ascentis.Infrastructure
             Properties = new Dictionary<string, object>();
         }
 
+        public Dynamo(object source)
+        {
+            CopyFrom(source);
+        }
+
         public int Count => Properties.Keys.Count;
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
