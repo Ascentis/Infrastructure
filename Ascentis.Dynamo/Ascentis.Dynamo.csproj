@@ -55,7 +55,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\gacutil" /u ExternalCacheItem &amp;gt; nul &amp;amp; set ERRORLEVEL=0
+    <PostBuildEvent>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\gacutil" /u Dynamo &amp;gt; nul &amp;amp; set ERRORLEVEL=0
 "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\gacutil" /i $(TargetPath)</PostBuildEvent>
   </PropertyGroup>
 </Project>
