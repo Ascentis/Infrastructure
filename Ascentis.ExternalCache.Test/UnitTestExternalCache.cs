@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Dynamic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Utf8Json;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
@@ -43,6 +45,66 @@ namespace Ascentis.Infrastructure.Test
                 item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 3", item["P1"]);
                 Assert.AreEqual("Property 4", item["P2"]);
+            }
+        }
+
+        [TestMethod]
+        public void TestAdd10000ObjectsAndGet()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                // ReSharper disable once InconsistentNaming
+                for (var i = 0; i < 10000; i++)
+                {
+                    var _item = new Dynamo();
+                    _item["P1"] = "Property 1";
+                    _item["P2"] = i;
+                    externalCache.Add($"Item {i}", _item);
+                    var item = (Dynamo) externalCache.Get($"Item {i}");
+                    Assert.AreEqual("Property 1", item["P1"]);
+                    Assert.AreEqual(i, item["P2"]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestAdd10000StringsAndGet()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                // ReSharper disable once InconsistentNaming
+                for (var i = 0; i < 10000; i++)
+                {
+                    externalCache.Add($"Item {i}", $"Hello {i}");
+                    var item = (string)externalCache.Get($"Item {i}");
+                    Assert.AreEqual($"Hello {i}", item);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestAddArrayWith100000StringsAsJsonAndGet()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                // ReSharper disable once InconsistentNaming
+                var arr = new dynamic[100000];
+                for (var i = 0; i < 100000; i++)
+                {
+                    arr[i] = new ExpandoObject();
+                    arr[i].P1 = i;
+                    arr[i].P2 = "Hello World";
+                }
+                var json = JsonSerializer.ToJsonString(arr);
+                externalCache.Add($"Item", json);
+                var item = (string)externalCache.Get($"Item");
+                Assert.AreEqual(json, item);
+                var objs = (dynamic[])JsonSerializer.Deserialize<ExpandoObject[]>(item);
+                for (var i = 0; i < 100000; i++)
+                {
+                    Assert.AreEqual(objs[i].P1, i);
+                    Assert.AreEqual(objs[i].P2, "Hello World");
+                }
             }
         }
 
