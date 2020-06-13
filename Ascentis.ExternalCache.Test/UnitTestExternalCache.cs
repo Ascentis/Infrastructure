@@ -98,6 +98,7 @@ namespace Ascentis.Infrastructure.Test
                 var json = JsonSerializer.Serialize(arr);
                 externalCache.Add($"Item", json);
                 var item = (byte[])externalCache.Get($"Item");
+                // ReSharper disable once CoVariantArrayConversion
                 var objs = (dynamic[])JsonSerializer.Deserialize<ExpandoObject[]>(item);
                 for (var i = 0; i < 100000; i++)
                 {
@@ -235,6 +236,20 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestTryAddSameTwice()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                Assert.IsTrue(externalCache.Add("Item 1", "Value 1"));
+                var item = (string)externalCache.Get("Item 1");
+                Assert.AreEqual("Value 1", item);
+                Assert.IsFalse(externalCache.Add("Item 1", "Value 2"));
+                item = (string)externalCache.Get("Item 1");
+                Assert.AreEqual("Value 1", item);
+            }
+        }
+
+        [TestMethod]
         public void TestContains()
         {
             using (var externalCache = new ExternalCache())
@@ -347,6 +362,20 @@ namespace Ascentis.Infrastructure.Test
             {
                 externalCache.Set("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
                 CheckItem1AsString(externalCache);
+            }
+        }
+
+        [TestMethod]
+        public void TestSetStringTwice()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Set("Item 1", "Value 1", new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                var item = (string)externalCache.Get("Item 1");
+                Assert.AreEqual("Value 1", item);
+                externalCache.Set("Item 1", "Value 2", new TimeSpan(10000000)); // 10000 ticks = 1ms 
+                item = (string)externalCache.Get("Item 1");
+                Assert.AreEqual("Value 2", item);
             }
         }
 
