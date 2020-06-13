@@ -1,5 +1,7 @@
 ﻿using System;
 using Ascentis.ExternalCache.TesterConsole;
+using MessagePack;
+using MessagePack.Resolvers;
 using Utf8Json;
 
 namespace Ascentis.Infrastructure
@@ -49,6 +51,21 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (insert/retrieves per second): {(count / (((float)(Environment.TickCount - initialTickCount)) / 1000))}");
             externalCacheManager.ClearAllCaches();
+
+            /*
+            Console.WriteLine(@"--- Executing serializing with MessagePack as byte[] ---");
+            initialTickCount = Environment.TickCount;
+            Console.WriteLine($@"Start:{initialTickCount}");
+            dynamic obj3 = new Dynamo { ["Prop1"] = TextResource.SampleXML };
+            jsonObj = MessagePack.MessagePackSerializer.Serialize(obj3, ContractlessStandardResolver.Options);
+            for (var i = 0; i < count; i++)
+                externalCache.Add($"Item{i}", jsonObj);
+            for (var i = 0; i < count; i++)
+                externalCache.Get($"Item{i}");
+            Console.WriteLine($@"Finish:{Environment.TickCount}");
+            Console.WriteLine($@"Speed (insert/retrieves per second): {(count / (((float)(Environment.TickCount - initialTickCount)) / 1000))}");
+            externalCacheManager.ClearAllCaches();
+            */
 
             Console.WriteLine(@"Press any key to finish");
             Console.ReadLine();
