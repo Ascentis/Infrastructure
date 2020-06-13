@@ -95,10 +95,9 @@ namespace Ascentis.Infrastructure.Test
                     arr[i].P1 = i;
                     arr[i].P2 = "Hello World";
                 }
-                var json = JsonSerializer.ToJsonString(arr);
+                var json = JsonSerializer.Serialize(arr);
                 externalCache.Add($"Item", json);
-                var item = (string)externalCache.Get($"Item");
-                Assert.AreEqual(json, item);
+                var item = (byte[])externalCache.Get($"Item");
                 var objs = (dynamic[])JsonSerializer.Deserialize<ExpandoObject[]>(item);
                 for (var i = 0; i < 100000; i++)
                 {
