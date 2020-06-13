@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
@@ -12,9 +13,9 @@ namespace Ascentis.Infrastructure
 
         public static bool IsPrimitive(Type type)
         {
-            return type.IsPrimitive || type == typeof(decimal) || type == typeof(string);
+            return type != null && (type.IsPrimitive || type == typeof(decimal) || type == typeof(string) || type.IsArray && IsPrimitive(type.GetElementType()));
         }
-
+        
         public Dynamo()
         {
             Properties = new Dictionary<string, object>();
