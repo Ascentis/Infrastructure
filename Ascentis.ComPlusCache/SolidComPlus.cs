@@ -4,15 +4,14 @@ using Ascentis.Framework;
 
 namespace Ascentis.Infrastructure
 {
-    public class SolidComPlus<T> where T: new()
+    public class SolidComPlus<T>
     {
-        public delegate void InitComObjectDelegate(object obj);
+        public delegate void InitComObjectDelegate(T obj);
         private readonly ConcurrentObjectAccessor<T> _objectAccessor;
         private readonly Retrier<ConcurrentObjectAccessor<T>> _retrier;
-        private object[] _constructorArgs;
-        private InitComObjectDelegate _initComObjectDelegate;
+        private readonly InitComObjectDelegate _initComObjectDelegate;
 
-        private bool CanRetryOnCOMPlusError(Exception e, int retries)
+        private bool TestCanRetryOnComPlusError(Exception e, int retries)
         {
             if (!(e is COMException) || retries != 0) 
                 return false;
@@ -23,8 +22,15 @@ namespace Ascentis.Infrastructure
                 _initComObjectDelegate(newComObj);
             }, oldComObj => 
             {
-                if (oldComObj is IDisposable disposable)
-                    disposable.Dispose();
+                try
+                {
+                    if (oldComObj is IDisposable disposable)
+                        disposable.Dispose();
+                }
+                catch (Exception)
+                {
+                    // ignored any exception. COM object may be stale at this point
+                }
             });
             return true;
         }
@@ -33,15 +39,16 @@ namespace Ascentis.Infrastructure
         {
             _initComObjectDelegate = initObjectDelegate;
             _objectAccessor = new ConcurrentObjectAccessor<T>();
-            _retrier = new Retrier<ConcurrentObjectAccessor<T>>(_objectAccessor, CanRetryOnCOMPlusError);
+            _retrier = new Retrier<ConcurrentObjectAccessor<T>>(_objectAccessor, TestCanRetryOnComPlusError);
+            initObjectDelegate?.Invoke(_objectAccessor.Reference);
         }
 
         public SolidComPlus(InitComObjectDelegate initObjectDelegate, params object[] args)
         {
             _initComObjectDelegate = initObjectDelegate;
-            _constructorArgs = args;
             _objectAccessor = new ConcurrentObjectAccessor<T>(args);
-            _retrier = new Retrier<ConcurrentObjectAccessor<T>>(_objectAccessor, CanRetryOnCOMPlusError);
+            _retrier = new Retrier<ConcurrentObjectAccessor<T>>(_objectAccessor, TestCanRetryOnComPlusError);
+            initObjectDelegate?.Invoke(_objectAccessor.Reference);
         }
 
         public TFnRetType Retriable<TFnRetType>(ConcurrentObjectAccessor<T>.LockedFunctionDelegate<TFnRetType> functionDelegate)

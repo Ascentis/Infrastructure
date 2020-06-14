@@ -9,13 +9,19 @@ namespace Ascentis.Infrastructure
     public class ComPlusCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
     {
         private readonly DateTime _infiniteDateTime = new DateTime(9999, 1, 1);
-        private readonly Retrier<ExternalCache> _externalCache = new Retrier<ExternalCache>(new ExternalCache());
+        private readonly SolidComPlus<ExternalCache> _externalCache;
 
-        public ComPlusCache() {}
+        public ComPlusCache()
+        {
+            _externalCache = new SolidComPlus<ExternalCache>();
+        }
 
         public ComPlusCache(string name)
         {
-            _externalCache.Retriable( externalCache => externalCache.Select(name));
+            _externalCache = new SolidComPlus<ExternalCache>(externalCache =>
+            {
+                externalCache.Select(name);
+            });
         }
 
         public void Dispose()
@@ -25,12 +31,12 @@ namespace Ascentis.Infrastructure
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            return (_externalCache as IEnumerable<KeyValuePair<string, object>>).GetEnumerator();
+            return _externalCache.Retriable(externalCache => ((IEnumerable<KeyValuePair<string, object>>) externalCache)?.GetEnumerator() ?? throw new InvalidOperationException());
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (_externalCache as IEnumerable).GetEnumerator();
+            return _externalCache.Retriable(externalCache => ((IEnumerable) externalCache)?.GetEnumerator() ?? throw new InvalidOperationException());
         }
 
         public long Trim(int percent)

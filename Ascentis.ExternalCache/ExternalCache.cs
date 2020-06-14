@@ -9,7 +9,7 @@ using Ascentis.Framework;
 namespace Ascentis.Infrastructure
 {
     [Guid("78088bd8-739f-4397-adba-cc7ea259e654")]
-    public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache, IEnumerable, IEnumerable<KeyValuePair<string, object>>
+    public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
     {
         private const string DefaultMemoryCacheName = "default";
         public static readonly ConcurrentDictionary<string, ConcurrentObjectAccessor<InternalMemoryCache>> Caches;

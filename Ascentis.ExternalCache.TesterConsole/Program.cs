@@ -11,8 +11,8 @@ namespace Ascentis.Infrastructure
         static void Main()
         {
             const int count = 10000;
-            var externalCache = new ExternalCache();
-            externalCache.Select("PerformanceTestCache");
+            var externalCache = new ComPlusCache();
+            //externalCache.Select("PerformanceTestCache");
             externalCache.Clear();
 
             Console.WriteLine(@"--- Executing serializing a string ---");
@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure
                 externalCache.Get($"Item{i}");
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (insert/retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");
-            var externalCacheManager = new ExternalCacheManager();
+            var externalCacheManager = new ComPlusCacheManager();
             externalCacheManager.ClearAllCaches();
 
             Console.WriteLine(@"--- Executing serializing complex object ---");
