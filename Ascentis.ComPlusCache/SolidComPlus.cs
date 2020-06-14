@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure
 
         private bool TestCanRetryOnComPlusError(Exception e, int retries)
         {
-            if (!(e is COMException) || retries != 0) 
+            if (!(e is COMException) || retries != 0 || (!e.Message.Contains("The remote procedure call failed") && !e.Message.Contains("The RPC server is unavailable")))
                 return false;
             _objectAccessor.SwapNewAndExecute(comObj => true, newComObj =>
             {
@@ -29,7 +29,7 @@ namespace Ascentis.Infrastructure
                 }
                 catch (Exception)
                 {
-                    // ignored any exception. COM object may be stale at this point
+                    // Ignore
                 }
             });
             return true;

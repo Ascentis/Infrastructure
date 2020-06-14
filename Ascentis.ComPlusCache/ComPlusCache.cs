@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-/* System.Runtime.InteropServices.COMException: 'The remote procedure call failed. (Exception from HRESULT: 0x800706BE)' */
-
 namespace Ascentis.Infrastructure
 {
     public class ComPlusCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
