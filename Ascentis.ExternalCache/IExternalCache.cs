@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
     [Guid("d0eec9c2-8cc1-40ad-96fd-22908fe467a5")]
-    public interface IExternalCache
+    public interface IExternalCache : IEnumerable<KeyValuePair<string, object>>
     {
         void Select(string cacheName);
         bool Add(string key, object item);

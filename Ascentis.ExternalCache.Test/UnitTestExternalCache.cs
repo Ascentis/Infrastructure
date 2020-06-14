@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,6 +46,24 @@ namespace Ascentis.Infrastructure.Test
                 item = (Dynamo) externalCache.Get("Item 1");
                 Assert.AreEqual("Property 3", item["P1"]);
                 Assert.AreEqual("Property 4", item["P2"]);
+            }
+        }
+
+        [TestMethod]
+        public void TestAddObjectAndEnumerate()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                // ReSharper disable once InconsistentNaming
+                var _item = new Dynamo();
+                _item["P1"] = "Property 1";
+                _item["P2"] = "Property 2";
+                externalCache.Add("Item 1", _item);
+                foreach(var item in externalCache)
+                {
+                    Assert.AreEqual("Property 1", ((dynamic)item.Value).P1);
+                    Assert.AreEqual("Property 2", ((dynamic)item.Value).P2);
+                }
             }
         }
 

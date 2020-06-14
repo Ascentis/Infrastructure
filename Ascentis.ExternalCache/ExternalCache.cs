@@ -1,21 +1,23 @@
 ﻿using System.Runtime.Caching;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Ascentis.Framework;
 
 namespace Ascentis.Infrastructure
 {
     [Guid("78088bd8-739f-4397-adba-cc7ea259e654")]
-    public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
+    public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache, IEnumerable, IEnumerable<KeyValuePair<string, object>>
     {
         private const string DefaultMemoryCacheName = "default";
-        public static readonly ConcurrentDictionary<string, ConcurrentObjectAccessor<MemoryCache>> Caches;
+        public static readonly ConcurrentDictionary<string, ConcurrentObjectAccessor<InternalMemoryCache>> Caches;
         private static readonly CacheItemPolicy DefaultCacheItemPolicy;
 
         static ExternalCache()
         {
-            Caches = new ConcurrentDictionary<string, ConcurrentObjectAccessor<MemoryCache>>();
+            Caches = new ConcurrentDictionary<string, ConcurrentObjectAccessor<InternalMemoryCache>>();
             DefaultCacheItemPolicy = new CacheItemPolicy
             {
                 /* We need to use an async "disposer" with IDisposable items in the cache because the MemoryCache.Remove() apparently
@@ -34,9 +36,14 @@ namespace Ascentis.Infrastructure
             };
         }
 
-        private ConcurrentObjectAccessor<MemoryCache> _cache;
+        /* The reason for using a ConcurrentObjectAccessor is to allow implementation of ClearAllCaches() in ExternalCacheManager capable of
+           completely destroying existing cache freeing all of its used memory in parallel to normal usage of the cache continuing uninterrupted.
+           For this to work we use the pattern ConcurrentObjectAccessor allowing normal operation working under a ReadLock while ClearAllCaches() will
+           perform a SwapNewAndExecute() call, which replaces the old cache with a new one and executes the delegate with the old cache. This happens
+           within a temporary write lock to replace the internal reference to MemoryCache */
+        private ConcurrentObjectAccessor<InternalMemoryCache> _cache;
 
-        private ConcurrentObjectAccessor<MemoryCache> Cache
+        private ConcurrentObjectAccessor<InternalMemoryCache> Cache
         {
             get
             {
@@ -53,7 +60,7 @@ namespace Ascentis.Infrastructure
         {
             if (cacheName == DefaultMemoryCacheName)
                 cacheName = "_" + DefaultMemoryCacheName;
-            Cache = Caches.GetOrAdd(cacheName, name => new ConcurrentObjectAccessor<MemoryCache>(name, null));
+            Cache = Caches.GetOrAdd(cacheName, name => new ConcurrentObjectAccessor<InternalMemoryCache>(name, null));
         }
 
         private void CheckCache()
@@ -189,6 +196,21 @@ namespace Ascentis.Infrastructure
         public void Clear()
         {
             Cache.ExecuteReadLocked( cache => cache.Trim(100));
+        }
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        {
+            return Cache.ExecuteReadLocked(cache => (cache as IEnumerable<KeyValuePair<string, object>>).GetEnumerator());
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Cache.ExecuteReadLocked(cache => (cache as IEnumerable).GetEnumerator());
+        }
+
+        public long Trim(int percent)
+        {
+            return Cache.ExecuteReadLocked(cache => cache.Trim(percent));
         }
     }
 }

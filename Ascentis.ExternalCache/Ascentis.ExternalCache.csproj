@@ -10,6 +10,7 @@
     <RootNamespace>Ascentis.ExternalCache</RootNamespace>
     <AssemblyName>Ascentis.ExternalCache</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -67,8 +68,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ascentis.AsyncDisposer, Version=1.1.0.0, Culture=neutral, PublicKeyToken=c0a0ba2c60187ff1, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ascentis.AsyncDisposer.1.1.0\lib\net40\Ascentis.AsyncDisposer.dll</HintPath>
+    <Reference Include="Ascentis.AsyncDisposer, Version=1.2.4.0, Culture=neutral, PublicKeyToken=c0a0ba2c60187ff1, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ascentis.AsyncDisposer.1.2.4\lib\net40\Ascentis.AsyncDisposer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -82,6 +83,7 @@
     <Compile Include="ExternalCacheManager.cs" />
     <Compile Include="IExternalCache.cs" />
     <Compile Include="IExternalCacheManager.cs" />
+    <Compile Include="InternalMemoryCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
