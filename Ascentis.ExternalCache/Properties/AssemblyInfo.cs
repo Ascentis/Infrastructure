@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ascentis")]
 [assembly: AssemblyProduct("Ascentis.ExternalCache")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,9 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("35d66854-b6a0-4155-9302-ecebddf171e8")]
+[assembly: Guid("21EDECBC-56CA-463D-9D74-0A6CF4618623")]
+[assembly: ApplicationID("22578A01-CCA8-11D2-A719-0060B0B41584")]
+[assembly: ApplicationName("Ascentis.ExternalCache")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,10 +34,8 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.2")]
-[assembly: AssemblyFileVersion("1.2.0.2")]
-
-[assembly: ApplicationName("Ascentis.ExternalCache")]
+[assembly: AssemblyVersion("1.2.0.3")]
+[assembly: AssemblyFileVersion("1.2.0.3")]
 [assembly: ApplicationActivation(ActivationOption.Server)]
 [assembly: ApplicationAccessControl(false, Authentication = AuthenticationOption.None)]
 [assembly: AssemblyKeyFileAttribute("Ascentis.ExternalCache.snk")]

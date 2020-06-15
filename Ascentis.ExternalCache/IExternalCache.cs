@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
-    [Guid("d0eec9c2-8cc1-40ad-96fd-22908fe467a5")]
-    public interface IExternalCache : IEnumerable<KeyValuePair<string, object>>
+    [Guid("87CCFC0F-73BE-4AB1-A23C-F3EA5B419D82")]
+    public interface IExternalCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
     {
         void Select(string cacheName);
         bool Add(string key, object item);
@@ -25,5 +24,7 @@ namespace Ascentis.Infrastructure
         void Set(string key, string value, DateTime absoluteExpiration);
         void Set(string key, string value, TimeSpan slidingExpiration);
         void Clear();
+        long Trim(int percent);
+        void SelfTest();
     }
 }

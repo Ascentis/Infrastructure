@@ -7,16 +7,16 @@ namespace Ascentis.Infrastructure
     public class ComPlusCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
     {
         private readonly DateTime _infiniteDateTime = new DateTime(9999, 1, 1);
-        private readonly SolidComPlus<ExternalCache> _externalCache;
+        private readonly SolidComPlus<IExternalCache, ExternalCache> _externalCache;
 
         public ComPlusCache()
         {
-            _externalCache = new SolidComPlus<ExternalCache>();
+            _externalCache = new SolidComPlus<IExternalCache, ExternalCache>();
         }
 
         public ComPlusCache(string name)
         {
-            _externalCache = new SolidComPlus<ExternalCache>(externalCache =>
+            _externalCache = new SolidComPlus<IExternalCache, ExternalCache>(externalCache =>
             {
                 externalCache.Select(name);
             });
@@ -24,7 +24,14 @@ namespace Ascentis.Infrastructure
 
         public void Dispose()
         {
-            _externalCache.Retriable( externalCache => externalCache.Dispose());
+            try
+            {
+                _externalCache.NonRetriable(externalCache => externalCache.Dispose());
+            }
+            catch (Exception)
+            {
+                // COM+ could be dead at this point
+            }
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()

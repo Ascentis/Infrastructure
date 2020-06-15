@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,6 +23,24 @@ namespace Ascentis.Infrastructure.Test
             using (var externalCacheManager = new ExternalCacheManager())
                 externalCacheManager.ClearAllCaches();
             Thread.Sleep(1000);
+        }
+
+        [TestMethod]
+        public void TestTrim()
+        {
+            using (var externalCache = new ExternalCache())
+            {
+                externalCache.Trim(100);
+            }
+        }
+
+        [TestMethod]
+        public void TestSelfTest()
+        {
+            using (var externalCache = (IExternalCache)new ExternalCache())
+            {
+                externalCache.SelfTest();
+            }
         }
 
         [TestMethod]
@@ -334,7 +351,7 @@ namespace Ascentis.Infrastructure.Test
             }
         }
 
-        private void CheckItem1AsString(ExternalCache externalCache)
+        private void CheckItem1AsString(IExternalCache externalCache)
         {
             var item = (string)externalCache.Get("Item 1");
             Assert.IsNotNull(item);
@@ -356,7 +373,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestAddStringAndLetItExpireByAbsoluteTime()
         {
-            using (var externalCache = new ExternalCache())
+            using (var externalCache = (IExternalCache)new ExternalCache())
             {
                 externalCache.Add("Item 1", "Value 1", DateTime.Now.AddMilliseconds(1000));
                 CheckItem1AsString(externalCache);

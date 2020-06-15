@@ -29,9 +29,9 @@ namespace Ascentis.Infrastructure
             _canRetry = canRetry;
         }
 
-        public TFnRetType Retriable<TFnRetType>(RetriableFunctionDelegate<TFnRetType> functionDelegate)
+        public TFnRetType Retriable<TFnRetType>(RetriableFunctionDelegate<TFnRetType> functionDelegate, int initialRetryCount = 0)
         {
-            var retries = 0;
+            var retries = initialRetryCount;
             while (true)
             {
                 try
@@ -46,9 +46,9 @@ namespace Ascentis.Infrastructure
             }
         }
 
-        public void Retriable(RetriableProcedureDelegate procedureDelegate)
+        public void Retriable(RetriableProcedureDelegate procedureDelegate, int initialRetryCount = 0)
         {
-            var retries = 0;
+            var retries = initialRetryCount;
             while (true)
             {
                 try

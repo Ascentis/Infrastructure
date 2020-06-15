@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Dynamic;
-using Ascentis.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascentis.Infrastructure.Test
@@ -18,7 +17,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestCreate()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache())
+            using (var comPlusCache = new ComPlusCache())
             {
                 Assert.IsNotNull(comPlusCache);
             }
@@ -27,7 +26,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestCreateNamed()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 Assert.IsNotNull(comPlusCache);
             }
@@ -36,7 +35,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSetAndGetViaDictionaryAccess()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache["Entry 1"] = "Hello";
                 Assert.AreEqual("Hello", comPlusCache["Entry 1"]);
@@ -46,7 +45,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestIterate()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache["Entry 1"] = "Hello";
                 foreach (var entry in comPlusCache)
@@ -60,7 +59,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestTrim()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache())
+            using (var comPlusCache = new ComPlusCache())
             {
                 Assert.AreEqual(0, comPlusCache.Trim(100));
             }
@@ -69,7 +68,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestContains()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache["Entry 1"] = "Hello";
                 Assert.IsTrue(comPlusCache.Contains("Entry 1"));
@@ -79,7 +78,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestAdd()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache.Add("Entry 1", "Hello");
                 comPlusCache.Add("Entry 2", new object());
@@ -99,7 +98,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestAddOrGetExisting()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache.Trim(100);
                 Assert.AreEqual(null, comPlusCache.AddOrGetExisting("Entry 1", "Hello"));
@@ -114,7 +113,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestRemove()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache.Add("Entry 1", "Hello");
                 Assert.IsTrue(comPlusCache.Contains("Entry 1"));
@@ -126,7 +125,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSetAndGet()
         {
-            using (var comPlusCache = new Infrastructure.ComPlusCache("TestCache"))
+            using (var comPlusCache = new ComPlusCache("TestCache"))
             {
                 comPlusCache.Set("Entry 1", "Hello", new DateTime(9999, 1, 1));
                 Assert.AreEqual("Hello", comPlusCache.Get("Entry 1"));

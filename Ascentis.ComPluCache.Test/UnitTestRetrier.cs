@@ -1,8 +1,7 @@
 ﻿using System;
-using Ascentis.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Ascentis.ComPluCache.Test
+namespace Ascentis.Infrastructure.Test
 {
     public class TheClass
     {
@@ -12,9 +11,6 @@ namespace Ascentis.ComPluCache.Test
     [TestClass]
     public class UnitTestRetrier
     {
-        public UnitTestRetrier()
-        {
-        }
 
         #region Additional test attributes
         //
@@ -76,10 +72,12 @@ namespace Ascentis.ComPluCache.Test
         [TestMethod]
         public void TestMethodRetryProcedureWithCustomCanRetryOnException()
         {
-            var retrier = new Retrier<TheClass>(new TheClass(), (e, _counter) => e is Exception && _counter <= 2);
+            // ReSharper disable once InconsistentNaming
+            var retrier = new Retrier<TheClass>(new TheClass(), (e, _counter) => e != null && _counter <= 2);
             var counter = 0;
             retrier.Retriable(delegate
             {
+                // ReSharper disable once AccessToModifiedClosure
                 if (counter++ <= 2)
                     throw new Exception();
             });

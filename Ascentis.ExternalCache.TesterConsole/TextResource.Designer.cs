@@ -19,7 +19,7 @@ namespace Ascentis.ExternalCache.TesterConsole {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class TextResource {
@@ -61,17 +61,8 @@ namespace Ascentis.ExternalCache.TesterConsole {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot;?&gt;
-        ///&lt;package &gt;
-        ///  &lt;metadata&gt;
-        ///    &lt;id&gt;Ascentis.ExternalCache&lt;/id&gt;
-        ///    &lt;version&gt;1.1.0.0&lt;/version&gt;
-        ///    &lt;authors&gt;jsbattig&lt;/authors&gt;
-        ///    &lt;owners&gt;jsbattig&lt;/owners&gt;
-        ///    &lt;license type=&quot;expression&quot;&gt;MIT&lt;/license&gt;
-        ///    &lt;projectUrl&gt;https://github.com/Ascentis/net-complus-external-cache&lt;/projectUrl&gt;
-        ///    &lt;repository type=&quot;git&quot; url=&quot;https://github.com/Ascentis/net-complus-external-cache.git&quot; branch=&quot;master&quot; commit=&quot;e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3&quot; /&gt;
-        ///    &lt;requireLicenseAcceptance&gt;false&lt;/ [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to 1,1,&quot;New Employee No Shift Associated        &quot;,1,1,7,NULL,00:00,23:59,0,1439,1,0,21,0.00,0.00,0.00,0.00,0,0,0,0,1,2,1,2,1,&quot;                                        &quot;,0,0,0,0,0.00,&quot;NEUADMIN  &quot;,2014-11-04 08:28:51.000,1,15,20,2,0,2,0,180,0,0,0,0.00,0,0,0,0,0,1,LREIMBNOLM=.F. LMEALOUTWKHRS=.F. LREIMPC=.F. NREIMPC=0 CREIMPCREF=00:00,0,0,0,0,0,0,NULL,0.00,0,NULL,0.00,0.00,0.00,0.00
+        ///5,400,&quot;04:00 - 12:30 M-F M30                   &quot;,2,1,7,NULL,00:00,23:59,0,1439,1,0,21,6.00,0.00,0.00,0.00,30,0,0,0,1,2,1,2,1,&quot;       [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SampleXML {
             get {

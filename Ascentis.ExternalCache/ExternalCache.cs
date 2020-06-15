@@ -8,6 +8,9 @@ using Ascentis.Framework;
 
 namespace Ascentis.Infrastructure
 {
+    /* Don't use this class directly, but rather do it thorough ComPlusCache. ComPlusCache can handle COM+ service crashes
+       and automatically retry operations */
+
     [Guid("78088bd8-739f-4397-adba-cc7ea259e654")]
     public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
     {
@@ -211,6 +214,10 @@ namespace Ascentis.Infrastructure
         public long Trim(int percent)
         {
             return Cache.ExecuteReadLocked(cache => cache.Trim(percent));
+        }
+
+        public void SelfTest()
+        {
         }
     }
 }
