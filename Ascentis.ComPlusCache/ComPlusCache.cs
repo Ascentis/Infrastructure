@@ -36,7 +36,7 @@ namespace Ascentis.Infrastructure
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            return _externalCache.Retriable(externalCache => ((IEnumerable<KeyValuePair<string, object>>) externalCache)?.GetEnumerator() ?? throw new InvalidOperationException());
+            return _externalCache.Retriable(externalCache => externalCache?.GetEnumerator() ?? throw new InvalidOperationException());
         }
 
         IEnumerator IEnumerable.GetEnumerator()
