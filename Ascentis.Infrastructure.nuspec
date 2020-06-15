@@ -6,15 +6,13 @@
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
-    <projectUrl>https://github.com/Ascentis/net-complus-external-cache</projectUrl>
-    <repository type="git" url="https://github.com/Ascentis/net-complus-external-cache.git" branch="master" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />
+    <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Out of process cache operating as a COM+ server based on MemoryCache class</description>
-    <releaseNotes>Removed external cache item. No need COM object to transfer data, use simple Dynamic class</releaseNotes>
+    <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer</description>
+    <releaseNotes>Packaged up several utilitarian classes</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+</tags>
     <dependencies>
-      <dependency id="Ascentis.AsyncDisposer" version="1.2.5.0" />
     </dependencies>
     <contentFiles>
       <files include="COMRegUnregAssembly\COMUnregisterAssembly.ps1" buildAction="None"/>
@@ -22,6 +20,10 @@
     </contentFiles>
   </metadata>
   <files>
+    <file src="bin\Release\Ascentis.Infrastructure.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.Infrastructure.pdb" target="lib\net40" />
+    <file src="bin\Release\Ascentis.ComPlusCache.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.ComPlusCache.pdb" target="lib\net40" />
     <file src="bin\Release\Ascentis.ExternalCache.dll" target="lib\net40" />
     <file src="bin\Release\Ascentis.ExternalCache.pdb" target="lib\net40" />
     <file src="bin\Release\Ascentis.Dynamo.dll" target="lib\net40" />

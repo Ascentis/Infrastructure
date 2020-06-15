@@ -8,8 +8,8 @@
     <ProjectGuid>{8854E85D-2D83-4DBF-B9E9-CB9BFA34F6DA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ascentis.ComPluCache.Test</RootNamespace>
-    <AssemblyName>Ascentis.ComPluCache.Test</AssemblyName>
+    <RootNamespace>Ascentis.ComPlusCache.Test</RootNamespace>
+    <AssemblyName>Ascentis.ComPlusCache.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

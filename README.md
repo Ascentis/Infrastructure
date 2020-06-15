@@ -29,3 +29,18 @@ to execute functions within a readlock. This allows usage of method SwapAndExecu
 When to use this? When dealing with COM, COM+ or DCOM objects prone to crashing or suffering from network partitions. With this class the COM
 object can be isolated behing a wrapper relying on ConcurrentObjectAccessor and the low level object can be replaced transparently upon detection
 of partition exception.
+
+## Ascentis.Retrier
+
+This class allows to wrap function or procedure calls in a try-catch block that would retry operations based on on a delegate function returning
+true or false. Can be combined with ConcurrentObjectAccessor to replace transparently a low level object upon certain conditions.
+
+## Ascentis.ConccurentObjectAccessor
+
+This class allows to control usage of an object reference permitting multiple concurrent threads using it for reading its value (and executing code with it),
+while only one thread can write to the reference at the same time. The main purpose is to replace a failing object transparently upon detection of a faulty condition.
+A concrete example is a COM+ object which crashed. The reference to this object is worthless until replaced by a new COM+ object instance.
+
+## Ascentis.SolidComPlus
+
+This class encapsulates a COM+ object instance allowing the user to implement automatic swapping of a dead object. 
