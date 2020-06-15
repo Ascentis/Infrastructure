@@ -68,9 +68,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ascentis.AsyncDisposer, Version=1.2.5.0, Culture=neutral, PublicKeyToken=c0a0ba2c60187ff1, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ascentis.AsyncDisposer.1.2.5\lib\net40\Ascentis.AsyncDisposer.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.EnterpriseServices" />
@@ -91,10 +88,13 @@
       <Project>{212f2e16-1872-4cd0-9084-286c2f73bf35}</Project>
       <Name>Ascentis.Dynamo</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Ascentis.Infrastructure\Ascentis.Infrastructure.csproj">
+      <Project>{4322e4f4-e201-4fea-a5db-38b06c8c1fea}</Project>
+      <Name>Ascentis.Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

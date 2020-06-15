@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Ascentis.ExternalCache</id>
-    <version>1.2.0.3</version>
+    <id>Ascentis.Infrastructure</id>
+    <version>2.0.0.0</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
