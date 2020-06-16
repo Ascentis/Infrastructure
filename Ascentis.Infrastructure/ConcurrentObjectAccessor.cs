@@ -40,7 +40,7 @@ namespace Ascentis.Infrastructure
         public ConcurrentObjectAccessor(params object[] args)
         {
             _constructorArgs = args;
-            Reference = (T) Activator.CreateInstance(typeof(T), args);
+            Reference = (T) Activator.CreateInstance(typeof(TClass), args);
             InitRefLock();
         }
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Dynamic;
+using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascentis.Infrastructure.Test
@@ -163,7 +165,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestStressConcurrent()
         {
             const int threadCount = 4;
-            const int loops = 5000;
+            const int loops = 1000;
             var totalLoops = 0;
             var threads = new Thread[threadCount];
             for (var i = 0; i < threadCount; i++)
@@ -193,6 +195,41 @@ namespace Ascentis.Infrastructure.Test
             foreach (var thread in threads)
                 thread.Join();
             Assert.AreEqual(threadCount * loops, totalLoops);
+        }
+
+        [TestMethod]
+        public void TestAddOrUpdateParallelWithSameComPlusReference()
+        {
+            var cd = new ComPlusCache("Concurrent");
+            cd.Trim(100);
+            var addCnt = 0;
+            var updCnt = 0;
+            Parallel.For(0, 10000, i =>
+            {
+                cd.AddOrUpdate("1", () =>
+                {
+                    Interlocked.Increment(ref addCnt);
+                    return 1;
+                }, () =>
+                {
+                    Interlocked.Increment(ref updCnt);
+                    return new Random().Next(10000);
+                });
+            });
+            var cnt = 0;
+            foreach (var item in cd)
+                cnt++;
+            Assert.AreEqual(1, cnt);
+            Assert.AreEqual(9999, updCnt);
+            Assert.AreEqual(1, addCnt);
+            Assert.AreNotEqual(-1, (int)cd["1"]);
+            
+            int value = (int)cd.GetOrAdd("2", () => 100);
+            Assert.AreEqual(100, value);
+
+            // Should return 100, as key 2 is already set to that value
+            value = (int)cd.GetOrAdd("2", () => 10000);
+            Assert.AreEqual(100, value);
         }
     }
 }

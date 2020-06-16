@@ -8,7 +8,9 @@ namespace Ascentis.Infrastructure
     {
         private const string Reserved = "-<.Reserved.>-";
         public delegate TRt ValueFactory<out TRt>();
+        public delegate TRt UpdateValueFactory<out TRt>();
         private delegate object SetCacheEntry();
+        private delegate object UpdateSetCacheEntry();
         private readonly DateTime _infiniteDateTime = new DateTime(9999, 1, 1);
         private readonly SolidComPlus<IExternalCache, ExternalCache> _externalCache;
 
@@ -212,7 +214,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        private TRt AddOrUpdate<TRt>(string key, SetCacheEntry addSetCacheEntry, SetCacheEntry updateSetCacheEntry)
+        private TRt AddOrUpdate<TRt>(string key, SetCacheEntry addSetCacheEntry, UpdateSetCacheEntry updateSetCacheEntry)
         {
             do
             {
@@ -224,7 +226,7 @@ namespace Ascentis.Infrastructure
             } while (true);
         }
 
-        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory)
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, UpdateValueFactory<object> updateValueFactory)
         {
             return AddOrUpdate<object>(key, () =>
             {
@@ -239,7 +241,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory)
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, UpdateValueFactory<string> updateValueFactory)
         {
             return AddOrUpdate<string>(key, () =>
             {
@@ -254,7 +256,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory, DateTime absoluteExpiration)
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, UpdateValueFactory<object> updateValueFactory, DateTime absoluteExpiration)
         {
             return AddOrUpdate<object>(key, () =>
             {
@@ -269,7 +271,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory, DateTime absoluteExpiration)
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, UpdateValueFactory<string> updateValueFactory, DateTime absoluteExpiration)
         {
             return AddOrUpdate<string>(key, () =>
             {
@@ -284,7 +286,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory, TimeSpan slidingExpiration)
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, UpdateValueFactory<object> updateValueFactory, TimeSpan slidingExpiration)
         {
             return AddOrUpdate<object>(key, () =>
             {
@@ -299,7 +301,7 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory, TimeSpan slidingExpiration)
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, UpdateValueFactory<string> updateValueFactory, TimeSpan slidingExpiration)
         {
             return AddOrUpdate<string>(key, () =>
             {

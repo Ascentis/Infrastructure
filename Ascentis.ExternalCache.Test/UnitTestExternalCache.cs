@@ -30,7 +30,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var externalCache = new ExternalCache())
             {
-                externalCache.Trim(100);
+                externalCache.Clear();
             }
         }
 

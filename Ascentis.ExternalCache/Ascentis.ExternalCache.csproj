@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExternalCache.cs" />
+    <Compile Include="ExternalCacheItem.cs" />
     <Compile Include="ExternalCacheManager.cs" />
     <Compile Include="IExternalCache.cs" />
     <Compile Include="IExternalCacheManager.cs" />
