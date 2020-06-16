@@ -60,6 +60,10 @@
       <Project>{800b2d4d-5835-41b0-8692-ebd8c98ca1bb}</Project>
       <Name>Ascentis.ComPlusCache</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Ascentis.Dynamo\Ascentis.Dynamo.csproj">
+      <Project>{212f2e16-1872-4cd0-9084-286c2f73bf35}</Project>
+      <Name>Ascentis.Dynamo</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

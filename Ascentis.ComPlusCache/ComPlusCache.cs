@@ -6,6 +6,9 @@ namespace Ascentis.Infrastructure
 {
     public class ComPlusCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
     {
+        private const string Reserved = "-<.Reserved.>-";
+        public delegate TRt ValueFactory<out TRt>();
+        private delegate object SetCacheEntry();
         private readonly DateTime _infiniteDateTime = new DateTime(9999, 1, 1);
         private readonly SolidComPlus<IExternalCache, ExternalCache> _externalCache;
 
@@ -133,6 +136,182 @@ namespace Ascentis.Infrastructure
         public void Clear()
         {
             _externalCache.Retriable(externalCache => externalCache.Clear());
+        }
+
+        /* ConcurrentDictionary style methods using delegates to create values only when needed */
+
+        private TRt GetOrAdd<TRt>(string key, SetCacheEntry setCacheEntry)
+        {
+            TRt obj;
+            do
+            {
+                obj = (TRt)_externalCache.Retriable(externalCache => externalCache.Get(key));
+                if (obj != null)
+                { 
+                    if (!(obj is string s)) break;
+                    if (s == Reserved) continue;
+                    break;
+                }
+                obj = (TRt)_externalCache.Retriable(externalCache => externalCache.AddOrGetExisting(key, Reserved));
+                if (obj != null) continue;
+                return (TRt)setCacheEntry();
+            } while (true);
+            return obj;
+        }
+
+        public object GetOrAdd(string key, ValueFactory<object> builder)
+        {
+            return GetOrAdd(key, builder, _infiniteDateTime);
+        }
+
+        public string GetOrAdd(string key, ValueFactory<string> builder)
+        {
+            return GetOrAdd(key, builder, _infiniteDateTime);
+        }
+
+        public object GetOrAdd(string key, ValueFactory<object> builder, DateTime absoluteExpiration)
+        {
+            return GetOrAdd<object>(key, () =>
+                _externalCache.Retriable(externalCache =>
+                {
+                    var v = builder();
+                    externalCache.Set(key, v, absoluteExpiration);
+                    return v;
+                }));
+        }
+
+        public string GetOrAdd(string key, ValueFactory<string> builder, DateTime absoluteExpiration)
+        {
+            return GetOrAdd<string>(key, () =>
+                _externalCache.Retriable(externalCache =>
+                {
+                    var v = builder();
+                    externalCache.Set(key, v, absoluteExpiration);
+                    return v;
+                }));
+        }
+
+        public object GetOrAdd(string key, ValueFactory<object> builder, TimeSpan slidingExpiration)
+        {
+            return GetOrAdd<object>(key, () =>
+                _externalCache.Retriable(externalCache =>
+                {
+                    var v = builder();
+                    externalCache.Set(key, v, slidingExpiration);
+                    return v; 
+                }));
+        }
+
+        public string GetOrAdd(string key, ValueFactory<string> builder, TimeSpan slidingExpiration)
+        {
+            return GetOrAdd<string>(key, () =>
+            {
+                var v = builder();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, slidingExpiration));
+                return v;
+            });
+        }
+
+        private TRt AddOrUpdate<TRt>(string key, SetCacheEntry addSetCacheEntry, SetCacheEntry updateSetCacheEntry)
+        {
+            do
+            {
+                if (_externalCache.Retriable(externalCache => externalCache.Contains(key))
+                    && !_externalCache.Retriable(externalCache => externalCache.CompareValue(key, Reserved)))
+                    return (TRt)updateSetCacheEntry();
+                if (_externalCache.Retriable(externalCache => externalCache.Add(key, Reserved)))
+                    return (TRt)addSetCacheEntry();
+            } while (true);
+        }
+
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory)
+        {
+            return AddOrUpdate<object>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, _infiniteDateTime));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, _infiniteDateTime));
+                return v;
+            });
+        }
+
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory)
+        {
+            return AddOrUpdate<string>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, _infiniteDateTime));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, _infiniteDateTime));
+                return v;
+            });
+        }
+
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory, DateTime absoluteExpiration)
+        {
+            return AddOrUpdate<object>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, absoluteExpiration));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, absoluteExpiration));
+                return v;
+            });
+        }
+
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory, DateTime absoluteExpiration)
+        {
+            return AddOrUpdate<string>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, absoluteExpiration));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, absoluteExpiration));
+                return v;
+            });
+        }
+
+        public object AddOrUpdate(string key, ValueFactory<object> addValueFactory, ValueFactory<object> updateValueFactory, TimeSpan slidingExpiration)
+        {
+            return AddOrUpdate<object>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, slidingExpiration));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, slidingExpiration));
+                return v;
+            });
+        }
+
+        public string AddOrUpdate(string key, ValueFactory<string> addValueFactory, ValueFactory<string> updateValueFactory, TimeSpan slidingExpiration)
+        {
+            return AddOrUpdate<string>(key, () =>
+            {
+                var v = addValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, slidingExpiration));
+                return v;
+            }, () =>
+            {
+                var v = updateValueFactory();
+                _externalCache.Retriable(externalCache => externalCache.Set(key, v, slidingExpiration));
+                return v;
+            });
         }
     }
 }

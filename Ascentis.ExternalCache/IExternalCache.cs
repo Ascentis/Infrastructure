@@ -25,6 +25,7 @@ namespace Ascentis.Infrastructure
         void Set(string key, string value, TimeSpan slidingExpiration);
         void Clear();
         long Trim(int percent);
+        bool CompareValue(string key, object value);
         void SelfTest();
     }
 }

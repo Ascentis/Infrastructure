@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
@@ -208,6 +209,17 @@ namespace Ascentis.Infrastructure
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Cache.ExecuteReadLocked(cache => (cache as IEnumerable).GetEnumerator());
+        }
+
+        [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
+        public bool CompareValue(string key, object value)
+        {
+            var obj = Get(key);
+            if (obj == null && value == null)
+                return true;
+            if (obj == null && value != null || obj != null && value == null)
+                return false;
+            return obj.GetType() == value.GetType() && value == obj;
         }
 
         public long Trim(int percent)

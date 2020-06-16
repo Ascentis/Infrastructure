@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Dynamic;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascentis.Infrastructure.Test
@@ -107,6 +108,26 @@ namespace Ascentis.Infrastructure.Test
                 Assert.AreEqual(null, comPlusCache.AddOrGetExisting("Entry 2", obj));
                 Assert.IsNotNull(comPlusCache["Entry 2"]);
                 Assert.IsTrue(comPlusCache["Entry 2"] is DynamicObject);
+                Assert.AreEqual("Hi", comPlusCache.GetOrAdd("Entry 3", () => "Hi"));
+                Assert.AreEqual("Hi", comPlusCache.GetOrAdd("Entry 3", () => "Hello"));
+
+                Assert.AreEqual(123, comPlusCache.GetOrAdd("Entry 4", () => 123));
+                Assert.AreEqual(123, comPlusCache.GetOrAdd("Entry 4", () => 345));
+            }
+        }
+
+        [TestMethod]
+        public void TestAddOrUpdate()
+        {
+            using (var comPlusCache = new ComPlusCache("TestCache"))
+            {
+                comPlusCache.Trim(100);
+                Assert.AreEqual("World", comPlusCache.AddOrUpdate("Entry 1", () => "World", () => "Hello"));
+                Assert.AreEqual("World", comPlusCache["Entry 1"]);
+                Assert.AreEqual("Brave New World", comPlusCache.AddOrUpdate("Entry 1", () => "Hello World", () => "Brave New World"));
+                comPlusCache.AddOrUpdate("Entry 2", () => new Dynamo(), () => null);
+                Assert.IsNotNull(comPlusCache["Entry 2"]);
+                Assert.IsTrue(comPlusCache["Entry 2"] is DynamicObject);
             }
         }
 
@@ -136,6 +157,42 @@ namespace Ascentis.Infrastructure.Test
                 comPlusCache.Set("Entry 4", new object(), new TimeSpan(365, 0, 0, 0));
                 Assert.IsTrue(comPlusCache.Contains("Entry 4"));
             }
+        }
+
+        [TestMethod]
+        public void TestStressConcurrent()
+        {
+            const int threadCount = 4;
+            const int loops = 5000;
+            var totalLoops = 0;
+            var threads = new Thread[threadCount];
+            for (var i = 0; i < threadCount; i++)
+                (threads[i] = new Thread(context =>
+                {
+                    using (var externalCache = new ComPlusCache())
+                    {
+                        for (var j = 0; j < loops; j++)
+                        {
+                            var item = new Dynamo();
+                            var item2 = new Dynamo();
+                            item["P1"] = "Property " + j;
+                            externalCache.AddOrUpdate($"Item {(int)context}-{j}", () => item, () => item2);
+                            Assert.IsTrue(externalCache.Contains($"Item {(int)context}-{j}"));
+                            var returnedItem = (Dynamo)externalCache.Get($"Item {(int)context}-{j}");
+                            Assert.AreEqual("Property " + j, returnedItem["P1"]);
+                            externalCache.Remove($"Item {(int)context}-{j}");
+                            Assert.IsFalse(externalCache.Contains($"Item {(int)context}-{j}"));
+                            externalCache.AddOrUpdate($"Item {j}", () => item, () => item2);
+                            Assert.IsTrue(externalCache.Contains($"Item {j}"));
+                            var item3 = externalCache.GetOrAdd($"Item {j}", () => item2);
+                            Assert.IsNotNull(item3);
+                            Interlocked.Increment(ref totalLoops);
+                        }
+                    }
+                })).Start(i);
+            foreach (var thread in threads)
+                thread.Join();
+            Assert.AreEqual(threadCount * loops, totalLoops);
         }
     }
 }
