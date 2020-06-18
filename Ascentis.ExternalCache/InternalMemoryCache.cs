@@ -7,8 +7,9 @@ using System.Threading;
 namespace Ascentis.Infrastructure
 {
     [Serializable]
-    public class InternalMemoryCache : IEnumerable<KeyValuePair<string, object>>
+    internal class InternalMemoryCache : IEnumerable<KeyValuePair<string, object>>
     {
+        private const int DefaultExpireCycleCheck = 5000;
         private static ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>> _caches = new ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>>();
         private ConcurrentDictionary<string, ExternalCacheItem> _cache;
         private static int _lastExpirerRunTicks;
@@ -37,7 +38,12 @@ namespace Ascentis.Infrastructure
 
         static InternalMemoryCache()
         {
-            _expireTimer.Change(500, 500);
+            _expireTimer.Change(DefaultExpireCycleCheck, DefaultExpireCycleCheck);
+        }
+
+        public static void SetCacheExpirationCycleCheck(int cycleMs)
+        {
+            _expireTimer.Change(cycleMs, cycleMs);
         }
 
         private string _name;
@@ -48,19 +54,15 @@ namespace Ascentis.Infrastructure
                 cache.Value.Clear();
         }
 
-        private void InitCacheInstance()
-        {
-            _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
-        }
-
         public string Name
         {
             get => _name;
             set
             {
-                if (value == Name) return;
+                if (value == Name)
+                    return;
                 _name = value;
-                InitCacheInstance();
+                _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
             }
         }
 
@@ -129,10 +131,10 @@ namespace Ascentis.Infrastructure
         
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            var tmpDict = new Dictionary<string, object>();
+            var list = new List<KeyValuePair<string, object>>();
             foreach (var item in _cache) 
-                tmpDict.Add(item.Key, KickSlidingExpirationForward(item.Value));
-            return tmpDict.GetEnumerator();
+                list.Add(new KeyValuePair<string, object>(item.Key, item.Value));
+            return list.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

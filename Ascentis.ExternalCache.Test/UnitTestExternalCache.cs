@@ -10,7 +10,13 @@ namespace Ascentis.Infrastructure.Test
     [TestClass]
     public class UnitTestExternalCache
     {
-        [TestMethod]
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            using (var externalCacheManager = new ExternalCacheManager())
+                externalCacheManager.SetCacheExpirationCycleCheck(500);
+        }
+
         public void TestCreateExternalCache()
         {
             using (var externalCache = new ExternalCache())

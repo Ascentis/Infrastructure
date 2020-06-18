@@ -7,5 +7,6 @@ namespace Ascentis.Infrastructure
     public interface IExternalCacheManager
     {
         void ClearAllCaches();
+        void SetCacheExpirationCycleCheck(int cycleMs);
     }
 }
