@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Dynamic;
-using System.Security.Cryptography;
+using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -60,15 +61,6 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestTrim()
-        {
-            using (var comPlusCache = new ComPlusCache())
-            {
-                Assert.AreEqual(0, comPlusCache.Trim(100));
-            }
-        }
-
-        [TestMethod]
         public void TestContains()
         {
             using (var comPlusCache = new ComPlusCache("TestCache"))
@@ -83,12 +75,13 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var comPlusCache = new ComPlusCache("TestCache"))
             {
-                comPlusCache.Add("Entry 1", "Hello");
-                comPlusCache.Add("Entry 2", new object());
-                comPlusCache.Add("Entry 3", "Hello", new DateTime(9999, 1, 1));
-                comPlusCache.Add("Entry 4", new object(), new DateTime(9999, 1, 1));
-                comPlusCache.Add("Entry 5", "Hello", new TimeSpan(1, 1, 1, 1));
-                comPlusCache.Add("Entry 6", new object(), new TimeSpan(1, 1, 1, 1));
+                Assert.IsTrue(comPlusCache.Add("Entry 1", "Hello"));
+                Assert.IsFalse(comPlusCache.Add("Entry 1", "Hello"));
+                Assert.IsTrue(comPlusCache.Add("Entry 2", new object()));
+                Assert.IsTrue(comPlusCache.Add("Entry 3", "Hello", new DateTime(9999, 1, 1)));
+                Assert.IsTrue(comPlusCache.Add("Entry 4", new object(), new DateTime(9999, 1, 1)));
+                Assert.IsTrue(comPlusCache.Add("Entry 5", "Hello", new TimeSpan(1, 1, 1, 1)));
+                Assert.IsTrue(comPlusCache.Add("Entry 6", new object(), new TimeSpan(1, 1, 1, 1)));
                 Assert.IsTrue(comPlusCache.Contains("Entry 1"));
                 Assert.IsTrue(comPlusCache.Contains("Entry 2"));
                 Assert.IsTrue(comPlusCache.Contains("Entry 3"));
@@ -103,7 +96,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var comPlusCache = new ComPlusCache("TestCache"))
             {
-                comPlusCache.Trim(100);
+                comPlusCache.Clear();
                 Assert.AreEqual(null, comPlusCache.AddOrGetExisting("Entry 1", "Hello"));
                 Assert.AreEqual("Hello", comPlusCache["Entry 1"]);
                 var obj = new object();
@@ -123,10 +116,12 @@ namespace Ascentis.Infrastructure.Test
         {
             using (var comPlusCache = new ComPlusCache("TestCache"))
             {
-                comPlusCache.Trim(100);
+                comPlusCache.Clear();
                 Assert.AreEqual("World", comPlusCache.AddOrUpdate("Entry 1", () => "World", () => "Hello"));
                 Assert.AreEqual("World", comPlusCache["Entry 1"]);
                 Assert.AreEqual("Brave New World", comPlusCache.AddOrUpdate("Entry 1", () => "Hello World", () => "Brave New World"));
+                Assert.AreEqual("Brave New World 2", comPlusCache.AddOrUpdate("Entry 1", () => "Hello World", () => "Brave New World 2"));
+                Assert.AreEqual("Brave New World 3", comPlusCache.AddOrUpdate("Entry 1", () => "Hello World", () => "Brave New World 3"));
                 comPlusCache.AddOrUpdate("Entry 2", () => new Dynamo(), () => null);
                 Assert.IsNotNull(comPlusCache["Entry 2"]);
                 Assert.IsTrue(comPlusCache["Entry 2"] is DynamicObject);
@@ -201,11 +196,14 @@ namespace Ascentis.Infrastructure.Test
         public void TestAddOrUpdateParallelWithSameComPlusReference()
         {
             var cd = new ComPlusCache("Concurrent");
-            cd.Trim(100);
+            //var dict = new ConcurrentDictionary<string, int>();
+            cd.Clear();
             var addCnt = 0;
             var updCnt = 0;
+            var totalCnt = 0;
             Parallel.For(0, 10000, i =>
             {
+                Interlocked.Increment(ref totalCnt);
                 cd.AddOrUpdate("1", () =>
                 {
                     Interlocked.Increment(ref addCnt);
@@ -217,11 +215,13 @@ namespace Ascentis.Infrastructure.Test
                 });
             });
             var cnt = 0;
+            // ReSharper disable once UnusedVariable
             foreach (var item in cd)
                 cnt++;
             Assert.AreEqual(1, cnt);
-            Assert.AreEqual(9999, updCnt);
+            Assert.AreEqual(10000, totalCnt);
             Assert.AreEqual(1, addCnt);
+            Assert.AreEqual(9999, updCnt);
             Assert.AreNotEqual(-1, (int)cd["1"]);
             
             int value = (int)cd.GetOrAdd("2", () => 100);

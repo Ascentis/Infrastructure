@@ -6,16 +6,20 @@ namespace Ascentis.Infrastructure
     public class TlsAccessor<T, TClass> where TClass : T
     {
         private LocalDataStoreSlot _refSlot;
+        public delegate void InitObjectDelegate(T obj);
         private readonly object[] _constructorArgs;
         public bool IgnoreRefDisposalExceptions;
+        private readonly InitObjectDelegate _initObjectDelegate;
 
-        public TlsAccessor()
+        public TlsAccessor(InitObjectDelegate initObjectDelegate)
         {
+            _initObjectDelegate = initObjectDelegate;
             InitRefSlot();
         }
 
-        public TlsAccessor(params object[] args)
+        public TlsAccessor(InitObjectDelegate initObjectDelegate, params object[] args)
         {
+            _initObjectDelegate = initObjectDelegate;
             _constructorArgs = args;
             InitRefSlot();
         }
@@ -36,6 +40,7 @@ namespace Ascentis.Infrastructure
                     refObj = (TClass)Activator.CreateInstance(typeof(TClass), _constructorArgs);
                 else
                     refObj = (TClass)Activator.CreateInstance(typeof(TClass));
+                _initObjectDelegate?.Invoke((T)refObj);
                 Thread.SetData(_refSlot, refObj);
                 return (T)refObj;
             }

@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.Caching;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 
 namespace Ascentis.Infrastructure
 {
@@ -11,6 +13,34 @@ namespace Ascentis.Infrastructure
     {
         private static ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>> _caches = new ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>>();
         private ConcurrentDictionary<string, ExternalCacheItem> _cache;
+        private static int _lastExpirerRunTicks;
+
+        private static Timer _expireTimer = new Timer(source =>
+        {
+            if (_lastExpirerRunTicks == 0)
+                _lastExpirerRunTicks = Environment.TickCount;
+            foreach (var cache in _caches)
+                   foreach (var item in cache.Value)
+                   {
+                       if (item.Value.Policy.SlidingExpiration != TimeSpan.Zero)
+                       { 
+                           item.Value.Policy.SlidingExpiration = new TimeSpan(item.Value.Policy.SlidingExpiration.Ticks - Math.Abs(Environment.TickCount - _lastExpirerRunTicks) * 10000);
+                           if (item.Value.Policy.SlidingExpiration.Ticks <= 0)
+                           {
+                               // ReSharper disable once UnusedVariable
+                               cache.Value.TryRemove(item.Key, out var oldItem);
+                           }
+                       } else if (item.Value.Policy.AbsoluteExpiration <= DateTime.Now)
+                           // ReSharper disable once UnusedVariable
+                           cache.Value.TryRemove(item.Key, out var oldItem);
+                   }
+            _lastExpirerRunTicks = Environment.TickCount;
+        });
+
+        static InternalMemoryCache()
+        {
+            _expireTimer.Change(500, 500);
+        }
 
         private string _name;
 
@@ -20,6 +50,11 @@ namespace Ascentis.Infrastructure
                 cache.Value.Clear();
         }
 
+        private void InitCacheInstance()
+        {
+            _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
+        }
+
         public string Name
         {
             get => _name;
@@ -27,20 +62,25 @@ namespace Ascentis.Infrastructure
             {
                 if (value == Name) return;
                 _name = value;
-                _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
+                InitCacheInstance();
             }
         }
 
         public InternalMemoryCache()
         {
             Name = "default";
-            _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
         }
 
         public InternalMemoryCache(string name)
         {
             Name = name;
-            _cache = _caches.GetOrAdd(name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
+        }
+
+        private object KickSlidingExpirationForward(ExternalCacheItem item)
+        {
+            if (item != null && item.OriginalSlidingExpiration != TimeSpan.Zero)
+                item.Policy.SlidingExpiration = item.OriginalSlidingExpiration;
+            return item?.Value;
         }
 
         public bool Add(ExternalCacheItem item)
@@ -50,8 +90,13 @@ namespace Ascentis.Infrastructure
 
         public object AddOrGetExisting(ExternalCacheItem item)
         {
-            var aItem = _cache.GetOrAdd(item.Key, key => item);
-            return aItem?.Value;
+            var added = false;
+            var aItem = _cache.GetOrAdd(item.Key, key =>
+            {
+                added = true;
+                return item;
+            });
+            return !added ? KickSlidingExpirationForward(aItem) : null;
         }
 
         public bool Contains(string key)
@@ -61,7 +106,7 @@ namespace Ascentis.Infrastructure
 
         public object Get(string key)
         {
-            return _cache.TryGetValue(key, out var item) ? item.Value : null;
+            return _cache.TryGetValue(key, out var item) ? KickSlidingExpirationForward(item) : null;
         }
 
         public object Remove(string key)
@@ -88,7 +133,7 @@ namespace Ascentis.Infrastructure
         {
             var tmpDict = new Dictionary<string, object>();
             foreach (var item in _cache) 
-                tmpDict.Add(item.Key, item.Value.Value);
+                tmpDict.Add(item.Key, KickSlidingExpirationForward(item.Value));
             return tmpDict.GetEnumerator();
         }
 

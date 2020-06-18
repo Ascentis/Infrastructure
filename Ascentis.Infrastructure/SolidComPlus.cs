@@ -26,16 +26,10 @@ namespace Ascentis.Infrastructure
         public SolidComPlus(InitComObjectDelegate initObjectDelegate = null)
         {
             _initComObjectDelegate = initObjectDelegate;
-            _objectAccessor = new TlsAccessor<T, TClass>();
-            _objectAccessor.IgnoreRefDisposalExceptions = true;
-            _retrier = new Retrier<TlsAccessor<T, TClass>>(_objectAccessor, TestCanRetryOnComPlusError);
-            initObjectDelegate?.Invoke(_objectAccessor.Reference);
-        }
-
-        public SolidComPlus(InitComObjectDelegate initObjectDelegate, params object[] args)
-        {
-            _initComObjectDelegate = initObjectDelegate;
-            _objectAccessor = new TlsAccessor<T, TClass>(args);
+            _objectAccessor = new TlsAccessor<T, TClass>((newComObj) =>
+            {
+                initObjectDelegate?.Invoke(newComObj);
+            });
             _objectAccessor.IgnoreRefDisposalExceptions = true;
             _retrier = new Retrier<TlsAccessor<T, TClass>>(_objectAccessor, TestCanRetryOnComPlusError);
             initObjectDelegate?.Invoke(_objectAccessor.Reference);
@@ -65,7 +59,5 @@ namespace Ascentis.Infrastructure
     public class SolidComPlus<T> : SolidComPlus<T, T>
     {
         public SolidComPlus(InitComObjectDelegate initObjectDelegate = null) : base(initObjectDelegate) {}
-
-        public SolidComPlus(InitComObjectDelegate initObjectDelegate, params object[] args) : base(initObjectDelegate, args) {}
     }
 }

@@ -49,11 +49,6 @@ namespace Ascentis.Infrastructure
             return _externalCache.Retriable(externalCache => ((IEnumerable) externalCache)?.GetEnumerator() ?? throw new InvalidOperationException());
         }
 
-        public long Trim(int percent)
-        {
-            return _externalCache.Retriable(externalCache => externalCache.Trim(percent));
-        }
-
         public object this[string key]
         {
             get => _externalCache.Retriable(externalCache => externalCache.Get(key));
