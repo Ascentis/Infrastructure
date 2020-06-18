@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
             var externalCacheManager = new ComPlusCacheManager();
             externalCacheManager.ClearAllCaches();
-            externalCache.Trim(100);
+            externalCache.Clear();
 
             Console.WriteLine(@"--- Executing serializing a byte[] ---");
             var arr = Encoding.UTF8.GetBytes (data); 
@@ -63,7 +63,7 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
             externalCacheManager = new ComPlusCacheManager();
             externalCacheManager.ClearAllCaches();
-            externalCache.Trim(100);
+            externalCache.Clear();
 
             Console.WriteLine(@"--- Executing serializing complex object ---");
             initialTickCount = Environment.TickCount;
@@ -83,7 +83,7 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Speed (retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
             externalCacheManager.ClearAllCaches();
-            externalCache.Trim(100);
+            externalCache.Clear();
 
             /*
             Console.WriteLine(@"--- Executing serializing JSON as byte[] ---");

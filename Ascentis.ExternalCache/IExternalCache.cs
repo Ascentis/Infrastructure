@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Ascentis.Infrastructure
 {
     [Guid("87CCFC0F-73BE-4AB1-A23C-F3EA5B419D82")]
-    public interface IExternalCache : IDisposable, IEnumerable<KeyValuePair<string, object>>
+    public interface IExternalCache : IEnumerable<KeyValuePair<string, object>>
     {
         void Select(string cacheName);
         bool Add(string key, object item);

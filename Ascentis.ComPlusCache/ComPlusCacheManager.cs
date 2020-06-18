@@ -2,7 +2,7 @@
 
 namespace Ascentis.Infrastructure
 {
-    public class ComPlusCacheManager : IDisposable
+    public class ComPlusCacheManager
     {
         private readonly SolidComPlus<IExternalCacheManager, ExternalCacheManager> _externalCacheManager;
 
@@ -14,18 +14,6 @@ namespace Ascentis.Infrastructure
         public void ClearAllCaches()
         {
             _externalCacheManager.Retriable(cacheManager => cacheManager.ClearAllCaches());
-        }
-
-        public void Dispose()
-        {
-            try
-            {
-                _externalCacheManager.NonRetriable(externalCacheManager => externalCacheManager.Dispose());
-            }
-            catch (Exception)
-            {
-                // Ignore. COM+ object could be dead
-            }
         }
     }
 }

@@ -13,33 +13,7 @@ namespace Ascentis.Infrastructure
     [Guid("78088bd8-739f-4397-adba-cc7ea259e654")]
     public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
     {
-        private static readonly CacheItemPolicy DefaultCacheItemPolicy;
-
-        static ExternalCache()
-        {
-            DefaultCacheItemPolicy = new CacheItemPolicy
-            {
-                /* We need to use an async "disposer" with IDisposable items in the cache because the MemoryCache.Remove() apparently
-                   keeps a reference to the removed item and tries to do something with it even after the removal callback is called.
-                   This causes an exception when Remove() method is called if calling Dispose() method directly in RemovedCallback.
-                   Something worth nothing to is that the pattern used to actually dequeue and dispose items is one where the full
-                   queue is copied over to the disposing thread and new queue initialized. This is to avoid the problem of a call to
-                   RemovedCallback causing an item getting inserted into the queue and getting picked up right away before the callback
-                   returns. If that were to happen the result will be the same as if calling Dispose() within the RemovedCallback delegate */
-                RemovedCallback = arguments =>
-                {
-                    if (!(arguments.CacheItem.Value is IDisposable disposableItem))
-                        return;
-                    AsyncDisposer.Enqueue(disposableItem);
-                }
-            };
-        }
-
-        /* The reason for using a ConcurrentObjectAccessor is to allow implementation of ClearAllCaches() in ExternalCacheManager capable of
-           completely destroying existing cache freeing all of its used memory in parallel to normal usage of the cache continuing uninterrupted.
-           For this to work we use the pattern ConcurrentObjectAccessor allowing normal operation working under a ReadLock while ClearAllCaches() will
-           perform a SwapNewAndExecute() call, which replaces the old cache with a new one and executes the delegate with the old cache. This happens
-           within a temporary write lock to replace the internal reference to MemoryCache */
+        private static readonly CacheItemPolicy DefaultCacheItemPolicy = new CacheItemPolicy();
         private InternalMemoryCache _cache;
 
         private InternalMemoryCache Cache

@@ -37,10 +37,8 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSelfTest()
         {
-            using (var externalCache = (IExternalCache)new ExternalCache())
-            {
-                externalCache.SelfTest();
-            }
+            var externalCache = (IExternalCache) new ExternalCache();
+            externalCache.SelfTest();
         }
 
         [TestMethod]
@@ -373,11 +371,9 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestAddStringAndLetItExpireByAbsoluteTime()
         {
-            using (var externalCache = (IExternalCache)new ExternalCache())
-            {
-                externalCache.Add("Item 1", "Value 1", DateTime.Now.AddMilliseconds(1000));
-                CheckItem1AsString(externalCache);
-            }
+            var externalCache = (IExternalCache) new ExternalCache();
+            externalCache.Add("Item 1", "Value 1", DateTime.Now.AddMilliseconds(1000));
+            CheckItem1AsString(externalCache);
         }
 
         [TestMethod]
