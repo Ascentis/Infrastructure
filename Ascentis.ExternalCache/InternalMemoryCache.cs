@@ -11,8 +11,9 @@ namespace Ascentis.Infrastructure
     {
         private const int DefaultExpireCycleCheck = 5000;
         private static ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>> _caches = new ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>>();
-        private ConcurrentDictionary<string, ExternalCacheItem> _cache;
         private static int _lastExpirerRunTicks;
+
+        private ConcurrentDictionary<string, ExternalCacheItem> _cache;
 
         private static Timer _expireTimer = new Timer(source =>
         {
@@ -41,18 +42,7 @@ namespace Ascentis.Infrastructure
             _expireTimer.Change(DefaultExpireCycleCheck, DefaultExpireCycleCheck);
         }
 
-        public static void SetCacheExpirationCycleCheck(int cycleMs)
-        {
-            _expireTimer.Change(cycleMs, cycleMs);
-        }
-
         private string _name;
-
-        public static void ClearAll()
-        {
-            foreach(var cache in _caches)
-                cache.Value.Clear();
-        }
 
         public string Name
         {
@@ -64,6 +54,17 @@ namespace Ascentis.Infrastructure
                 _name = value;
                 _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
             }
+        }
+
+        public static void SetCacheExpirationCycleCheck(int cycleMs)
+        {
+            _expireTimer.Change(cycleMs, cycleMs);
+        }
+
+        public static void ClearAll()
+        {
+            foreach(var cache in _caches)
+                cache.Value.Clear();
         }
 
         public InternalMemoryCache()
@@ -133,7 +134,7 @@ namespace Ascentis.Infrastructure
         {
             var list = new List<KeyValuePair<string, object>>();
             foreach (var item in _cache) 
-                list.Add(new KeyValuePair<string, object>(item.Key, item.Value));
+                list.Add(new KeyValuePair<string, object>(item.Key, item.Value.Value));
             return list.GetEnumerator();
         }
 

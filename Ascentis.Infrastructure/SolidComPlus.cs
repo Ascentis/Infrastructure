@@ -3,9 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure
 {
-    public class SolidComPlus<T, TClass> where TClass : T
+    public class SolidComPlus<T, TClass> : IDisposable where TClass : T
     {
         private const int MaxRetries = 1;
+        public delegate TFnRetType FunctionDelegate<out TFnRetType>(T reference);
+        public delegate void ProcedureDelegate(T reference);
         public delegate void InitComObjectDelegate(T obj);
         private readonly TlsAccessor<T, TClass> _objectAccessor;
         private readonly Retrier<TlsAccessor<T, TClass>> _retrier;
@@ -35,22 +37,27 @@ namespace Ascentis.Infrastructure
             initObjectDelegate?.Invoke(_objectAccessor.Reference);
         }
 
-        public TFnRetType Retriable<TFnRetType>(ConcurrentObjectAccessor<T, TClass>.LockedFunctionDelegate<TFnRetType> functionDelegate)
+        public void Dispose()
+        {
+            _objectAccessor.Dispose();
+        }
+
+        public TFnRetType Retriable<TFnRetType>(FunctionDelegate<TFnRetType> functionDelegate)
         {
             return _retrier.Retriable(accessor => functionDelegate(accessor.Reference));
         }
 
-        public void Retriable(ConcurrentObjectAccessor<T, TClass>.LockedProcedureDelegate procedureDelegate)
+        public void Retriable(ProcedureDelegate procedureDelegate)
         {
             _retrier.Retriable(accessor => procedureDelegate(accessor.Reference));
         }
 
-        public TFnRetType NonRetriable<TFnRetType>(ConcurrentObjectAccessor<T, TClass>.LockedFunctionDelegate<TFnRetType> functionDelegate)
+        public TFnRetType NonRetriable<TFnRetType>(FunctionDelegate<TFnRetType> functionDelegate)
         {
             return _retrier.Retriable(accessor => functionDelegate(accessor.Reference), MaxRetries);
         }
 
-        public void NonRetriable(ConcurrentObjectAccessor<T, TClass>.LockedProcedureDelegate procedureDelegate)
+        public void NonRetriable(ProcedureDelegate procedureDelegate)
         {
             _retrier.Retriable(accessor => procedureDelegate(accessor.Reference), MaxRetries);
         }

@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Ascentis.Infrastructure
 {
-    public class TlsAccessor<T, TClass> where TClass : T
+    public class TlsAccessor<T, TClass> : IDisposable where TClass : T
     {
         private LocalDataStoreSlot _refSlot;
         public delegate void InitObjectDelegate(T obj);
@@ -22,6 +22,11 @@ namespace Ascentis.Infrastructure
             _initObjectDelegate = initObjectDelegate;
             _constructorArgs = args;
             InitRefSlot();
+        }
+
+        public void Dispose()
+        {
+            Thread.FreeNamedDataSlot($"COMRef-{GetHashCode()}");
         }
 
         private void InitRefSlot()

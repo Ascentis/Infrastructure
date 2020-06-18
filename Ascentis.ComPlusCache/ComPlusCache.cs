@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ascentis.Infrastructure
 {
-    public class ComPlusCache : IEnumerable<KeyValuePair<string, object>>
+    public class ComPlusCache : IEnumerable<KeyValuePair<string, object>>, IDisposable
     {
         private const string Reserved = "-<.Reserved.>-";
         public delegate TRt ValueFactory<out TRt>();
@@ -25,6 +25,11 @@ namespace Ascentis.Infrastructure
             {
                 externalCache.Select(name);
             });
+        }
+
+        public void Dispose()
+        {
+            _externalCache.Dispose();
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()

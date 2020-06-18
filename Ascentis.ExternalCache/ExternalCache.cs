@@ -65,7 +65,6 @@ namespace Ascentis.Infrastructure
         {
             var policy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
             return Cache.Add(new ExternalCacheItem(key, BuildCacheItem(item), policy));
@@ -75,7 +74,6 @@ namespace Ascentis.Infrastructure
         {
             var policy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
             return Cache.Add(new ExternalCacheItem(key, item, policy));
@@ -85,7 +83,6 @@ namespace Ascentis.Infrastructure
         {
             var cacheItemPolicy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
             return Cache.Add(new ExternalCacheItem(key, BuildCacheItem(item), cacheItemPolicy));
@@ -95,7 +92,6 @@ namespace Ascentis.Infrastructure
         {
             var cacheItemPolicy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
             return Cache.Add(new ExternalCacheItem(key, item, cacheItemPolicy));
@@ -130,7 +126,6 @@ namespace Ascentis.Infrastructure
         {
             var policy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
             Cache.Set(new ExternalCacheItem(key, BuildCacheItem(value), policy));
@@ -140,7 +135,6 @@ namespace Ascentis.Infrastructure
         {
             var cacheItemPolicy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
             Cache.Set(new ExternalCacheItem(key, BuildCacheItem(value), cacheItemPolicy));
@@ -150,7 +144,6 @@ namespace Ascentis.Infrastructure
         {
             var policy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 AbsoluteExpiration = absoluteExpiration
             };
             Cache.Set(new ExternalCacheItem(key, value, policy));
@@ -160,7 +153,6 @@ namespace Ascentis.Infrastructure
         {
             var cacheItemPolicy = new CacheItemPolicy
             {
-                RemovedCallback = DefaultCacheItemPolicy.RemovedCallback,
                 SlidingExpiration = slidingExpiration
             };
             Cache.Set(new ExternalCacheItem(key, value, cacheItemPolicy));
