@@ -71,30 +71,32 @@ namespace Ascentis.Infrastructure
             }));
         }
 
-        public TFnReturnType SwapNewAndExecute<TFnReturnType>(GateDelegate gateOpenDelegate, InitReferenceDelegate initReference, LockedFunctionDelegate<TFnReturnType> functionDelegate) 
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(GateDelegate gateOpenDelegate, InitReferenceDelegate initReference, LockedFunctionDelegate<TFnReturnType> cleanupOldReference) 
         {
             _refLock.EnterUpgradeableReadLock();
             try
             {
                 if (!gateOpenDelegate(Reference))
                     return default;
-                T localReference;
+                T oldReference;
+                T newReference;
+                if (_constructorArgs != null)
+                    newReference = (T)Activator.CreateInstance(typeof(T), _constructorArgs);
+                else
+                    newReference = Activator.CreateInstance<T>();
+                initReference(newReference);
                 _refLock.EnterWriteLock();
                 try
                 {
-                    localReference = _reference;
-                    if (_constructorArgs != null)
-                        Reference = (T) Activator.CreateInstance(typeof(T), _constructorArgs);
-                    else
-                        Reference = Activator.CreateInstance<T>();
-                    initReference(_reference);
+                    oldReference = _reference;
+                    Reference = newReference;
                 }
                 finally
                 {
                     _refLock.ExitWriteLock();
                 }
 
-                return functionDelegate(localReference);
+                return cleanupOldReference(oldReference);
             }
             finally
             {
