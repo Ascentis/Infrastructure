@@ -2,18 +2,21 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.Caching;
 using System.Threading;
 
 namespace Ascentis.Infrastructure
 {
     [Serializable]
-    internal class InternalMemoryCache : IEnumerable<KeyValuePair<string, object>>
+    public class SimpleMemoryCache : IEnumerable<KeyValuePair<string, object>>
     {
         private const int DefaultExpireCycleCheck = 5000;
-        private static ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>> _caches = new ConcurrentDictionary<string, ConcurrentDictionary<string, ExternalCacheItem>>();
+        private static ConcurrentDictionary<string, ConcurrentDictionary<string, SimpleCacheItem>> _caches = new ConcurrentDictionary<string, ConcurrentDictionary<string, SimpleCacheItem>>();
         private static int _lastExpirerRunTicks;
 
-        private ConcurrentDictionary<string, ExternalCacheItem> _cache;
+        public delegate object ValueBuilder(string key);
+
+        private ConcurrentDictionary<string, SimpleCacheItem> _cache;
 
         private static Timer _expireTimer = new Timer(source =>
         {
@@ -37,7 +40,7 @@ namespace Ascentis.Infrastructure
             _lastExpirerRunTicks = Environment.TickCount;
         });
 
-        static InternalMemoryCache()
+        static SimpleMemoryCache()
         {
             _expireTimer.Change(DefaultExpireCycleCheck, DefaultExpireCycleCheck);
         }
@@ -52,7 +55,7 @@ namespace Ascentis.Infrastructure
                 if (value == Name)
                     return;
                 _name = value;
-                _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, ExternalCacheItem>());
+                _cache = _caches.GetOrAdd(Name, (key) => new ConcurrentDictionary<string, SimpleCacheItem>());
             }
         }
 
@@ -67,29 +70,45 @@ namespace Ascentis.Infrastructure
                 cache.Value.Clear();
         }
 
-        public InternalMemoryCache()
+        public SimpleMemoryCache()
         {
             Name = "default";
         }
 
-        public InternalMemoryCache(string name)
+        public SimpleMemoryCache(string name)
         {
             Name = name;
         }
 
-        private object KickSlidingExpirationForward(ExternalCacheItem item)
+        private object KickSlidingExpirationForward(SimpleCacheItem item)
         {
             if (item != null && item.OriginalSlidingExpiration != TimeSpan.Zero)
                 item.Policy.SlidingExpiration = item.OriginalSlidingExpiration;
             return item?.Value;
         }
 
-        public bool Add(ExternalCacheItem item)
+        public bool Add(SimpleCacheItem item)
         {
             return _cache.TryAdd(item.Key, item);
         }
 
-        public object AddOrGetExisting(ExternalCacheItem item)
+        public object AddOrGetExisting(string key, ValueBuilder builder, CacheItemPolicy policy = null)
+        {
+            var added = false; 
+            var aItem = _cache.GetOrAdd(key, k =>
+            {
+                added = true;
+                return new SimpleCacheItem(k, builder(k), policy);
+            });
+            return !added ? KickSlidingExpirationForward(aItem) : null;
+        }
+
+        public object AddOrGetExisting(string key, object obj, CacheItemPolicy policy = null)
+        {
+            return AddOrGetExisting(key, k => obj, policy);
+        }
+
+        public object AddOrGetExisting(SimpleCacheItem item)
         {
             var added = false;
             var aItem = _cache.GetOrAdd(item.Key, key =>
@@ -115,9 +134,16 @@ namespace Ascentis.Infrastructure
             return _cache.TryRemove(key, out var item) ? item.Value : null;
         }
 
-        public void Set(ExternalCacheItem item)
+        public void Set(SimpleCacheItem item)
         {
-            _cache.AddOrUpdate(item.Key, (key) => item, (key, oldValue) => item);
+            _cache.AddOrUpdate(item.Key, key => item, (key, oldValue) => item);
+        }
+
+        public void Set(string key, ValueBuilder builder, CacheItemPolicy policy = null)
+        {
+            _cache.AddOrUpdate(key, 
+                k => new SimpleCacheItem(k, builder(key), policy), 
+                (k, oldValue) => new SimpleCacheItem(k, builder(k), policy));
         }
 
         public void Clear()

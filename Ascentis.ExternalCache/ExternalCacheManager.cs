@@ -10,12 +10,12 @@ namespace Ascentis.Infrastructure
     {
         public void ClearAllCaches()
         {
-            InternalMemoryCache.ClearAll();
+            SimpleMemoryCache.ClearAll();
         }
 
         public void SetCacheExpirationCycleCheck(int cycleMs)
         {
-            InternalMemoryCache.SetCacheExpirationCycleCheck(cycleMs);
+            SimpleMemoryCache.SetCacheExpirationCycleCheck(cycleMs);
         }
     }
 }

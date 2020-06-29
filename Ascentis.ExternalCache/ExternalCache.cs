@@ -14,9 +14,9 @@ namespace Ascentis.Infrastructure
     public class ExternalCache : System.EnterpriseServices.ServicedComponent, IExternalCache
     {
         private static readonly CacheItemPolicy DefaultCacheItemPolicy = new CacheItemPolicy();
-        private InternalMemoryCache _cache;
+        private SimpleMemoryCache _cache;
 
-        private InternalMemoryCache Cache
+        private SimpleMemoryCache Cache
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Ascentis.Infrastructure
         {
             if (Cache.Name == cacheName) return;
             if(_cache == null)
-                _cache = new InternalMemoryCache(cacheName);
+                _cache = new SimpleMemoryCache(cacheName);
             Cache.Name = cacheName;
         }
 
@@ -40,7 +40,7 @@ namespace Ascentis.Infrastructure
         {
             if (_cache != null)
                 return;
-            _cache = new InternalMemoryCache();
+            _cache = new SimpleMemoryCache();
         }
 
         private static object BuildCacheItem(object source)
@@ -53,12 +53,12 @@ namespace Ascentis.Infrastructure
 
         public bool Add(string key, object item)
         {
-            return Cache.Add(new ExternalCacheItem(key, BuildCacheItem(item), DefaultCacheItemPolicy));
+            return Cache.Add(new SimpleCacheItem(key, BuildCacheItem(item), DefaultCacheItemPolicy));
         }
 
         public bool Add(string key, string item)
         {
-            return Cache.Add(new ExternalCacheItem(key, item, DefaultCacheItemPolicy));
+            return Cache.Add(new SimpleCacheItem(key, item, DefaultCacheItemPolicy));
         }
 
         public bool Add(string key, object item, DateTime absoluteExpiration)
@@ -67,7 +67,7 @@ namespace Ascentis.Infrastructure
             {
                 AbsoluteExpiration = absoluteExpiration
             };
-            return Cache.Add(new ExternalCacheItem(key, BuildCacheItem(item), policy));
+            return Cache.Add(new SimpleCacheItem(key, BuildCacheItem(item), policy));
         }
 
         public bool Add(string key, string item, DateTime absoluteExpiration)
@@ -76,7 +76,7 @@ namespace Ascentis.Infrastructure
             {
                 AbsoluteExpiration = absoluteExpiration
             };
-            return Cache.Add(new ExternalCacheItem(key, item, policy));
+            return Cache.Add(new SimpleCacheItem(key, item, policy));
         }
 
         public bool Add(string key, object item, TimeSpan slidingExpiration)
@@ -85,7 +85,7 @@ namespace Ascentis.Infrastructure
             {
                 SlidingExpiration = slidingExpiration
             };
-            return Cache.Add(new ExternalCacheItem(key, BuildCacheItem(item), cacheItemPolicy));
+            return Cache.Add(new SimpleCacheItem(key, BuildCacheItem(item), cacheItemPolicy));
         }
 
         public bool Add(string key, string item, TimeSpan slidingExpiration)
@@ -94,17 +94,17 @@ namespace Ascentis.Infrastructure
             {
                 SlidingExpiration = slidingExpiration
             };
-            return Cache.Add(new ExternalCacheItem(key, item, cacheItemPolicy));
+            return Cache.Add(new SimpleCacheItem(key, item, cacheItemPolicy));
         }
 
         public object AddOrGetExisting(string key, object value)
         {
-            return Cache.AddOrGetExisting(new ExternalCacheItem(key, BuildCacheItem(value), DefaultCacheItemPolicy));
+            return Cache.AddOrGetExisting(new SimpleCacheItem(key, BuildCacheItem(value), DefaultCacheItemPolicy));
         }
 
         public object AddOrGetExisting(string key, string value)
         {
-            return Cache.AddOrGetExisting(new ExternalCacheItem(key, value, DefaultCacheItemPolicy));
+            return Cache.AddOrGetExisting(new SimpleCacheItem(key, value, DefaultCacheItemPolicy));
         }
 
         public bool Contains(string key)
@@ -128,7 +128,7 @@ namespace Ascentis.Infrastructure
             {
                 AbsoluteExpiration = absoluteExpiration
             };
-            Cache.Set(new ExternalCacheItem(key, BuildCacheItem(value), policy));
+            Cache.Set(new SimpleCacheItem(key, BuildCacheItem(value), policy));
         }
 
         public void Set(string key, object value, TimeSpan slidingExpiration)
@@ -137,7 +137,7 @@ namespace Ascentis.Infrastructure
             {
                 SlidingExpiration = slidingExpiration
             };
-            Cache.Set(new ExternalCacheItem(key, BuildCacheItem(value), cacheItemPolicy));
+            Cache.Set(new SimpleCacheItem(key, BuildCacheItem(value), cacheItemPolicy));
         }
 
         public void Set(string key, string value, DateTime absoluteExpiration)
@@ -146,7 +146,7 @@ namespace Ascentis.Infrastructure
             {
                 AbsoluteExpiration = absoluteExpiration
             };
-            Cache.Set(new ExternalCacheItem(key, value, policy));
+            Cache.Set(new SimpleCacheItem(key, value, policy));
         }
 
         public void Set(string key, string value, TimeSpan slidingExpiration)
@@ -155,7 +155,7 @@ namespace Ascentis.Infrastructure
             {
                 SlidingExpiration = slidingExpiration
             };
-            Cache.Set(new ExternalCacheItem(key, value, cacheItemPolicy));
+            Cache.Set(new SimpleCacheItem(key, value, cacheItemPolicy));
         }
 
         public void Clear()

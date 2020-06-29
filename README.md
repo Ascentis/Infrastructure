@@ -44,3 +44,8 @@ A concrete example is a COM+ object which crashed. The reference to this object 
 ## Ascentis.SolidComPlus
 
 This class encapsulates a COM+ object instance allowing the user to implement automatic swapping of a dead object. 
+
+## SimpleMemoryCache
+
+Replacement for standard .NET MemoryCache based on ConcurrentDictionary. After opening the hood on MemoryCache found it over-complicated for most uses compared with ConcurrentDictionary.
+This class is based on ConcurrentDictionary and provides expiration like MemoryCache using an ancillary timer.

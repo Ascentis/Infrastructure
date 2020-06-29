@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ascentis.Infrastructure;
+﻿using Ascentis.Infrastructure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTestAsyncDisposer
 {
