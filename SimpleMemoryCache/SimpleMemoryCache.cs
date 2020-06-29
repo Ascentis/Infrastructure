@@ -129,6 +129,19 @@ namespace Ascentis.Infrastructure
             return _cache.TryGetValue(key, out var item) ? KickSlidingExpirationForward(item) : null;
         }
 
+        public bool Get(string key, out object value)
+        {
+            var found = _cache.TryGetValue(key, out var item);
+            if (found)
+            {
+                KickSlidingExpirationForward(item);
+                value = item.Value;
+            }
+            else
+                value = null;
+            return found;
+        }
+
         public object Remove(string key)
         {
             return _cache.TryRemove(key, out var item) ? item.Value : null;
