@@ -2,6 +2,7 @@
 
 namespace Ascentis.Infrastructure.Test
 {
+    // ReSharper disable once InconsistentNaming
     public class TestClass : IDisposable
     {
         public string Prop1 { get; set; }

@@ -3,6 +3,7 @@ using System.Threading;
 
 namespace UnitTestAsyncDisposer
 {
+    // ReSharper disable once InconsistentNaming
     public class TestObject : IDisposable
     {
         public static volatile int DisposedCount;

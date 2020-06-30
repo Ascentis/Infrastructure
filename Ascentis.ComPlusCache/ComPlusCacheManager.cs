@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ascentis.Infrastructure
+﻿namespace Ascentis.Infrastructure
 {
     public class ComPlusCacheManager
     {

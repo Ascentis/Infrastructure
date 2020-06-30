@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Runtime.Caching;
 using System.Text;
 using Ascentis.ExternalCache.TesterConsole;
-using MessagePack;
-using MessagePack.Resolvers;
-using Utf8Json;
 
 namespace Ascentis.Infrastructure
 {
@@ -25,14 +21,15 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Start:{initialTickCount}");
             for (var i = 0; i < count; i++)
                 externalCache.Add($"Item{i}", data);
-                //externalCache.Add(new CacheItem($"Item{i}", data), null);
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (insert per second): {(count / (((float)(Environment.TickCount - initialTickCount)) / 1000))}");
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
 
             initialTickCount = Environment.TickCount;
+            // ReSharper disable once NotAccessedVariable
             string s;
             for (var i = 0; i < count; i++)
+                // ReSharper disable once RedundantAssignment
                 s = (string)externalCache.Get($"Item{i}");
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");
@@ -48,7 +45,6 @@ namespace Ascentis.Infrastructure
             Console.WriteLine($@"Start:{initialTickCount}");
             for (var i = 0; i < count; i++)
                 externalCache.Add($"Item{i}", arr);
-                //externalCache.Add(new CacheItem($"Item{i}", arr), null);
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (insert per second): {(count / (((float)(Environment.TickCount - initialTickCount)) / 1000))}");
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
@@ -71,13 +67,13 @@ namespace Ascentis.Infrastructure
             var obj = new Dynamo {["Prop1"] = data};
             for (var i = 0; i < count; i++)
                 externalCache.Add($"Item{i}", obj);
-                //externalCache.Add(new CacheItem($"Item{i}", obj), null);
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (insert per second): {(count / (((float)(Environment.TickCount - initialTickCount)) / 1000))}");
             Console.WriteLine($@"Average roundtrip time (microseconds): {((((float)(Environment.TickCount - initialTickCount)) / count * 1000))}");
 
             initialTickCount = Environment.TickCount;
             for (var i = 0; i < count; i++)
+                // ReSharper disable once RedundantAssignment
                 obj = (Dynamo)externalCache.Get($"Item{i}");
             Console.WriteLine($@"Finish:{Environment.TickCount}");
             Console.WriteLine($@"Speed (retrieves per second): {(count / (((float) (Environment.TickCount - initialTickCount)) / 1000))}");

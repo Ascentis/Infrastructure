@@ -96,7 +96,7 @@ namespace Ascentis.Infrastructure
                     _refLock.ExitWriteLock();
                 }
 
-                return cleanupOldReference(oldReference);
+                return cleanupOldReference == null ? default : cleanupOldReference(oldReference);
             }
             finally
             {
@@ -104,43 +104,43 @@ namespace Ascentis.Infrastructure
             }
         }
 
-        public TFnReturnType SwapNewAndExecute<TFnReturnType>(GateDelegate gateOpenDelegate, LockedFunctionDelegate<TFnReturnType> functionDelegate)
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(GateDelegate gateOpenDelegate, LockedFunctionDelegate<TFnReturnType> cleanupOldReference = null)
         {
-            return SwapNewAndExecute(gateOpenDelegate, reference => { }, functionDelegate);
+            return SwapNewAndExecute(gateOpenDelegate, reference => { }, cleanupOldReference);
         }
 
-        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedProcedureDelegate procedureDelegate)
+        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedProcedureDelegate cleanupOldReference = null)
         {
-            SwapNewAndExecute(gateOpenDelegate, reference => {}, procedureDelegate);
+            SwapNewAndExecute(gateOpenDelegate, reference => {}, cleanupOldReference);
         }
 
-        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, InitReferenceDelegate initReference, LockedProcedureDelegate procedureDelegate)
+        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, InitReferenceDelegate initReference, LockedProcedureDelegate cleanupOldReference = null)
         {
             SwapNewAndExecute<object>(gateOpenDelegate, initReference,reference =>
             {
-               procedureDelegate(reference);
-               return null;
+                cleanupOldReference?.Invoke(reference);
+                return null;
             });
         }
 
-        public TFnReturnType SwapNewAndExecute<TFnReturnType>(LockedFunctionDelegate<TFnReturnType> functionDelegate)
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(LockedFunctionDelegate<TFnReturnType> cleanupOldReference = null)
         {
-            return SwapNewAndExecute(reference => true, functionDelegate);
+            return SwapNewAndExecute(reference => true, cleanupOldReference);
         }
 
-        public TFnReturnType SwapNewAndExecute<TFnReturnType>(InitReferenceDelegate initReference, LockedFunctionDelegate<TFnReturnType> functionDelegate)
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(InitReferenceDelegate initReference, LockedFunctionDelegate<TFnReturnType> cleanupOldReference = null)
         {
-            return SwapNewAndExecute(reference => true, initReference, functionDelegate);
+            return SwapNewAndExecute(reference => true, initReference, cleanupOldReference);
         }
 
-        public void SwapNewAndExecute(LockedProcedureDelegate procedureDelegate)
+        public void SwapNewAndExecute(LockedProcedureDelegate cleanupOldReference = null)
         {
-            SwapNewAndExecute(reference => true, procedureDelegate);
+            SwapNewAndExecute(reference => true, cleanupOldReference);
         }
 
-        public void SwapNewAndExecute(InitReferenceDelegate initReference, LockedProcedureDelegate procedureDelegate)
+        public void SwapNewAndExecute(InitReferenceDelegate initReference, LockedProcedureDelegate cleanupOldReference = null)
         {
-            SwapNewAndExecute(reference => true, initReference, procedureDelegate);
+            SwapNewAndExecute(reference => true, initReference, cleanupOldReference);
         }
     }
 
