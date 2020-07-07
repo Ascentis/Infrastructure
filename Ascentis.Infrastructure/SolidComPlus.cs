@@ -11,15 +11,15 @@ namespace Ascentis.Infrastructure
         public delegate void InitComObjectDelegate(T obj);
         private readonly TlsAccessor<T, TClass> _objectAccessor;
         private readonly Retrier<TlsAccessor<T, TClass>> _retrier;
-        private readonly InitComObjectDelegate _initComObjectDelegate;
 
         private bool TestCanRetryOnComPlusError(Exception e, int retries)
         {
             if (e is COMException && (e.Message.Contains("The remote procedure call failed") ||
                                       e.Message.Contains("The RPC server is unavailable")))
             {
-                _objectAccessor.Reference = default(T);
-                _initComObjectDelegate?.Invoke(_objectAccessor.Reference);
+                _objectAccessor.Reference = default;
+                // ReSharper disable once UnusedVariable
+                var readRef = _objectAccessor.Reference; // This access to Reference causes newly created instance to be initialized
             }
 
             return retries <= MaxRetries - 1;
@@ -27,8 +27,7 @@ namespace Ascentis.Infrastructure
 
         public SolidComPlus(InitComObjectDelegate initObjectDelegate = null)
         {
-            _initComObjectDelegate = initObjectDelegate;
-            _objectAccessor = new TlsAccessor<T, TClass>((newComObj) =>
+            _objectAccessor = new TlsAccessor<T, TClass>(newComObj =>
             {
                 initObjectDelegate?.Invoke(newComObj);
             });

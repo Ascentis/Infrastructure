@@ -26,12 +26,12 @@ namespace Ascentis.Infrastructure
 
         public void Dispose()
         {
-            Thread.FreeNamedDataSlot($"COMRef-{GetHashCode()}");
+            Thread.FreeNamedDataSlot($"TlsRef-{GetHashCode()}");
         }
 
         private void InitRefSlot()
         {
-            _refSlot = Thread.GetNamedDataSlot($"COMRef-{GetHashCode()}");
+            _refSlot = Thread.GetNamedDataSlot($"TlsRef-{GetHashCode()}");
         }
 
         public T Reference

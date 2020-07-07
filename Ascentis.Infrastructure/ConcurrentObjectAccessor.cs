@@ -123,19 +123,9 @@ namespace Ascentis.Infrastructure
             });
         }
 
-        public TFnReturnType SwapNewAndExecute<TFnReturnType>(LockedFunctionDelegate<TFnReturnType> cleanupOldReference = null)
-        {
-            return SwapNewAndExecute(reference => true, cleanupOldReference);
-        }
-
         public TFnReturnType SwapNewAndExecute<TFnReturnType>(InitReferenceDelegate initReference, LockedFunctionDelegate<TFnReturnType> cleanupOldReference = null)
         {
             return SwapNewAndExecute(reference => true, initReference, cleanupOldReference);
-        }
-
-        public void SwapNewAndExecute(LockedProcedureDelegate cleanupOldReference = null)
-        {
-            SwapNewAndExecute(reference => true, cleanupOldReference);
         }
 
         public void SwapNewAndExecute(InitReferenceDelegate initReference, LockedProcedureDelegate cleanupOldReference = null)

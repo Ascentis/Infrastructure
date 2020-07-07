@@ -53,7 +53,7 @@ namespace UnitTestAsyncDisposer
             var accessor = new ConcurrentObjectAccessor<TestObject, TestObject>("Hello");
             Assert.IsNotNull(accessor);
             Assert.IsNotNull(accessor.Reference);
-            var retVal = accessor.SwapNewAndExecute(obj => obj.Name);
+            var retVal = accessor.SwapNewAndExecute(newObj => { }, obj => obj.Name);
             Assert.AreEqual("Hello", retVal);
         }
 

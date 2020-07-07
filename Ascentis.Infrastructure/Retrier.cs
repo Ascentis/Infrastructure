@@ -10,7 +10,7 @@ namespace Ascentis.Infrastructure
 
         private readonly CanRetry _canRetry;
 
-        public T Reference { get; }
+        private T Reference { get; }
 
         private static bool DefaultCanRetry(Exception e, int retries)
         {
