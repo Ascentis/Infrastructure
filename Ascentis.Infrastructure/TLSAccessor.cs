@@ -17,11 +17,9 @@ namespace Ascentis.Infrastructure
             InitRefSlot();
         }
 
-        public TlsAccessor(InitObjectDelegate initObjectDelegate, params object[] args)
+        public TlsAccessor(InitObjectDelegate initObjectDelegate, params object[] args) : this(initObjectDelegate)
         {
-            _initObjectDelegate = initObjectDelegate;
             _constructorArgs = args;
-            InitRefSlot();
         }
 
         public void Dispose()
