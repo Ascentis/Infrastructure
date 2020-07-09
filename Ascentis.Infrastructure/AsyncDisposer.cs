@@ -28,7 +28,7 @@ namespace Ascentis.Infrastructure
 
             (DisposalTimer = new Timer(state =>
             {
-                Disposables.SwapNewAndExecute(disposables => !disposables.IsEmpty, disposables =>
+                Disposables.SwapNewAndExecute(gateOpenDelegate:disposables => !disposables.IsEmpty, cleanupOldReference: disposables =>
                 {
                     while (disposables.TryDequeue(out var item))
                         item.Dispose();

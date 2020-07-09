@@ -53,7 +53,7 @@ namespace UnitTestAsyncDisposer
             var accessor = new ConcurrentObjectAccessor<TestObject, TestObject>("Hello");
             Assert.IsNotNull(accessor);
             Assert.IsNotNull(accessor.Reference);
-            var retVal = accessor.SwapNewAndExecute(newObj => { }, obj => obj.Name);
+            var retVal = accessor.SwapNewAndExecute(newObj => { }, cleanupOldReference:obj => obj.Name);
             Assert.AreEqual("Hello", retVal);
         }
 
@@ -64,7 +64,7 @@ namespace UnitTestAsyncDisposer
             Assert.IsNotNull(accessor);
             Assert.IsNotNull(accessor.Reference);
             string retVal = "";
-            accessor.SwapNewAndExecute(obj =>
+            accessor.SwapNewAndExecute(initReference:obj =>
             {
                 retVal = obj.Name;
             });
@@ -90,13 +90,13 @@ namespace UnitTestAsyncDisposer
             Assert.IsNotNull(accessor);
             Assert.IsNotNull(accessor.Reference);
             string retVal = "";
-            accessor.SwapNewAndExecute(gate => true, obj =>
+            accessor.SwapNewAndExecute(gate => true, cleanupOldReference:obj =>
             {
                 retVal = obj.Name;
             });
             Assert.AreEqual("Hello", retVal);
             retVal = null;
-            accessor.SwapNewAndExecute(gate => false, obj =>
+            accessor.SwapNewAndExecute(gate => false, cleanupOldReference:obj =>
             {
                 retVal = obj.Name;
             });
