@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.4.4.1</version>
+    <version>2.4.5.0</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer</description>
-    <releaseNotes>Downgraded to target .NET 4.6 rather than 4.6.1</releaseNotes>
+    <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
+    <releaseNotes>Added new class BoundedParallel</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+</tags>
     <dependencies>
@@ -18,6 +18,9 @@
       <files include="COMRegUnregAssembly\COMUnregisterAssembly.ps1" buildAction="None"/>
       <files include="COMRegUnregAssembly\COMUnregisterComponent.ps1" buildAction="None"/>
     </contentFiles>
+    <references>
+      <reference file="Ascentis.Infrastructure.dll" />
+    </references>
   </metadata>
   <files>
     <file src="bin\Release\Ascentis.Infrastructure.dll" target="lib\net40" />

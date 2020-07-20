@@ -49,3 +49,9 @@ This class encapsulates a COM+ object instance allowing the user to implement au
 
 Replacement for standard .NET MemoryCache based on ConcurrentDictionary. After opening the hood on MemoryCache found it over-complicated for most uses compared with ConcurrentDictionary.
 This class is based on ConcurrentDictionary and provides expiration like MemoryCache using an ancillary timer.
+
+## BoundedParallel
+
+Use instead of standard static Parallel class to gain control of the number of concurrent calls that be executed using Parallel static class. This allows to control the number of threads
+from the default .NET threadpool to avoid a runaway scenario where .NET has to keep trying to add more threads. If a high number of callers attempt multiple concurrent calls to Parallel methods
+it can fall into what's called "Hill Climbing" algorihtm causing high contention as .NET tries to add more threads slowly

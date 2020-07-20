@@ -50,6 +50,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitTestBoundedParallel.cs" />
     <Compile Include="TestObject.cs" />
     <Compile Include="UnitTestAsyncDisposer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

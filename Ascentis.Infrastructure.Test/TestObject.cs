@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace UnitTestAsyncDisposer
+namespace Ascentis.Infrastructure.Test
 {
     // ReSharper disable once InconsistentNaming
     public class TestObject : IDisposable

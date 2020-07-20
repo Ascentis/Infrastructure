@@ -1,7 +1,7 @@
 ﻿using Ascentis.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestAsyncDisposer
+namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     public class UnitTestConcurrentObjectAccessor
