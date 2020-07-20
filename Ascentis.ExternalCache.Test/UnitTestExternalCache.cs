@@ -41,6 +41,12 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestThreadingModel()
+        {
+            Assert.AreEqual(ApartmentState.STA, Thread.CurrentThread.GetApartmentState());
+        }
+
+        [TestMethod]
         public void TestSelfTest()
         {
             var externalCache = (IExternalCache) new ExternalCache();

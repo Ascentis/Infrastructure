@@ -9,13 +9,14 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestStressConcurrentAddGetAndRemove()
         {
-            const int threadCount = 4;
+            const int threadCount = 20;
             const int loops = 1000;
             var totalLoops = 0;
             var threads = new Thread[threadCount];
             for (var i = 0; i < threadCount; i++)
                 (threads[i] = new Thread(context =>
                 {
+                    Assert.AreEqual(ApartmentState.MTA, Thread.CurrentThread.GetApartmentState());
                     using (var externalCache = new ExternalCache())
                     {
                         for (var j = 0; j < loops; j++)
