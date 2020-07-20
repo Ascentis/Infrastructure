@@ -2,7 +2,7 @@
 
 This library offers a a few general purpose components:
 
-## Ascentis.ComPlusCache
+## ComPlusCache
 It provides functionality similar to what MemoryCache provides.
 
 When to use this?
@@ -16,7 +16,7 @@ The class supports serialized COM objects but performance is about 10x slower th
 When passing a COM object to store in cache, a shallow copy will be performed and the resulting copied object will be stored. Currently only public properties are copied over and there's no test to verify the behavior if within those properties there's a subobject.
 Current tests cover only the case of a COM DTO containing only primitive public properties.
 
-## Ascentis.AsyncDisposer
+## AsyncDisposer
 
 Use this static class to dispose of IDisposable objects using async semantics.
 When to use this?
@@ -30,18 +30,18 @@ When to use this? When dealing with COM, COM+ or DCOM objects prone to crashing 
 object can be isolated behing a wrapper relying on ConcurrentObjectAccessor and the low level object can be replaced transparently upon detection
 of partition exception.
 
-## Ascentis.Retrier
+## Retrier
 
 This class allows to wrap function or procedure calls in a try-catch block that would retry operations based on on a delegate function returning
 true or false. Can be combined with ConcurrentObjectAccessor to replace transparently a low level object upon certain conditions.
 
-## Ascentis.ConccurentObjectAccessor
+## ConcurrentObjectAccessor
 
 This class allows to control usage of an object reference permitting multiple concurrent threads using it for reading its value (and executing code with it),
 while only one thread can write to the reference at the same time. The main purpose is to replace a failing object transparently upon detection of a faulty condition.
 A concrete example is a COM+ object which crashed. The reference to this object is worthless until replaced by a new COM+ object instance.
 
-## Ascentis.SolidComPlus
+## SolidComPlus
 
 This class encapsulates a COM+ object instance allowing the user to implement automatic swapping of a dead object. 
 
