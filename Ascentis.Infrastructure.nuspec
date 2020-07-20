@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.4.4.0</version>
+    <version>2.4.4.1</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer</description>
-    <releaseNotes>Fixed bug calling initialization method of TlsAccessor twice upon retries</releaseNotes>
+    <releaseNotes>Downgraded to target .NET 4.6 rather than 4.6.1</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+</tags>
     <dependencies>
