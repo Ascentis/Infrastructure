@@ -84,6 +84,93 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestBoundedParallelInvokeForceSerialWithThreadLimiter()
+        {
+            var cnt = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
+            var boundedParallel = new BoundedParallel(-1, 2);
+            Parallel.Invoke(() =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            });
+            Assert.AreEqual(12, cnt);
+            Assert.IsTrue(boundedParallel.SerialRunCount > 0, "SerialRunCount should be > 0");
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelInvokeForceSerialWithThreadLimiterAndParallelOptions()
+        {
+            var cnt = 0;
+            var parOptions = new ParallelOptions {MaxDegreeOfParallelism = 1};
+            // ReSharper disable once RedundantArgumentDefaultValue
+            var boundedParallel = new BoundedParallel(-1, 4);
+            Parallel.Invoke(() =>
+            {
+                boundedParallel.Invoke(parOptions, () =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(parOptions, () =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(parOptions, () =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            }, () =>
+            {
+                boundedParallel.Invoke(parOptions, () =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+            });
+            Assert.AreEqual(12, cnt);
+            Assert.IsTrue(boundedParallel.SerialRunCount == 0, "SerialRunCount should be equals to 0");
+        }
+
+        [TestMethod]
         public void TestBoundedParallelSimpleForEachCall()
         {
             var items = new[] {1, 2, 3};
