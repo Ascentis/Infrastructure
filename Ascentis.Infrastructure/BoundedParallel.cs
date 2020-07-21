@@ -56,21 +56,16 @@ namespace Ascentis.Infrastructure
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)
         {
-            try
+            using var concurrentInvocationCount = new Cleanable<int>(Interlocked.Increment(ref _concurrentInvocationsCount),
+                value => Interlocked.Decrement(ref _concurrentInvocationsCount));
+            using var concurrentThreadCount = new Cleanable<int>(Interlocked.Add(ref _concurrentThreadsCount, threadCount),
+                value => Interlocked.Add(ref _concurrentThreadsCount, -threadCount));
+            if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount.Value) &&
+                IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value))
             {
-                var concurrentInvocationCount = Interlocked.Increment(ref _concurrentInvocationsCount);
-                var concurrentThreadCount = Interlocked.Add(ref _concurrentThreadsCount, threadCount);
-                if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount) && IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount))
-                {
-                    var result = bodyParallelCall();
-                    parallelLoopResult = new ParallelLoopResult(result.IsCompleted, result.LowestBreakIteration);
-                    return true;
-                }
-            }
-            finally
-            {
-                Interlocked.Add(ref _concurrentThreadsCount, -threadCount);
-                Interlocked.Decrement(ref _concurrentInvocationsCount);
+                var result = bodyParallelCall();
+                parallelLoopResult = new ParallelLoopResult(result.IsCompleted, result.LowestBreakIteration);
+                return true;
             }
             parallelLoopResult = DefaultParallelLoopResult;
             return false;

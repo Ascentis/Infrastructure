@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+// ReSharper disable AccessToDisposedClosure
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
@@ -439,6 +440,8 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(12, cnt);
             Assert.IsTrue(boundedParallel.SerialRunCount > 0, "SerialRunCount should be > 0");
 
+            using var startedThread1Event = new ManualResetEvent(false);
+            using var startedThread2Event = new ManualResetEvent(false);
             boundedParallel.AbortInvocationsOnSerialInvocationException = true;
             cnt = 0;
             Assert.ThrowsException<AggregateException>(() =>
@@ -446,36 +449,38 @@ namespace Ascentis.Infrastructure.Test
             {
                 boundedParallel.Invoke(() =>
                     {
-                        Thread.Sleep(1500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    }, () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    });
-            }, () =>
-            {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(1500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    }, () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    });
-            }, () =>
-            {
-                Thread.Sleep(500);
-                boundedParallel.Invoke(() =>
-                    {
+                        startedThread1Event.Set();
                         Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        startedThread2Event.Set();
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                startedThread1Event.WaitOne();
+                startedThread2Event.WaitOne();
+                boundedParallel.Invoke(() =>
+                    {
                         Interlocked.Increment(ref cnt);
                         throw new Exception();
                     },
@@ -488,6 +493,8 @@ namespace Ascentis.Infrastructure.Test
                     });
             }, () =>
             {
+                startedThread1Event.WaitOne();
+                startedThread2Event.WaitOne();
                 boundedParallel.Invoke(() =>
                     {
                         Thread.Sleep(500);
