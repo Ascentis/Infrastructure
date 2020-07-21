@@ -13,6 +13,7 @@ namespace Ascentis.Infrastructure.Test
             {
                 using var cleanable = new Cleanable<int>(1, value => cleaned = true);
                 Assert.AreEqual(1, cleanable.Value);
+                Assert.IsFalse(cleaned);
             }
             Assert.IsTrue(cleaned);
         }
