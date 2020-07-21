@@ -54,4 +54,4 @@ This class is based on ConcurrentDictionary and provides expiration like MemoryC
 
 Use instead of standard static Parallel class to gain control of the number of concurrent calls that be executed using Parallel static class. This allows to control the number of threads
 from the default .NET threadpool to avoid a runaway scenario where .NET has to keep trying to add more threads. If a high number of callers attempt multiple concurrent calls to Parallel methods
-it can fall into what's called "Hill Climbing" algorihtm causing high contention as .NET tries to add more threads slowly
+it can fall into what's called "Hill Climbing" algorithm causing high contention as .NET tries to add more threads slowly
