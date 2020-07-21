@@ -86,7 +86,6 @@ namespace Ascentis.Infrastructure
             Interlocked.Increment(ref _serialRunCount);
             List<Exception> exceptions = null;
             foreach (var item in items)
-            {
                 try
                 {
                     body.Invoke(item);
@@ -97,7 +96,7 @@ namespace Ascentis.Infrastructure
                     if (AbortInvocationsOnSerialInvocationException)
                         break;
                 }
-            }
+
             if (exceptions != null) 
                 throw new AggregateException(exceptions);
             return DefaultParallelLoopResult;

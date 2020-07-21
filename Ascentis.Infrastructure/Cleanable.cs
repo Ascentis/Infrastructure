@@ -2,10 +2,9 @@
 
 namespace Ascentis.Infrastructure
 {
-    public class Cleanable<T> : IDisposable
+    public readonly struct Cleanable<T> : IDisposable
     {
         public delegate void CleanupDelegate(T value);
-
         private readonly CleanupDelegate _cleanupDelegate;
 
         public T Value { get; }
