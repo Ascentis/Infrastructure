@@ -99,8 +99,7 @@ namespace Ascentis.Infrastructure
             Invoke(DefaultParallelOptions, actions);
         }
 
-        public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions,
-            Action<TSource> body)
+        public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions, Action<TSource> body)
         {
             if (TryParallel(() => Parallel.ForEach(source, parallelOptions, body), out var parallelLoopResult)) 
                 return parallelLoopResult;
