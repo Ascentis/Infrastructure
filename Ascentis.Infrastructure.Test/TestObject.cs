@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     // ReSharper disable once InconsistentNaming

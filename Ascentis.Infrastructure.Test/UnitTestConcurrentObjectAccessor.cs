@@ -1,6 +1,6 @@
-﻿using Ascentis.Infrastructure;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     [TestClass]

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     /// <summary>
@@ -42,6 +44,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestBoundedParallelInvokeForceSerial()
         {
             var cnt = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(2);
             Parallel.Invoke(() =>
             {
@@ -100,6 +103,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var items = new[] {1, 2, 3};
             var cnt = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(2);
             Parallel.Invoke(() =>
             {
@@ -158,6 +162,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var items = new[] {1, 2, 3};
             var sumItems = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(2);
             Parallel.Invoke(() =>
             {
@@ -194,10 +199,12 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         public void TestBoundedParallelForForceSerialThenParallelAgain()
         {
             var items = new[] {1, 2, 3};
             var sumItems = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(2);
             Parallel.Invoke(() =>
             {
@@ -277,9 +284,11 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         public void TestBoundedParallelInvokeForceSerialThrowsException()
         {
             var cnt = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
             Assert.ThrowsException<AggregateException>(() =>
             Parallel.Invoke(() =>
