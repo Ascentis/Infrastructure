@@ -11,7 +11,7 @@
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
     <releaseNotes>Added support for limiting parallelism based on potential maximum number of threads to be consumed</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
-    <tags>caching MemoryCache COM COM+</tags>
+    <tags>caching MemoryCache COM COM+ threading Parallel</tags>
     <dependencies>
     </dependencies>
     <contentFiles>
