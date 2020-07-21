@@ -7,6 +7,8 @@ namespace Ascentis.Infrastructure
 {
     public class BoundedParallel
     {
+        public const int MaxParallelInvocations = 2;
+
         private delegate ParallelLoopResult ParallelLoopDelegate();
         private delegate void ParallelInvokeDelegate();
 
@@ -16,9 +18,11 @@ namespace Ascentis.Infrastructure
         private volatile int _serialRunCount;
         public int SerialRunCount => _serialRunCount;
 
+        public bool AbortInvocationsOnSerialInvocationException { get; set; } = true;
+
         private readonly int _maxParallelInvocations;
 
-        public BoundedParallel(int maxParallelInvocations = 2)
+        public BoundedParallel(int maxParallelInvocations = MaxParallelInvocations)
         {
             _maxParallelInvocations = maxParallelInvocations;
         }
@@ -32,6 +36,9 @@ namespace Ascentis.Infrastructure
         {
             try
             {
+                /* Interlocked.Increment() call should be before try {}. Only exception thrown by it is NullReferenceException so
+                   it's safe to call within try {} and assume success keeping _concurrentInvocationsCount balanced with 
+                   call to Interlocked.Decrement() in finally {} block */
                 if (Interlocked.Increment(ref _concurrentInvocationsCount) <= _maxParallelInvocations)
                 {
                     parallelLoopResult = bodyParallelCall();
@@ -64,13 +71,25 @@ namespace Ascentis.Infrastructure
         private volatile int _concurrentInvocationsCount;
         public void Invoke(ParallelOptions parallelOptions, params Action[] actions)
         {
-            if (TryParallel(() =>
-            {
-                Parallel.Invoke(parallelOptions, actions);
-            })) return;
+            if (TryParallel(() => Parallel.Invoke(parallelOptions, actions))) 
+                return;
             IncrementSerialRunCount();
+            var exceptions = new List<Exception>();
             foreach (var action in actions)
-                action.Invoke();
+            {
+                try
+                {
+                    action.Invoke();
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                    if (AbortInvocationsOnSerialInvocationException)
+                        break;
+                }
+            }
+            if (exceptions.Count > 0)
+                throw new AggregateException(exceptions);
         }
 
         public void Invoke(params Action[] actions)
@@ -81,10 +100,25 @@ namespace Ascentis.Infrastructure
         public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions,
             Action<TSource> body)
         {
-            if (TryParallel(() => Parallel.ForEach(source, parallelOptions, body), out var parallelLoopResult)) return parallelLoopResult;
+            if (TryParallel(() => Parallel.ForEach(source, parallelOptions, body), out var parallelLoopResult)) 
+                return parallelLoopResult;
             IncrementSerialRunCount();
+            var exceptions = new List<Exception>();
             foreach (var item in source)
-                body.Invoke(item);
+            {
+                try
+                {
+                    body.Invoke(item);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                    if (AbortInvocationsOnSerialInvocationException)
+                        break;
+                }
+            }
+            if (exceptions.Count > 0) 
+                throw new AggregateException(exceptions);
             return DefaultParallelLoopResult;
         }
 
@@ -95,10 +129,25 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, ParallelOptions parallelOptions, Action<long> body)
         {
-            if (TryParallel(() => Parallel.For(fromInclusive, toExclusive, parallelOptions, body), out var parallelLoopResult)) return parallelLoopResult;
+            if (TryParallel(() => Parallel.For(fromInclusive, toExclusive, parallelOptions, body), out var parallelLoopResult)) 
+                return parallelLoopResult;
             IncrementSerialRunCount();
+            var exceptions = new List<Exception>();
             for (var idx = fromInclusive; idx < toExclusive; idx++)
-                body.Invoke(idx);
+            {
+                try
+                {
+                    body.Invoke(idx);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                    if (AbortInvocationsOnSerialInvocationException)
+                        break;
+                }
+            }
+            if (exceptions.Count > 0) 
+                throw new AggregateException(exceptions);
             return DefaultParallelLoopResult;
         }
 

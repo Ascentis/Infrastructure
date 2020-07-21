@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -246,6 +247,161 @@ namespace Ascentis.Infrastructure.Test
 
             Assert.AreEqual(12, sumItems);
             Assert.IsTrue(boundedParallel.SerialRunCount == 0, "SerialRunCount should be equals to 0");
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelSimpleInvokeCallThrowsException()
+        {
+            var cnt = 0;
+            var boundedParallel = new BoundedParallel(3);
+            Assert.ThrowsException<AggregateException>(() =>
+            boundedParallel.Invoke(() =>
+                {
+                    Interlocked.Increment(ref cnt);
+                    throw new Exception("Explosion");
+                }, () =>
+                {
+                    Interlocked.Increment(ref cnt);
+                },
+                () =>
+                {
+                    Interlocked.Increment(ref cnt);
+                }));
+            Assert.AreEqual(3, cnt);
+            Assert.IsTrue(boundedParallel.SerialRunCount == 0, "SerialRunCount must be zero");
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelInvokeForceSerialThrowsException()
+        {
+            var cnt = 0;
+            var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
+            Assert.ThrowsException<AggregateException>(() =>
+            Parallel.Invoke(() =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                        throw new Exception();
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }));
+            Assert.AreEqual(12, cnt);
+            Assert.IsTrue(boundedParallel.SerialRunCount > 0, "SerialRunCount should be > 0");
+
+            boundedParallel.AbortInvocationsOnSerialInvocationException = true;
+            cnt = 0;
+            Assert.ThrowsException<AggregateException>(() =>
+            Parallel.Invoke(() =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(1500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(1500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                Thread.Sleep(500);
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                        throw new Exception();
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }, () =>
+            {
+                boundedParallel.Invoke(() =>
+                    {
+                        Thread.Sleep(500);
+                        Interlocked.Increment(ref cnt);
+                    },
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
+            }));
+            Assert.AreEqual(10, cnt);
+            Assert.IsTrue(boundedParallel.SerialRunCount > 0, "SerialRunCount should be > 0");
         }
     }
 }
