@@ -85,13 +85,14 @@ namespace Ascentis.Infrastructure.Test
         {
             var items = new[] {1, 2, 3};
             var cnt = 0;
-            var boundedParallel = new BoundedParallel(3);
-            boundedParallel.ForEach(items, (item) =>
+            var boundedParallel = new BoundedParallel(3); 
+            var result = boundedParallel.ForEach(items, (item) =>
             {
                 Interlocked.Increment(ref cnt);
             });
             Assert.AreEqual(3, cnt);
             Assert.IsTrue(boundedParallel.SerialRunCount == 0, "SerialRunCount must be zero");
+            Assert.IsTrue(result.IsCompleted);
         }
 
         [TestMethod]
@@ -104,30 +105,34 @@ namespace Ascentis.Infrastructure.Test
             {
                 boundedParallel.ForEach(items, (item) =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1500);
                     Interlocked.Increment(ref cnt);
                 });
             }, () =>
             {
                 boundedParallel.ForEach(items, (item) =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1500);
                     Interlocked.Increment(ref cnt);
                 });
             }, () =>
             {
-                boundedParallel.ForEach(items, (item) =>
+                Thread.Sleep(500);
+                var result1 = boundedParallel.ForEach(items, (item) =>
                 {
                     Thread.Sleep(500);
                     Interlocked.Increment(ref cnt);
                 });
+                Assert.IsTrue(result1.IsCompleted);
             }, () =>
             {
-                boundedParallel.ForEach(items, (item) =>
+                Thread.Sleep(500);
+                var result2 = boundedParallel.ForEach(items, (item) =>
                 {
                     Thread.Sleep(500);
                     Interlocked.Increment(ref cnt);
                 });
+                Assert.IsTrue(result2.IsCompleted);
             });
 
             Assert.AreEqual(12, cnt);

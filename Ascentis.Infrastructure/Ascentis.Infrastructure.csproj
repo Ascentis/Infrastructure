@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Ascentis.Infrastructure.snk" />
+    <Compile Include="Ascentis.ParallelLoopResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

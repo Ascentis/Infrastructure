@@ -9,10 +9,11 @@ namespace Ascentis.Infrastructure
     {
         public const int MaxParallelInvocations = 2;
 
-        private delegate ParallelLoopResult ParallelLoopDelegate();
+        private delegate System.Threading.Tasks.ParallelLoopResult ParallelLoopDelegate();
         private delegate void ParallelInvokeDelegate();
 
-        private static readonly ParallelLoopResult DefaultParallelLoopResult = new ParallelLoopResult();
+        private static readonly System.Threading.Tasks.ParallelLoopResult DefaultSystemParallelLoopResult = new System.Threading.Tasks.ParallelLoopResult();
+        private static readonly ParallelLoopResult DefaultParallelLoopResult = new ParallelLoopResult(true, null);
         private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions();
 
         private volatile int _serialRunCount;
@@ -41,7 +42,8 @@ namespace Ascentis.Infrastructure
                    call to Interlocked.Decrement() in finally {} block */
                 if (Interlocked.Increment(ref _concurrentInvocationsCount) <= _maxParallelInvocations)
                 {
-                    parallelLoopResult = bodyParallelCall();
+                    var result = bodyParallelCall();
+                    parallelLoopResult = new ParallelLoopResult(result.IsCompleted, result.LowestBreakIteration);
                     return true;
                 }
             }
@@ -59,7 +61,7 @@ namespace Ascentis.Infrastructure
             return TryParallel(() =>
             {
                 bodyParallelCall();
-                return DefaultParallelLoopResult;
+                return DefaultSystemParallelLoopResult;
             }, out var parallelLoopResult);
         }
 
