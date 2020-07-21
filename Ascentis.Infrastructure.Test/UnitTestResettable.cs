@@ -4,15 +4,15 @@
 namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
-    public class UnitTestCleanable
+    public class UnitTestResettable
     {
         [TestMethod]
-        public void TestCleanable()
+        public void TestResettable()
         {
             var cleaned = false;
             {
-                using var cleanable = new Cleanable<int>(1, value => cleaned = true);
-                Assert.AreEqual(1, cleanable.Value);
+                using var resettable = new Resettable<int>(1, value => cleaned = true);
+                Assert.AreEqual(1, resettable.Value);
                 Assert.IsFalse(cleaned);
             }
             Assert.IsTrue(cleaned);
