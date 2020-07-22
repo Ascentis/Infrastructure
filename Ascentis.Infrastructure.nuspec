@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.4.8.2</version>
+    <version>2.4.8.3</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
-    <releaseNotes>Cleanable made a struct for improved performance. Normally we want it allocated in stack</releaseNotes>
+    <releaseNotes>Added support to use all possible and allowed threads by overriding the maximum number of parallel threads when possible</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+ threading Parallel</tags>
     <dependencies>

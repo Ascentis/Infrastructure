@@ -10,48 +10,65 @@ namespace Ascentis.Infrastructure
     {
         #region Public consts
         public const int DefaultMaxParallelInvocations = 2;
-        public const int DefaultMaxParallelThreads = -1; // -1 equals to no limit in the number of threads that *could* run in parallel before going serial
+        public const int Unlimited = -1; // -1 equals to no limit in the number of threads that *could* run in parallel before going serial
         #endregion
 
         #region Private declarations
-        private delegate System.Threading.Tasks.ParallelLoopResult ParallelLoopDelegate();
-        private delegate void ParallelInvokeDelegate();
+        private delegate System.Threading.Tasks.ParallelLoopResult ParallelLoopDelegate(int allowedThreadCount);
+        private delegate void ParallelInvokeDelegate(int allowedThreadCount);
 
         private static readonly System.Threading.Tasks.ParallelLoopResult DefaultSystemParallelLoopResult = new System.Threading.Tasks.ParallelLoopResult();
         private static readonly ParallelLoopResult DefaultParallelLoopResult = new ParallelLoopResult(true, null);
         private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions();
 
-        private volatile int _serialRunCount;
+        private volatile int _totalSerialRunCount; // This primarily of use when unit testing
+        private volatile int _totalParallelThreadsConsumed; // This primarily of use when unit testing
         private volatile int _concurrentInvocationsCount;
         private volatile int _concurrentThreadsCount;
         #endregion
 
         #region Public properties
-        public int SerialRunCount => _serialRunCount; // This primarily of use when unit testing
-        public bool AbortInvocationsOnSerialInvocationException { get; set; }
+        public int TotalSerialRunCount => _totalSerialRunCount; // This primarily of use when unit testing
+        public int TotalParallelsThreadConsumed => _totalParallelThreadsConsumed; // This primarily of use when unit testing
+        public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value if DIFFERENT than Parallel class. Set to false to match behavior of Parallel class
         /* If MaxParallelInvocations is exceeded OR MaxParallelThreads is exceeded execution of Action array will be done serially */
-        public int MaxParallelInvocations { get; set; }
-        public int MaxParallelThreads { get; set; }
+        public int MaxParallelInvocations { get; set; } // Set to Unlimited (-1) to disable check on number of parallel invocations
+        public int MaxParallelThreads { get; set; } // Set to Unlimited (-1) to disable check on number of potential active - utilized - threads
         #endregion
 
         #region Constructor and public methods
-        public BoundedParallel(int maxParallelInvocations = DefaultMaxParallelInvocations, int defaultMaxParallelThreads = DefaultMaxParallelThreads)
+        public BoundedParallel(int maxParallelInvocations = DefaultMaxParallelInvocations, int defaultMaxParallelThreads = Unlimited)
         {
             MaxParallelInvocations = maxParallelInvocations;
             MaxParallelThreads = defaultMaxParallelThreads;
             AbortInvocationsOnSerialInvocationException = true;
         }
 
-        public void ResetSerialRunCount()
+        public void ResetTotalSerialRunCount()
         {
-            _serialRunCount = 0;
+            _totalSerialRunCount = 0;
+        }
+
+        public void ResetTotalParallelsThreadConsumed()
+        {
+            _totalParallelThreadsConsumed = 0;
         }
         #endregion
 
         #region Internals
         private static bool IsGateLimitOpen(int limit, int current)
         {
-            return limit == -1 || current <= limit;
+            return limit == Unlimited || current <= limit;
+        }
+
+        private int GetAllowedThreadCount(int currentConcurrentThreadCount, int requestedThreadCount)
+        {
+            if (MaxParallelThreads == Unlimited)
+                return requestedThreadCount;
+            if (currentConcurrentThreadCount <= MaxParallelThreads)
+                return requestedThreadCount;
+            var deltaAllowedThreads = MaxParallelThreads - currentConcurrentThreadCount + requestedThreadCount;
+            return deltaAllowedThreads > 0 ? deltaAllowedThreads : requestedThreadCount;
         }
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)
@@ -60,11 +77,13 @@ namespace Ascentis.Infrastructure
                 value => Interlocked.Decrement(ref _concurrentInvocationsCount));
             using var concurrentThreadCount = new Resettable<int>(Interlocked.Add(ref _concurrentThreadsCount, threadCount),
                 value => Interlocked.Add(ref _concurrentThreadsCount, -threadCount));
+            var allowedThreadCount = GetAllowedThreadCount(concurrentThreadCount.Value, threadCount);
             if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount.Value) &&
-                IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value))
+                (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value)))
             {
-                var result = bodyParallelCall();
-                parallelLoopResult = new ParallelLoopResult(result.IsCompleted, result.LowestBreakIteration);
+                Interlocked.Add(ref _totalParallelThreadsConsumed, allowedThreadCount);
+                var systemParallelLoopResult = bodyParallelCall(allowedThreadCount);
+                parallelLoopResult = new ParallelLoopResult(systemParallelLoopResult.IsCompleted, systemParallelLoopResult.LowestBreakIteration);
                 return true;
             }
             parallelLoopResult = DefaultParallelLoopResult;
@@ -74,16 +93,16 @@ namespace Ascentis.Infrastructure
         private bool TryParallel(ParallelInvokeDelegate bodyParallelCall, int threadCount)
         {
             // ReSharper disable once UnusedVariable
-            return TryParallel(() =>
+            return TryParallel(allowedThreadCount =>
             {
-                bodyParallelCall();
+                bodyParallelCall(allowedThreadCount);
                 return DefaultSystemParallelLoopResult;
             }, out var parallelLoopResult, threadCount);
         }
 
         private ParallelLoopResult IterateAndInvokeActions<T>(IEnumerable<T> items, Action<T> body)
         {
-            Interlocked.Increment(ref _serialRunCount);
+            Interlocked.Increment(ref _totalSerialRunCount);
             List<Exception> exceptions = null;
             foreach (var item in items)
                 try
@@ -104,7 +123,7 @@ namespace Ascentis.Infrastructure
 
         private static int MaxDegreeOfParallelism(ParallelOptions parallelOptions, int itemCount)
         {
-            return parallelOptions.MaxDegreeOfParallelism != -1 ? Math.Min(parallelOptions.MaxDegreeOfParallelism, itemCount) : itemCount;
+            return parallelOptions.MaxDegreeOfParallelism != Unlimited ? Math.Min(parallelOptions.MaxDegreeOfParallelism, itemCount) : itemCount;
         }
 
         private static IEnumerable<long> IterateForLoop(long fromInclusive, long toExclusive)
@@ -117,7 +136,11 @@ namespace Ascentis.Infrastructure
         #region System Parallel class replacement methods
         public void Invoke(ParallelOptions parallelOptions, params Action[] actions)
         {
-            if (TryParallel(() => Parallel.Invoke(parallelOptions, actions), MaxDegreeOfParallelism(parallelOptions, actions.Length))) 
+            if (TryParallel(allowedThreadCount =>
+            {
+                parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
+                Parallel.Invoke(parallelOptions, actions);
+            }, MaxDegreeOfParallelism(parallelOptions, actions.Length))) 
                 return;
             IterateAndInvokeActions(actions, action => action.Invoke());
         }
@@ -130,8 +153,11 @@ namespace Ascentis.Infrastructure
         public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions, Action<TSource> body)
         {
             var sourceCopy = new List<TSource>(source);
-            return TryParallel(() => Parallel.ForEach(sourceCopy, parallelOptions, body),
-                out var parallelLoopResult, MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))
+            return TryParallel(allowedThreadCount =>
+                {
+                    parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
+                    return Parallel.ForEach(sourceCopy, parallelOptions, body);
+                }, out var parallelLoopResult, MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))
                 ? parallelLoopResult 
                 : IterateAndInvokeActions(sourceCopy, body);
         }
@@ -143,7 +169,11 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, ParallelOptions parallelOptions, Action<long> body)
         {
-            return TryParallel(() => Parallel.For(fromInclusive, toExclusive, parallelOptions, body),
+            return TryParallel(allowedThreadCount =>
+                {
+                    parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
+                    return Parallel.For(fromInclusive, toExclusive, parallelOptions, body);
+                },
                 out var parallelLoopResult, MaxDegreeOfParallelism(parallelOptions, (int)(toExclusive - fromInclusive)))
                 ? parallelLoopResult 
                 : IterateAndInvokeActions(IterateForLoop(fromInclusive, toExclusive), body);
