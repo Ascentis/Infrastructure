@@ -393,7 +393,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestBoundedParallelSimpleInvokeCallThrowsException()
         {
             var cnt = 0;
-            var boundedParallel = new BoundedParallel(3) {AbortInvocationsOnSerialInvocationException = false};
+            var boundedParallel = new BoundedParallel(3);
             var e = Assert.ThrowsException<AggregateException>(() =>
                 boundedParallel.Invoke(() =>
                     {
