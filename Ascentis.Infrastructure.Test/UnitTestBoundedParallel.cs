@@ -393,16 +393,23 @@ namespace Ascentis.Infrastructure.Test
         public void TestBoundedParallelSimpleInvokeCallThrowsException()
         {
             var cnt = 0;
-            var boundedParallel = new BoundedParallel(3);
-            Assert.ThrowsException<AggregateException>(() =>
+            var boundedParallel = new BoundedParallel(3) {AbortInvocationsOnSerialInvocationException = false};
+            var e = Assert.ThrowsException<AggregateException>(() =>
                 boundedParallel.Invoke(() =>
                     {
                         Interlocked.Increment(ref cnt);
                         throw new Exception("Explosion");
-                    }, () => { Interlocked.Increment(ref cnt); },
-                    () => { Interlocked.Increment(ref cnt); }));
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                        throw new Exception("Explosion");
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }));
             Assert.AreEqual(3, cnt);
             Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.AreEqual(2, e.InnerExceptions.Count);
         }
 
         [TestMethod]
