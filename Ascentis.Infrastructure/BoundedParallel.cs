@@ -77,7 +77,9 @@ namespace Ascentis.Infrastructure
                 value => Interlocked.Decrement(ref _concurrentInvocationsCount));
             using var concurrentThreadCount = new Resettable<int>(Interlocked.Add(ref _concurrentThreadsCount, threadCount),
                 value => Interlocked.Add(ref _concurrentThreadsCount, -threadCount));
+
             var allowedThreadCount = GetAllowedThreadCount(concurrentThreadCount.Value, threadCount);
+
             if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount.Value) &&
                 (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value)))
             {
@@ -86,6 +88,7 @@ namespace Ascentis.Infrastructure
                 parallelLoopResult = new ParallelLoopResult(systemParallelLoopResult.IsCompleted, systemParallelLoopResult.LowestBreakIteration);
                 return true;
             }
+
             parallelLoopResult = DefaultParallelLoopResult;
             return false;
         }
@@ -104,6 +107,7 @@ namespace Ascentis.Infrastructure
         {
             Interlocked.Increment(ref _totalSerialRunCount);
             List<Exception> exceptions = null;
+
             foreach (var item in items)
                 try
                 {
