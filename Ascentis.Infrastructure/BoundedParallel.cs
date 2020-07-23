@@ -74,7 +74,7 @@ namespace Ascentis.Infrastructure
             if (currentConcurrentThreadCount <= MaxParallelThreads)
                 return requestedThreadCount;
             var deltaAllowedThreads = MaxParallelThreads - currentConcurrentThreadCount + requestedThreadCount;
-            return deltaAllowedThreads > 0 ? deltaAllowedThreads : requestedThreadCount;
+            return deltaAllowedThreads > 1 ? deltaAllowedThreads : requestedThreadCount; // Only if we can fit more than 1 thread we will return the delta
         }
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)

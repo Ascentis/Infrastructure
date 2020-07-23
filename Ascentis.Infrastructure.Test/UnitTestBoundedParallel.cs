@@ -519,7 +519,7 @@ namespace Ascentis.Infrastructure.Test
                     boundedParallel, methodInfo);
 
             boundedParallel.MaxParallelThreads = 3;
-            Assert.AreEqual(1, getAllowedThreadCount(4, 2)); // Could fit one thread of the two requested
+            Assert.AreEqual(2, getAllowedThreadCount(4, 2)); // Could fit one thread of the two requested, which makes no sense so returns requestedThreadCount
             Assert.AreEqual(2, getAllowedThreadCount(3, 2)); // Exact fit of the two requests
             Assert.AreEqual(2,
                 getAllowedThreadCount(5, 2)); // Could not fit even 1 thread, returned requestedThreadCount
