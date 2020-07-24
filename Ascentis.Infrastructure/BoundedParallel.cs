@@ -37,7 +37,7 @@ namespace Ascentis.Infrastructure
         public int TotalParallelsThreadConsumed => _totalParallelThreadsConsumed;
         public int ConcurrentInvocationsCount => _concurrentInvocationsCount;
         public int ConcurrentThreadsCount => _concurrentThreadsCount;
-        public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value if DIFFERENT than Parallel class. Set to false to match behavior of Parallel class
+        public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value is DIFFERENT than Parallel class normal behavior. Set to false to match behavior of Parallel class
         /* If MaxParallelInvocations is exceeded OR MaxParallelThreads is exceeded execution of Action array will be done serially */
         public int MaxParallelInvocations { get; set; } // Set to Unlimited (-1) to disable check on number of parallel invocations
         public int MaxParallelThreads { get; set; } // Set to Unlimited (-1) to disable check on number of potential active - utilized - threads
