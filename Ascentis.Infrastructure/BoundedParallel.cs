@@ -16,6 +16,7 @@ namespace Ascentis.Infrastructure
         public const int Unlimited = -1; // -1 equals to no limit in the number of threads or invocations that *could* run in parallel before going serial
 
         #endregion
+
         #region Private declarations
 
         private static readonly System.Threading.Tasks.ParallelLoopResult DefaultSystemParallelLoopResult = new System.Threading.Tasks.ParallelLoopResult();
@@ -30,6 +31,7 @@ namespace Ascentis.Infrastructure
         private volatile int _concurrentThreadsCount;
         
         #endregion
+
         #region Public properties
 
         public int TotalSerialRunCount => _totalSerialRunCount;
@@ -43,6 +45,7 @@ namespace Ascentis.Infrastructure
         public int MaxParallelThreads { get; set; } // Set to Unlimited (-1) to disable check on number of potential active - utilized - threads
         
         #endregion
+
         #region Constructor and public methods
 
         public BoundedParallel(int maxParallelInvocations = DefaultMaxParallelInvocations, int defaultMaxParallelThreads = Unlimited)
@@ -68,6 +71,7 @@ namespace Ascentis.Infrastructure
         }
 
         #endregion
+
         #region Internals
         private static bool IsGateLimitOpen(int limit, int current)
         {
@@ -151,6 +155,7 @@ namespace Ascentis.Infrastructure
         }
 
         #endregion
+
         #region System Parallel class replacement methods
 
         public void Invoke(ParallelOptions parallelOptions, params Action[] actions)
