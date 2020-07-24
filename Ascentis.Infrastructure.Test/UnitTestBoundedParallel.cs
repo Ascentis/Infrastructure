@@ -414,7 +414,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestBoundedParallelStressTestBoundedSucceedsContainingThreads()
+        public void TestBoundedParallelStressTest1BoundedSucceedsContainingThreads()
         {
             Assert.IsTrue(ThreadPool.SetMinThreads(25, 10));
             var cnt = 0;
@@ -434,7 +434,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestBoundedParallelStressTestUnboundedFailsContainingThreads()
+        public void TestBoundedParallelStressTest2UnboundedFailsContainingThreads()
         {
             Assert.IsTrue(ThreadPool.SetMinThreads(25, 10));
             var cnt = 0;

@@ -23,8 +23,9 @@ namespace Ascentis.Infrastructure
         private static readonly ParallelLoopResult DefaultNotCompletedParallelLoopResult = new ParallelLoopResult(false, null);
         private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions();
 
-        private volatile int _totalSerialRunCount; // This primarily of use when unit testing
-        private volatile int _totalParallelThreadsConsumed; // This primarily of use when unit testing
+        private volatile int _totalSerialRunCount;
+        private volatile int _totalParallelRunCount; 
+        private volatile int _totalParallelThreadsConsumed;
         private volatile int _concurrentInvocationsCount;
         private volatile int _concurrentThreadsCount;
         
@@ -32,6 +33,7 @@ namespace Ascentis.Infrastructure
         #region Public properties
 
         public int TotalSerialRunCount => _totalSerialRunCount;
+        public int TotalParallelRunCount => _totalParallelRunCount;
         public int TotalParallelsThreadConsumed => _totalParallelThreadsConsumed;
         public int ConcurrentInvocationsCount => _concurrentInvocationsCount;
         public int ConcurrentThreadsCount => _concurrentThreadsCount;
@@ -58,6 +60,11 @@ namespace Ascentis.Infrastructure
         public void ResetTotalParallelsThreadConsumed()
         {
             _totalParallelThreadsConsumed = 0;
+        }
+
+        public void ResetTotalParallelRunCount()
+        {
+            _totalParallelRunCount = 0;
         }
 
         #endregion
@@ -90,6 +97,7 @@ namespace Ascentis.Infrastructure
                 (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value)))
             {
                 Interlocked.Add(ref _totalParallelThreadsConsumed, allowedThreadCount);
+                Interlocked.Increment(ref _totalParallelRunCount);
                 var systemParallelLoopResult = bodyParallelCall(allowedThreadCount);
                 parallelLoopResult = new ParallelLoopResult(systemParallelLoopResult.IsCompleted, systemParallelLoopResult.LowestBreakIteration);
                 return true;
