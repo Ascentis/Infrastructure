@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
@@ -410,6 +411,44 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(3, cnt);
             Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
             Assert.AreEqual(2, e.InnerExceptions.Count);
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelStressTestBoundedSucceedsContainingThreads()
+        {
+            Assert.IsTrue(ThreadPool.SetMinThreads(25, 10));
+            var cnt = 0;
+            var boundedParallel = new BoundedParallel(4, 5);
+            var actions = new Action[20000];
+            for (var i = 0; i < actions.Length; i++)
+                actions[i] = () =>
+                {
+                    Interlocked.Increment(ref cnt);
+                    for (var j = 0; j < 5000; j++)
+                        Thread.Sleep(0);
+                };
+            boundedParallel.Invoke(actions);
+            Assert.AreEqual(actions.Length, cnt);
+            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must == 0");
+            Assert.IsTrue(Process.GetCurrentProcess().Threads.Count < 40, "WorkerThreads should be < 30");
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelStressTestUnboundedFailsContainingThreads()
+        {
+            Assert.IsTrue(ThreadPool.SetMinThreads(25, 10));
+            var cnt = 0;
+            var actions = new Action[20000];
+            for (var i = 0; i < actions.Length; i++)
+                actions[i] = () =>
+                {
+                    Interlocked.Increment(ref cnt);
+                    for (var j = 0; j < 5000; j++)
+                        Thread.Sleep(0);
+                };
+            Parallel.Invoke(actions);
+            Assert.AreEqual(actions.Length, cnt);
+            Assert.IsTrue(Process.GetCurrentProcess().Threads.Count > 40, "WorkerThreads should be > 40");
         }
 
         [TestMethod]
