@@ -24,9 +24,6 @@ namespace Ascentis.Infrastructure
         private static readonly ParallelLoopResult DefaultNotCompletedParallelLoopResult = new ParallelLoopResult(false, null);
         private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions();
 
-        private volatile int _totalSerialRunCount;
-        private volatile int _totalParallelRunCount; 
-        private volatile int _totalParallelThreadsConsumed;
         private volatile int _concurrentInvocationsCount;
         private volatile int _concurrentThreadsCount;
         
@@ -34,9 +31,7 @@ namespace Ascentis.Infrastructure
 
         #region Public properties
 
-        public int TotalSerialRunCount => _totalSerialRunCount;
-        public int TotalParallelRunCount => _totalParallelRunCount;
-        public int TotalParallelsThreadConsumed => _totalParallelThreadsConsumed;
+        public BoundedParallelStats Stats { get; }
         public int ConcurrentInvocationsCount => _concurrentInvocationsCount;
         public int ConcurrentThreadsCount => _concurrentThreadsCount;
         public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value is DIFFERENT than Parallel class normal behavior. Set to false to match behavior of Parallel class
@@ -53,21 +48,14 @@ namespace Ascentis.Infrastructure
             MaxParallelInvocations = maxParallelInvocations;
             MaxParallelThreads = defaultMaxParallelThreads;
             AbortInvocationsOnSerialInvocationException = true;
+            Stats = new BoundedParallelStats();
         }
 
-        public void ResetTotalSerialRunCount()
+        public void ResetAllStats()
         {
-            _totalSerialRunCount = 0;
-        }
-
-        public void ResetTotalParallelsThreadConsumed()
-        {
-            _totalParallelThreadsConsumed = 0;
-        }
-
-        public void ResetTotalParallelRunCount()
-        {
-            _totalParallelRunCount = 0;
+            Stats.ResetTotalParallelRunCount();
+            Stats.ResetTotalSerialRunCount();
+            Stats.ResetTotalParallelsThreadConsumed();
         }
 
         #endregion
@@ -90,6 +78,12 @@ namespace Ascentis.Infrastructure
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)
         {
+            if (threadCount <= 0)
+            {
+                parallelLoopResult = DefaultNotCompletedParallelLoopResult;
+                return false;
+            }
+
             using var concurrentInvocationCount = new Resettable<int>(Interlocked.Increment(ref _concurrentInvocationsCount),
                 value => Interlocked.Decrement(ref _concurrentInvocationsCount));
             using var concurrentThreadCount = new Resettable<int>(Interlocked.Add(ref _concurrentThreadsCount, threadCount),
@@ -100,8 +94,8 @@ namespace Ascentis.Infrastructure
             if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount.Value) &&
                 (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value)))
             {
-                Interlocked.Add(ref _totalParallelThreadsConsumed, allowedThreadCount);
-                Interlocked.Increment(ref _totalParallelRunCount);
+                Stats.IncrementParallelThreadsConsumed(allowedThreadCount);
+                Stats.IncrementParallelRunCount();
                 var systemParallelLoopResult = bodyParallelCall(allowedThreadCount);
                 parallelLoopResult = new ParallelLoopResult(systemParallelLoopResult.IsCompleted, systemParallelLoopResult.LowestBreakIteration);
                 return true;
@@ -123,7 +117,7 @@ namespace Ascentis.Infrastructure
 
         private ParallelLoopResult IterateAndInvokeActionsSerially<T>(IEnumerable<T> items, Action<T> body)
         {
-            Interlocked.Increment(ref _totalSerialRunCount);
+            Stats.IncrementSerialRunCount();
             List<Exception> exceptions = null;
 
             foreach (var item in items)
@@ -150,8 +144,8 @@ namespace Ascentis.Infrastructure
 
         private static IEnumerable<long> IterateForLoop(long fromInclusive, long toExclusive)
         {
-            for (var idx = fromInclusive; idx < toExclusive; idx++)
-                yield return idx;
+            while (fromInclusive < toExclusive)
+                yield return fromInclusive++;
         }
 
         #endregion

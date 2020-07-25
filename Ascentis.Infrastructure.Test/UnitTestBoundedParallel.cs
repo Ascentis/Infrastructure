@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -31,7 +32,42 @@ namespace Ascentis.Infrastructure.Test
             boundedParallel.Invoke(() => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); },
                 () => { Interlocked.Increment(ref cnt); });
             Assert.AreEqual(3, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.IsTrue(boundedParallel.Stats.TotalParallelRunCount != 0, "TotalParallelRunCount must not be zero");
+            boundedParallel.ResetAllStats();
+            Assert.AreEqual(0, boundedParallel.Stats.TotalParallelRunCount);
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelSimpleForEachWithZeroItems()
+        {
+            var regularParallelResult = Parallel.ForEach(new List<int>(), (n) => { });
+            var boundedParallel = new BoundedParallel(3);
+            var boundedResult = boundedParallel.ForEach(new List<int>(), (n) => { });
+            Assert.AreEqual(1, boundedParallel.Stats.TotalSerialRunCount);
+            Assert.AreEqual(0, boundedParallel.Stats.TotalParallelRunCount);
+            Assert.AreEqual(regularParallelResult.IsCompleted, boundedResult.IsCompleted);
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelSimpleForWithZeroItems()
+        {
+            var regularParallelResult = Parallel.For(0, 0, (n) => { });
+            var boundedParallel = new BoundedParallel(3);
+            var boundedResult = boundedParallel.For(0, 0, (n) => { });
+            Assert.AreEqual(1, boundedParallel.Stats.TotalSerialRunCount);
+            Assert.AreEqual(0, boundedParallel.Stats.TotalParallelRunCount);
+            Assert.AreEqual(regularParallelResult.IsCompleted, boundedResult.IsCompleted);
+        }
+
+        [TestMethod]
+        public void TestBoundedParallelSimpleInvokeWithNoActions()
+        {
+            var boundedParallel = new BoundedParallel(3);
+            var actions = new Action[0];
+            boundedParallel.Invoke(actions);
+            Assert.AreEqual(1, boundedParallel.Stats.TotalSerialRunCount);
+            Assert.AreEqual(0, boundedParallel.Stats.TotalParallelRunCount);
         }
 
         [TestMethod]
@@ -74,7 +110,7 @@ namespace Ascentis.Infrastructure.Test
                     () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
             });
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
 
         [TestMethod]
@@ -117,7 +153,7 @@ namespace Ascentis.Infrastructure.Test
                     () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
             });
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
 
         [TestMethod]
@@ -127,7 +163,7 @@ namespace Ascentis.Infrastructure.Test
             // ReSharper disable once RedundantArgumentDefaultValue
             using var waitEvent1 = new ManualResetEvent(false);
             using var waitEvent2 = new ManualResetEvent(false);
-            var boundedParallel = new BoundedParallel(-1, 4);
+            var boundedParallel = new BoundedParallel(-1, 5);
             Parallel.Invoke(() =>
             {
                 boundedParallel.Invoke(() =>
@@ -170,8 +206,9 @@ namespace Ascentis.Infrastructure.Test
                     () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
             });
             Assert.AreEqual(12, cnt);
-            Assert.AreEqual(2, boundedParallel.TotalSerialRunCount);
-            Assert.AreEqual(4, boundedParallel.TotalParallelsThreadConsumed);
+            Assert.AreEqual(2, boundedParallel.Stats.TotalSerialRunCount);
+            Assert.AreEqual(2, boundedParallel.Stats.TotalParallelRunCount);
+            Assert.AreEqual(5, boundedParallel.Stats.TotalParallelsThreadConsumed);
         }
 
         [TestMethod]
@@ -215,7 +252,7 @@ namespace Ascentis.Infrastructure.Test
                     () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
             });
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount should be equals to 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount should be equals to 0");
         }
 
         [TestMethod]
@@ -226,7 +263,7 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(3);
             var result = boundedParallel.ForEach(items, (item) => { Interlocked.Increment(ref cnt); });
             Assert.AreEqual(3, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
             Assert.IsTrue(result.IsCompleted);
         }
 
@@ -272,7 +309,7 @@ namespace Ascentis.Infrastructure.Test
             });
 
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
 
         [TestMethod]
@@ -281,9 +318,12 @@ namespace Ascentis.Infrastructure.Test
             var items = new[] {1, 2, 3};
             var sumItems = 0;
             var boundedParallel = new BoundedParallel(3);
-            boundedParallel.For(0, 3, (idx) => { Interlocked.Add(ref sumItems, items[(int) idx]); });
+            boundedParallel.For(0, 3, (idx) =>
+            {
+                Interlocked.Add(ref sumItems, items[(int) idx]);
+            });
             Assert.AreEqual(6, sumItems);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
         }
 
         [TestMethod]
@@ -324,7 +364,7 @@ namespace Ascentis.Infrastructure.Test
             });
 
             Assert.AreEqual(24, sumItems);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
 
         [TestMethod]
@@ -366,8 +406,8 @@ namespace Ascentis.Infrastructure.Test
             });
 
             Assert.AreEqual(24, sumItems);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
-            boundedParallel.ResetTotalSerialRunCount();
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            boundedParallel.Stats.ResetTotalSerialRunCount();
 
             sumItems = 0;
             Parallel.Invoke(() =>
@@ -387,7 +427,7 @@ namespace Ascentis.Infrastructure.Test
             });
 
             Assert.AreEqual(12, sumItems);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount should be equals to 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount should be equals to 0");
         }
 
         [TestMethod]
@@ -409,7 +449,7 @@ namespace Ascentis.Infrastructure.Test
                         Interlocked.Increment(ref cnt);
                     }));
             Assert.AreEqual(3, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
             Assert.AreEqual(2, e.InnerExceptions.Count);
         }
 
@@ -429,8 +469,8 @@ namespace Ascentis.Infrastructure.Test
                 };
             boundedParallel.Invoke(actions);
             Assert.AreEqual(actions.Length, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount == 0, "TotalSerialRunCount must == 0");
-            Assert.IsTrue(Process.GetCurrentProcess().Threads.Count < 40, "WorkerThreads should be < 30");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must == 0");
+            Assert.IsTrue(Process.GetCurrentProcess().Threads.Count < 50, "WorkerThreads should be < 50");
         }
 
         [TestMethod]
@@ -494,7 +534,7 @@ namespace Ascentis.Infrastructure.Test
                         () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
                 }));
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
 
             using var startedThread1Event = new ManualResetEvent(false);
             using var startedThread2Event = new ManualResetEvent(false);
@@ -541,7 +581,7 @@ namespace Ascentis.Infrastructure.Test
                         () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
                 }));
             Assert.AreEqual(10, cnt);
-            Assert.IsTrue(boundedParallel.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
 
         private delegate int GetAllowedThreadCountDelegate(int currentConcurrentThreadCount, int requestedThreadCount);
