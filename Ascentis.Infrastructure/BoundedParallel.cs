@@ -14,6 +14,7 @@ namespace Ascentis.Infrastructure
         public delegate void ParallelInvokeDelegate(int allowedThreadCount);
         public const int DefaultMaxParallelInvocations = 2;
         public const int Unlimited = -1; // -1 equals to no limit in the number of threads or invocations that *could* run in parallel before going serial
+        public const int MinThreadCountToGrantParallelism = 1;
 
         #endregion
 
@@ -22,7 +23,6 @@ namespace Ascentis.Infrastructure
         private static readonly System.Threading.Tasks.ParallelLoopResult DefaultSystemParallelLoopResult = new System.Threading.Tasks.ParallelLoopResult();
         private static readonly ParallelLoopResult DefaultCompletedParallelLoopResult = new ParallelLoopResult(true, null);
         private static readonly ParallelLoopResult DefaultNotCompletedParallelLoopResult = new ParallelLoopResult(false, null);
-        private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions();
 
         private volatile int _concurrentInvocationsCount;
         private volatile int _concurrentThreadsCount;
@@ -73,12 +73,14 @@ namespace Ascentis.Infrastructure
             if (currentConcurrentThreadCount <= MaxParallelThreads)
                 return requestedThreadCount;
             var deltaAllowedThreads = MaxParallelThreads - currentConcurrentThreadCount + requestedThreadCount;
-            return deltaAllowedThreads > 1 ? deltaAllowedThreads : requestedThreadCount; // Only if we can fit more than 1 thread we will return the delta
+            // Only if we can fit more than MinThreadCountToGrantParallelism threads we will return the delta
+            return deltaAllowedThreads > MinThreadCountToGrantParallelism ? deltaAllowedThreads : requestedThreadCount;
         }
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)
         {
-            if (threadCount <= 0)
+            // If MinThreadCountToGrantParallelism threads or less are requested, we will shortcut any evaluation to attempt parallelism
+            if (threadCount <= MinThreadCountToGrantParallelism)
             {
                 parallelLoopResult = DefaultNotCompletedParallelLoopResult;
                 return false;
@@ -165,7 +167,7 @@ namespace Ascentis.Infrastructure
 
         public void Invoke(params Action[] actions)
         {
-            Invoke(DefaultParallelOptions, actions);
+            Invoke(new ParallelOptions(), actions);
         }
 
         public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions, Action<TSource> body)
@@ -182,7 +184,7 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body)
         {
-            return ForEach(source, DefaultParallelOptions, body);
+            return ForEach(source, new ParallelOptions(), body);
         }
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, ParallelOptions parallelOptions, Action<long> body)
@@ -199,7 +201,7 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, Action<long> body)
         {
-            return For(fromInclusive, toExclusive, DefaultParallelOptions, body);
+            return For(fromInclusive, toExclusive, new ParallelOptions(), body);
         }
 
         #endregion

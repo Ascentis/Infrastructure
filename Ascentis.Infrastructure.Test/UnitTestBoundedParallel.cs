@@ -173,7 +173,13 @@ namespace Ascentis.Infrastructure.Test
                         Thread.Sleep(1500);
                         Interlocked.Increment(ref cnt);
                     },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
             }, () =>
             {
                 boundedParallel.Invoke(() =>
@@ -183,7 +189,13 @@ namespace Ascentis.Infrastructure.Test
                         Thread.Sleep(1500);
                         Interlocked.Increment(ref cnt);
                     },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
             }, () =>
             {
                 waitEvent1.WaitOne();
@@ -193,7 +205,13 @@ namespace Ascentis.Infrastructure.Test
                         Thread.Sleep(1000);
                         Interlocked.Increment(ref cnt);
                     },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
             }, () =>
             {
                 waitEvent1.WaitOne();
@@ -203,7 +221,13 @@ namespace Ascentis.Infrastructure.Test
                         Thread.Sleep(1000);
                         Interlocked.Increment(ref cnt);
                     },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    }, () =>
+                    {
+                        Interlocked.Increment(ref cnt);
+                    });
             });
             Assert.AreEqual(12, cnt);
             Assert.AreEqual(2, boundedParallel.Stats.TotalSerialRunCount);
@@ -215,7 +239,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestBoundedParallelInvokeForceSerialWithThreadLimiterAndParallelOptions()
         {
             var cnt = 0;
-            var parOptions = new ParallelOptions {MaxDegreeOfParallelism = 1};
+            var parOptions = new ParallelOptions {MaxDegreeOfParallelism = 2};
             // ReSharper disable once RedundantArgumentDefaultValue
             var boundedParallel = new BoundedParallel(-1, 4);
             Parallel.Invoke(() =>
@@ -252,7 +276,8 @@ namespace Ascentis.Infrastructure.Test
                     () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
             });
             Assert.AreEqual(12, cnt);
-            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount should be equals to 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalParallelRunCount > 0, "TotalParallelRunCount should be higher than 0");
+            Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be higher than 0");
         }
 
         [TestMethod]
