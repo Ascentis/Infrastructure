@@ -7,13 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 // ReSharper disable AccessToDisposedClosure
-
 // ReSharper disable once CheckNamespace
+
 namespace Ascentis.Infrastructure.Test
 {
-    /// <summary>
-    /// Summary description for BoundedParallel
-    /// </summary>
     [TestClass]
     public class UnitTestBoundedParallel
     {
@@ -24,13 +21,32 @@ namespace Ascentis.Infrastructure.Test
             Assert.IsNotNull(boundedParallel);
         }
 
+        // ReSharper disable once IdentifierTypo
+        private void BoundedParallelInvoke(BoundedParallel boundedParallel, int withSleep, ref int pcnt, ParallelOptions parOptions = null)
+        {
+            parOptions ??= new ParallelOptions();
+            var cnt = 0;
+            boundedParallel.Invoke(parOptions, () =>
+            {
+                if (withSleep > 0)
+                    Thread.Sleep(withSleep);
+                Interlocked.Increment(ref cnt);
+            }, () =>
+            {
+                Interlocked.Increment(ref cnt);
+            }, () =>
+            {
+                Interlocked.Increment(ref cnt);
+            });
+            Interlocked.Add(ref pcnt, cnt);
+        }
+
         [TestMethod]
         public void TestBoundedParallelSimpleInvokeCall()
         {
             var cnt = 0;
             var boundedParallel = new BoundedParallel(3);
-            boundedParallel.Invoke(() => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); },
-                () => { Interlocked.Increment(ref cnt); });
+            BoundedParallelInvoke(boundedParallel, 0, ref cnt);
             Assert.AreEqual(3, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
             Assert.IsTrue(boundedParallel.Stats.TotalParallelRunCount != 0, "TotalParallelRunCount must not be zero");
@@ -78,36 +94,16 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(2);
             Parallel.Invoke(() =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             });
             Assert.AreEqual(12, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
@@ -121,36 +117,16 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(-1, 2);
             Parallel.Invoke(() =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             }, () =>
             {
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt);
             });
             Assert.AreEqual(12, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
@@ -200,34 +176,12 @@ namespace Ascentis.Infrastructure.Test
             {
                 waitEvent1.WaitOne();
                 waitEvent2.WaitOne();
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(1000);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    }, () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    });
+                BoundedParallelInvoke(boundedParallel, 1000, ref cnt);
             }, () =>
             {
                 waitEvent1.WaitOne();
                 waitEvent2.WaitOne();
-                boundedParallel.Invoke(() =>
-                    {
-                        Thread.Sleep(1000);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    }, () =>
-                    {
-                        Interlocked.Increment(ref cnt);
-                    });
+                BoundedParallelInvoke(boundedParallel, 1000, ref cnt);
             });
             Assert.AreEqual(12, cnt);
             Assert.AreEqual(2, boundedParallel.Stats.TotalSerialRunCount);
@@ -244,36 +198,16 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(-1, 4);
             Parallel.Invoke(() =>
             {
-                boundedParallel.Invoke(parOptions, () =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt, parOptions);
             }, () =>
             {
-                boundedParallel.Invoke(parOptions, () =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt, parOptions);
             }, () =>
             {
-                boundedParallel.Invoke(parOptions, () =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt, parOptions);
             }, () =>
             {
-                boundedParallel.Invoke(parOptions, () =>
-                    {
-                        Thread.Sleep(500);
-                        Interlocked.Increment(ref cnt);
-                    },
-                    () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                BoundedParallelInvoke(boundedParallel, 500, ref cnt, parOptions);
             });
             Assert.AreEqual(12, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalParallelRunCount > 0, "TotalParallelRunCount should be higher than 0");
@@ -526,20 +460,10 @@ namespace Ascentis.Infrastructure.Test
             Assert.ThrowsException<AggregateException>(() =>
                 Parallel.Invoke(() =>
                 {
-                    boundedParallel.Invoke(() =>
-                        {
-                            Thread.Sleep(500);
-                            Interlocked.Increment(ref cnt);
-                        },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    BoundedParallelInvoke(boundedParallel, 500, ref cnt);
                 }, () =>
                 {
-                    boundedParallel.Invoke(() =>
-                        {
-                            Thread.Sleep(500);
-                            Interlocked.Increment(ref cnt);
-                        },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                    BoundedParallelInvoke(boundedParallel, 500, ref cnt);
                 }, () =>
                 {
                     boundedParallel.Invoke(() =>
@@ -548,7 +472,13 @@ namespace Ascentis.Infrastructure.Test
                             Interlocked.Increment(ref cnt);
                             throw new Exception();
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }, () =>
                 {
                     boundedParallel.Invoke(() =>
@@ -556,7 +486,13 @@ namespace Ascentis.Infrastructure.Test
                             Thread.Sleep(500);
                             Interlocked.Increment(ref cnt);
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }));
             Assert.AreEqual(12, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
@@ -574,7 +510,13 @@ namespace Ascentis.Infrastructure.Test
                             Thread.Sleep(500);
                             Interlocked.Increment(ref cnt);
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }, () =>
                 {
                     boundedParallel.Invoke(() =>
@@ -583,7 +525,13 @@ namespace Ascentis.Infrastructure.Test
                             Thread.Sleep(500);
                             Interlocked.Increment(ref cnt);
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }, () =>
                 {
                     startedThread1Event.WaitOne();
@@ -593,7 +541,13 @@ namespace Ascentis.Infrastructure.Test
                             Interlocked.Increment(ref cnt);
                             throw new Exception();
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }, () =>
                 {
                     startedThread1Event.WaitOne();
@@ -603,11 +557,19 @@ namespace Ascentis.Infrastructure.Test
                             Thread.Sleep(500);
                             Interlocked.Increment(ref cnt);
                         },
-                        () => { Interlocked.Increment(ref cnt); }, () => { Interlocked.Increment(ref cnt); });
+                        () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        }, () =>
+                        {
+                            Interlocked.Increment(ref cnt);
+                        });
                 }));
             Assert.AreEqual(10, cnt);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount > 0, "TotalSerialRunCount should be > 0");
         }
+
+        #region Private Method Tests
 
         private delegate int GetAllowedThreadCountDelegate(int currentConcurrentThreadCount, int requestedThreadCount);
         [TestMethod]
@@ -694,5 +656,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(1, maxDegreeOfParallelism(new ParallelOptions() {MaxDegreeOfParallelism = 1}, 2));
             Assert.AreEqual(2, maxDegreeOfParallelism(new ParallelOptions() {MaxDegreeOfParallelism = 3}, 2));
         }
+
+        #endregion
     }
 }
