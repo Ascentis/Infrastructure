@@ -14,7 +14,7 @@ namespace Ascentis.Infrastructure
         public delegate void ParallelInvokeDelegate(int allowedThreadCount);
         public const int DefaultMaxParallelInvocations = 2;
         public const int Unlimited = -1; // -1 equals to no limit in the number of threads or invocations that *could* run in parallel before going serial
-        public const int MinThreadCountToGrantParallelism = 1;
+        public const int MinThreadCountToGrantParallelism = 2;
 
         #endregion
 
@@ -74,13 +74,13 @@ namespace Ascentis.Infrastructure
                 return requestedThreadCount;
             var deltaAllowedThreads = MaxParallelThreads - currentConcurrentThreadCount + requestedThreadCount;
             // Only if we can fit more than MinThreadCountToGrantParallelism threads we will return the delta
-            return deltaAllowedThreads > MinThreadCountToGrantParallelism ? deltaAllowedThreads : requestedThreadCount;
+            return deltaAllowedThreads >= MinThreadCountToGrantParallelism ? deltaAllowedThreads : requestedThreadCount;
         }
 
         private bool TryParallel(ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount)
         {
             // If MinThreadCountToGrantParallelism threads or less are requested, we will shortcut any evaluation to attempt parallelism
-            if (threadCount <= MinThreadCountToGrantParallelism)
+            if (threadCount < MinThreadCountToGrantParallelism)
             {
                 parallelLoopResult = DefaultNotCompletedParallelLoopResult;
                 return false;
