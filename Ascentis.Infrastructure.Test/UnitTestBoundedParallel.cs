@@ -22,7 +22,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         // ReSharper disable once IdentifierTypo
-        private void BoundedParallelInvoke(BoundedParallel boundedParallel, int withSleep, ref int pcnt, ParallelOptions parOptions = null)
+        private static void BoundedParallelInvoke(BoundedParallel boundedParallel, int withSleep, ref int pcnt, ParallelOptions parOptions = null)
         {
             parOptions ??= new ParallelOptions();
             var cnt = 0;
