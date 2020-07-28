@@ -40,6 +40,7 @@ namespace Ascentis.Infrastructure
     ///         lowestBreakIteration = null
     /// 
     /// </summary>
+
     public class BoundedParallel
     {
         #region Public general declarations
@@ -134,7 +135,7 @@ namespace Ascentis.Infrastructure
         private static void SystemParallelForEach<T>(IEnumerable<T> source, int allowedThreadCount, ParallelOptions parallelOptions, Action<T> body)
         {
             parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
-            Parallel.ForEach(source, parallelOptions, body.Invoke);
+            Parallel.ForEach(source, parallelOptions, body);
         }
 
         private void IterateInvokingActionsSeriallyRecurrentlyRetryParallel<T>(IEnumerable<T> items, Action<T> body)
@@ -159,7 +160,7 @@ namespace Ascentis.Infrastructure
                 try
                 {
                     // After each serial invocation in caller's thread context we will try to run Parallel again with the remaining items in the queue
-                    if (!TryParallel(allowedThreadCount => SystemParallelForEach(itemsQueue, allowedThreadCount, new ParallelOptions(), body.Invoke), itemsQueue.Count))
+                    if (!TryParallel(allowedThreadCount => SystemParallelForEach(itemsQueue, allowedThreadCount, new ParallelOptions(), body), itemsQueue.Count))
                         continue;
                     if (exceptions == null)
                         return;
