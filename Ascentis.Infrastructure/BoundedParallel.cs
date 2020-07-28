@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 // ReSharper disable ConvertToLambdaExpression
 
@@ -24,16 +23,16 @@ namespace Ascentis.Infrastructure
         private static readonly ParallelLoopResult DefaultCompletedParallelLoopResult = new ParallelLoopResult(true, null);
         private static readonly ParallelLoopResult DefaultNotCompletedParallelLoopResult = new ParallelLoopResult(false, null);
 
-        private volatile int _concurrentInvocationsCount;
-        private volatile int _concurrentThreadsCount;
+        private readonly ConcurrentIncrementableResettableInt _concurrentInvocationsCount;
+        private readonly ConcurrentIncrementableResettableInt _concurrentThreadsCount;
         
         #endregion
 
         #region Public properties
 
         public BoundedParallelStats Stats { get; }
-        public int ConcurrentInvocationsCount => _concurrentInvocationsCount;
-        public int ConcurrentThreadsCount => _concurrentThreadsCount;
+        public int ConcurrentInvocationsCount => _concurrentInvocationsCount.Value;
+        public int ConcurrentThreadsCount => _concurrentThreadsCount.Value;
         public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value is DIFFERENT than Parallel class normal behavior. Set to false to match behavior of Parallel class
         /* If MaxParallelInvocations is exceeded OR MaxParallelThreads is exceeded execution of Action array will be done serially */
         public int MaxParallelInvocations { get; set; } // Set to Unlimited (-1) to disable check on number of parallel invocations
@@ -49,6 +48,8 @@ namespace Ascentis.Infrastructure
             MaxParallelThreads = defaultMaxParallelThreads;
             AbortInvocationsOnSerialInvocationException = true;
             Stats = new BoundedParallelStats();
+            _concurrentInvocationsCount = new ConcurrentIncrementableResettableInt();
+            _concurrentThreadsCount = new ConcurrentIncrementableResettableInt();
         }
 
         public void ResetAllStats()
@@ -86,15 +87,13 @@ namespace Ascentis.Infrastructure
                 return false;
             }
 
-            using var concurrentInvocationCount = new Resettable<int>(Interlocked.Increment(ref _concurrentInvocationsCount),
-                value => Interlocked.Decrement(ref _concurrentInvocationsCount));
-            using var concurrentThreadCount = new Resettable<int>(Interlocked.Add(ref _concurrentThreadsCount, threadCount),
-                value => Interlocked.Add(ref _concurrentThreadsCount, -threadCount));
+            using var concurrentInvocationsCountSnapshot = _concurrentInvocationsCount.Increment();
+            using var concurrentThreadsCountSnapshot = _concurrentThreadsCount.Increment(threadCount);
 
-            var allowedThreadCount = GetAllowedThreadCount(concurrentThreadCount.Value, threadCount);
+            var allowedThreadCount = GetAllowedThreadCount(concurrentThreadsCountSnapshot.Value, threadCount);
 
-            if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationCount.Value) &&
-                (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadCount.Value)))
+            if (IsGateLimitOpen(MaxParallelInvocations, concurrentInvocationsCountSnapshot.Value) &&
+                (threadCount != allowedThreadCount || IsGateLimitOpen(MaxParallelThreads, concurrentThreadsCountSnapshot.Value)))
             {
                 Stats.IncrementParallelThreadsConsumed(allowedThreadCount);
                 Stats.IncrementParallelRunCount();

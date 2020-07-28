@@ -54,6 +54,7 @@
     <Compile Include="BoundedParallel.cs" />
     <Compile Include="BoundedParallelStats.cs" />
     <Compile Include="ConcurrentObjectAccessor.cs" />
+    <Compile Include="ConcurrentIncrementableResettableInt.cs" />
     <Compile Include="Resettable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Retrier.cs" />
