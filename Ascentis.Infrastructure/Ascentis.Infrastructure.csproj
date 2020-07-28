@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncDisposer.cs" />
+    <Compile Include="AutoInit.cs" />
     <Compile Include="BoundedParallel.cs" />
     <Compile Include="BoundedParallelStats.cs" />
     <Compile Include="ConcurrentObjectAccessor.cs" />

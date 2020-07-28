@@ -55,6 +55,23 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "ExpressionIsAlwaysNull")]
+        public void TestBoundedParallelArgumentsCheck()
+        {
+            var boundedParallel = new BoundedParallel();
+            ParallelOptions nullParallelOptions = null;
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(nullParallelOptions, delegate { }));
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(new ParallelOptions(), null));
+            Assert.ThrowsException<ArgumentException>(() => boundedParallel.Invoke(new ParallelOptions(), new Action[] {null}));
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, nullParallelOptions, delegate { }));
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, new ParallelOptions(), null));
+            IEnumerable<int> nullEnumerable = null;
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(nullEnumerable, new ParallelOptions(), delegate { }));
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), null, delegate { }));
+            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), new ParallelOptions(), null));
+        }
+
+        [TestMethod]
         public void TestBoundedParallelSimpleForEachWithZeroItems()
         {
             var regularParallelResult = Parallel.ForEach(new List<int>(), (n) => { });
@@ -593,7 +610,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(2, getAllowedThreadCount(8, 2)); // Could fit both thread. Using unlimited ThreadLimit
         }
 
-        private delegate bool TryParallelDelegate(BoundedParallel.ParallelLoopDelegate bodyParallelCall, out ParallelLoopResult parallelLoopResult, int threadCount);
+        private delegate bool TryParallelDelegate(BoundedParallel.ParallelInvokeDelegate bodyParallelCall, int threadCount);
         [TestMethod]
         public void TestPrivateTryParallelDelegate()
         {
@@ -601,7 +618,7 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
             var methodInfo = boundedParallel.GetType().GetMethod("TryParallel",
                 BindingFlags.NonPublic | BindingFlags.Instance, null,
-                new[] {typeof(BoundedParallel.ParallelLoopDelegate), typeof(ParallelLoopResult).MakeByRefType(), typeof(int)}, null);
+                new[] {typeof(BoundedParallel.ParallelInvokeDelegate), typeof(int)}, null);
             Assert.IsNotNull(methodInfo);
             var tryParallel = (TryParallelDelegate) Delegate.CreateDelegate(typeof(TryParallelDelegate), boundedParallel, methodInfo);
 
@@ -612,12 +629,10 @@ namespace Ascentis.Infrastructure.Test
             {
                 Assert.AreEqual(1, boundedParallel.ConcurrentInvocationsCount);
                 Assert.AreEqual(2, boundedParallel.ConcurrentThreadsCount);
-                return Parallel.For(0, 1, idx => delegateCalled = true);
-            }, out var parallelLoopResult, 2);
+                Parallel.For(0, 1, idx => delegateCalled = true);
+            }, 2);
             Assert.IsTrue(retVal);
             Assert.IsTrue(delegateCalled);
-            Assert.IsTrue(parallelLoopResult.IsCompleted);
-            Assert.IsNull(parallelLoopResult.LowestBreakIteration);
             Assert.AreEqual(0, boundedParallel.ConcurrentInvocationsCount);
             Assert.AreEqual(0, boundedParallel.ConcurrentThreadsCount);
 
@@ -629,18 +644,12 @@ namespace Ascentis.Infrastructure.Test
                 retVal = tryParallel(count =>
                 {
                     innerDelegateCalled = true;
-                    return new System.Threading.Tasks.ParallelLoopResult();
-                }, out parallelLoopResult, 2);
-                return new System.Threading.Tasks.ParallelLoopResult();
-            }, out var parallelLoopResultOuter, 2);
+                }, 2);
+            }, 2);
             Assert.IsTrue(retValOuter);
             Assert.IsFalse(retVal);
             Assert.IsTrue(delegateCalled);
             Assert.IsFalse(innerDelegateCalled);
-            Assert.IsFalse(parallelLoopResultOuter.IsCompleted);
-            Assert.IsNull(parallelLoopResultOuter.LowestBreakIteration);
-            Assert.IsFalse(parallelLoopResult.IsCompleted);
-            Assert.IsNull(parallelLoopResult.LowestBreakIteration);
             Assert.AreEqual(0, boundedParallel.ConcurrentInvocationsCount);
             Assert.AreEqual(0, boundedParallel.ConcurrentThreadsCount);
         }
