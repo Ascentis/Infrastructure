@@ -6,6 +6,40 @@ using System.Threading.Tasks;
 
 namespace Ascentis.Infrastructure
 {
+    /// <summary>
+    ///
+    /// BoundedParallel can thought as an extension to .NET Parallel class providing more granular control over Parallel behavior as related to the
+    /// number of threads that are required to execute. With BoundedParallel concurrent invocations and number of threads can be controlled at the instance level.
+    /// 
+    /// .NET Parallel doesn't provide any control at a granular level. The only levers that a developer can use are global ThreadPool settings (min threads, max threads, etc.)
+    /// Often this settings are not enough to control how parallel executions behave and they tend to be too coarse ultimately affecting the entire application behavior.
+    /// In fact, the main motivation to create this class is to avoid runaway situations when multiple concurrent threads call Parallel.* around the same time leading to a race
+    /// condition requiring ever more threads and ultimately causing the ThreadPool class to utilize "Hill Climbing" thread provisioning heuristics which limit the creation of
+    /// new threads to 2 threads per second max causing queueing and blocking when attempting to schedule executions using ThreadPool jobs.
+    ///  
+    /// BoundedParallel semantics:
+    ///     1. User can control the maximum number concurrent invocations (constructor param maxParallelInvocations) regardless of how many threads will be taken per invocation.
+    ///         If the number of concurrent invocations is to be exceeded at any point the call will be served serially in the caller's thread context.
+    ///     2. User can control the maximum number of threads consumed per BoundedParallel instance by any number of allowed concurrent invocations (constructor param maxParallelThreads).
+    ///         If at any time the number of threads were to be exceeded by a given invocations the number of threads will be adjusted by using
+    ///         ParallelOptions.MaxDegreeOfParallelism to fit exactly to the maximum number of threads allowed on the BoundedParallel instance. The minimum level of Parallelism
+    ///         required when adjusting the number of threads is two (2) - it makes no sense to use Parallel.* if running only one (1) thread in Parallel while blocking the caller's thread.
+    ///     3. If BoundedParallel goes serial on a particular invocation, it will retry to execute using Parallelism after each serial invocation. This allows for parallelism if the
+    ///         threads within the ThreadPool are freed during the invocations done serially in another caller's thread.
+    ///     4. BoundedParallel will perform the same argument checks than Parallel calls and throw the same exception types.
+    ///     5. BoundedParallel will collect exceptions the same way than Parallel and raise a single AggregateException as long as AbortInvocationsOnSerialInvocationException
+    ///         is set to false. Beware that AbortInvocationsOnSerialInvocationException default value is true, cutting control early in case an exception occurs when executing
+    ///         actions serially.
+    ///     6. If passing -1 to maxParallelInvocations and maxParallelThreads constructor parameters BoundedParallel will behave the same way as Parallel.* method calls.
+    ///
+    /// Remarks:
+    ///     - Current version of BoundedParallel doesn't provide overload methods that allow for breaking execution the same way than standard Parallel For* methods do. Maybe a future
+    ///         improvement.
+    ///     - BoundedParallel.For* methods always return BoundedParallel.DefaultCompletedParallelLoopResult which has the following values set:
+    ///         isCompleted = true
+    ///         lowestBreakIteration = null
+    /// 
+    /// </summary>
     public class BoundedParallel
     {
         #region Public general declarations
@@ -41,10 +75,10 @@ namespace Ascentis.Infrastructure
 
         #region Constructor and public methods
 
-        public BoundedParallel(int maxParallelInvocations = DefaultMaxParallelInvocations, int defaultMaxParallelThreads = Unlimited)
+        public BoundedParallel(int maxParallelInvocations = DefaultMaxParallelInvocations, int maxParallelThreads = Unlimited)
         {
             MaxParallelInvocations = maxParallelInvocations;
-            MaxParallelThreads = defaultMaxParallelThreads;
+            MaxParallelThreads = maxParallelThreads;
             AbortInvocationsOnSerialInvocationException = true;
             Stats = new BoundedParallelStats();
             _concurrentInvocationsCount = new ConcurrentIncrementableResettableInt();
@@ -97,7 +131,13 @@ namespace Ascentis.Infrastructure
             return true;
         }
 
-        private void IterateAndInvokeActionsSerially<T>(IEnumerable<T> items, Action<T> body)
+        private static void SystemParallelForEach<T>(IEnumerable<T> source, int allowedThreadCount, ParallelOptions parallelOptions, Action<T> body)
+        {
+            parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
+            Parallel.ForEach(source, parallelOptions, body.Invoke);
+        }
+
+        private void IterateInvokingActionsSeriallyRecurrentlyRetryParallel<T>(IEnumerable<T> items, Action<T> body)
         {
             Stats.IncrementSerialRunCount();
             List<Exception> exceptions = null;
@@ -118,12 +158,8 @@ namespace Ascentis.Infrastructure
                 }
                 try
                 {
-                    // After each serial invocation in caller's thread we will try to run Parallel again with the remaining items in the queue
-                    if (!TryParallel(allowedThreadCount =>
-                    {
-                        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = allowedThreadCount };
-                        Parallel.ForEach(itemsQueue, parallelOptions, body.Invoke);
-                    }, itemsQueue.Count))
+                    // After each serial invocation in caller's thread context we will try to run Parallel again with the remaining items in the queue
+                    if (!TryParallel(allowedThreadCount => SystemParallelForEach(itemsQueue, allowedThreadCount, new ParallelOptions(), body.Invoke), itemsQueue.Count))
                         continue;
                     if (exceptions == null)
                         return;
@@ -171,7 +207,7 @@ namespace Ascentis.Infrastructure
                 Parallel.Invoke(parallelOptions, actions);
             }, MaxDegreeOfParallelism(parallelOptions, actions.Length))) 
                 return;
-            IterateAndInvokeActionsSerially(actions, action => action.Invoke());
+            IterateInvokingActionsSeriallyRecurrentlyRetryParallel(actions, action => action.Invoke());
         }
 
         public void Invoke(params Action[] actions)
@@ -179,20 +215,16 @@ namespace Ascentis.Infrastructure
             Invoke(new ParallelOptions(), actions);
         }
 
-        public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, ParallelOptions parallelOptions, Action<TSource> body)
+        public ParallelLoopResult ForEach<T>(IEnumerable<T> source, ParallelOptions parallelOptions, Action<T> body)
         {
             CheckForNullArguments<ArgumentNullException>(new object[] {source, parallelOptions, body});
-            var sourceCopy = new List<TSource>(source);
-            if (!TryParallel(allowedThreadCount =>
-                {
-                    parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
-                    Parallel.ForEach(sourceCopy, parallelOptions, body);
-                }, MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))) 
-                IterateAndInvokeActionsSerially(sourceCopy, body);
+            var sourceCopy = new List<T>(source);
+            if (!TryParallel(allowedThreadCount => SystemParallelForEach(sourceCopy, allowedThreadCount, parallelOptions, body), MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))) 
+                IterateInvokingActionsSeriallyRecurrentlyRetryParallel(sourceCopy, body);
             return DefaultCompletedParallelLoopResult;
         }
 
-        public ParallelLoopResult ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body)
+        public ParallelLoopResult ForEach<T>(IEnumerable<T> source, Action<T> body)
         {
             return ForEach(source, new ParallelOptions(), body);
         }
@@ -205,7 +237,7 @@ namespace Ascentis.Infrastructure
                     parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
                     Parallel.For(fromInclusive, toExclusive, parallelOptions, body);
                 }, MaxDegreeOfParallelism(parallelOptions, (int)(toExclusive - fromInclusive)))) 
-                IterateAndInvokeActionsSerially(IterateForLoop(fromInclusive, toExclusive), body);
+                IterateInvokingActionsSeriallyRecurrentlyRetryParallel(IterateForLoop(fromInclusive, toExclusive), body);
             return DefaultCompletedParallelLoopResult;
         }
 

@@ -127,6 +127,29 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestBoundedParallelInvokeForceSerialAndThenSomeParallel()
+        {
+            var cnt = 0;
+            // ReSharper disable once RedundantArgumentDefaultValue
+            var boundedParallel = new BoundedParallel(2);
+            Parallel.Invoke(() =>
+            {
+                BoundedParallelInvoke(boundedParallel, 1000, ref cnt); // Parallel
+            }, () =>
+            {
+                BoundedParallelInvoke(boundedParallel, 1000, ref cnt); // Parallel
+            }, () =>
+            {
+                Thread.Sleep(500);
+                BoundedParallelInvoke(boundedParallel, 2000, ref cnt); // One action serial and two in Parallel
+            });
+            Assert.AreEqual(9, cnt);
+            Assert.AreEqual(1, boundedParallel.Stats.TotalSerialRunCount);
+            Assert.AreEqual(3, boundedParallel.Stats.TotalParallelRunCount);
+            Assert.AreEqual(8, boundedParallel.Stats.TotalParallelsThreadConsumed);
+        }
+
+        [TestMethod]
         public void TestBoundedParallelInvokeForceSerialWithThreadLimiter()
         {
             var cnt = 0;

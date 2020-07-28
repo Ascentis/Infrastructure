@@ -2,9 +2,9 @@
 {
     public static class AutoInit
     { 
-        public static T Ref<T>(ref T exceptions) where T : new()
+        public static T Ref<T>(ref T obj) where T : new()
         {
-            return exceptions ??= new T();
+            return obj ??= new T();
         }
     }
 }
