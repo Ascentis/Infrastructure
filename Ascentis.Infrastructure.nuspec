@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.4.10.0</version>
+    <version>2.4.11.0</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
-    <releaseNotes>Added support to attempt Parallel execution after each serial execution</releaseNotes>
+    <releaseNotes>Added GenericBuilder class to be able to build objects based on a type that have constructor with parameters</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+ threading Parallel</tags>
     <dependencies>
