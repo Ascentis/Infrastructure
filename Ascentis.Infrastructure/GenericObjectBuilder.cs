@@ -60,7 +60,7 @@ namespace Ascentis.Infrastructure
             return Build<T>(paramTypes, args);
         }
 
-        private static ConstructorDelegate FindConstructor(Type type, Type[] paramTypes)
+        private static ConstructorDelegate GetConstructor(Type type, Type[] paramTypes)
         {
             return CachedConstructorDelegates.GetOrAdd(new Tuple<Type, Type[]>(type, paramTypes), k => CreateConstructor(k.Item1, paramTypes));
         }
@@ -68,14 +68,14 @@ namespace Ascentis.Infrastructure
         public static T Build<T>(Type[] paramTypes, params object[] args)
         {
             var type = typeof(T);
-            var constructor = FindConstructor(type, paramTypes);
+            var constructor = GetConstructor(type, paramTypes);
             return (T)constructor(args);
         }
 
         public static ConstructorDelegate<T> Builder<T>(Type[] paramTypes)
         {
             var type = typeof(T);
-            var constructor =  FindConstructor(type, paramTypes);
+            var constructor =  GetConstructor(type, paramTypes);
             return args => (T) constructor(args);
         }
     }
