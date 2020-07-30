@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascentis.Infrastructure.Test
@@ -144,7 +143,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestTesterPerformanceUsingGenericObjectBuilder()
         {
-            var paramTypes = new Type[1] {typeof(int)};
+            var paramTypes = new[] {typeof(int)};
             var builder = GenericObjectBuilder.Builder<TesterClass>(paramTypes);
             for (var i = 0; i < 1024 * 1024; i++)
             {
