@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Ascentis.Infrastructure
 {
-    public class TypeAndTypeArrayTupleEqualityComparer : IEqualityComparer<Tuple<Type, Type[]>>
+    public class TypeAndTypeArrayTupleEqualityComparer : IEqualityComparer<Tuple<Type, Type[]>>, IEqualityComparer
     {
         public bool Equals(Tuple<Type, Type[]> x, Tuple<Type, Type[]> y)
         {
@@ -37,6 +38,16 @@ namespace Ascentis.Infrastructure
             foreach (var type in obj.Item2) 
                 result ^= type != null ? type.GetHashCode() : 0;
             return result;
+        }
+
+        public bool Equals(object x, object y)
+        {
+            return Equals((Tuple<Type, Type[]>) x, (Tuple<Type, Type[]>) y);
+        }
+
+        public int GetHashCode(object obj)
+        {
+            return GetHashCode((Tuple<Type, Type[]>) obj);
         }
     }
 }

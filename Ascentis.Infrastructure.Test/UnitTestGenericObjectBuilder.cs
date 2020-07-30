@@ -141,7 +141,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestTesterPerformanceUsingGenericObjectBuilder()
+        public void TestTesterPerformanceUsingGenericObjectBuilderThoroughBuilder()
         {
             var paramTypes = new[] {typeof(int)};
             var builder = GenericObjectBuilder.Builder<TesterClass>(paramTypes);
@@ -149,6 +149,17 @@ namespace Ascentis.Infrastructure.Test
             {
                 builder(10);
                 builder(20);
+            }
+        }
+
+        [TestMethod]
+        public void TestTesterPerformanceUsingGenericObjectBuilderDirectBuild()
+        {
+            var paramTypes = new[] {typeof(int)};
+            for (var i = 0; i < 1024 * 1024; i++)
+            {
+                GenericObjectBuilder.Build<TesterClass>(paramTypes, 20);
+                GenericObjectBuilder.Build<TesterClass>(paramTypes, 20);
             }
         }
 

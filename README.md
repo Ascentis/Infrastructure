@@ -55,3 +55,25 @@ This class is based on ConcurrentDictionary and provides expiration like MemoryC
 Use instead of standard static Parallel class to gain control of the number of concurrent calls that be executed using Parallel static class. This allows to control the number of threads
 from the default .NET threadpool to avoid a runaway scenario where .NET has to keep trying to add more threads. If a high number of callers attempt multiple concurrent calls to Parallel methods
 it can fall into what's called "Hill Climbing" algorithm causing high contention as .NET tries to add more threads slowly
+
+## AutoInit
+
+Small utilitarian class that allow to initialize automatically a reference to an object provided the reference, a generic
+type and optional constructor parameters.
+This class depends on GenericObjectBuilder static class.
+
+## GenericObjectBuilder
+
+This class allows to build an object of any class provided the generic type and either parameters or an array of
+parameter types and parameters. This class will build expression tree based constructors and cache them based on the
+signature of the return type and the parameter types passed to the constructor.
+
+## Resettable
+
+This class allows to "reset" the state of something using a small helper IDisposable interface that upon leaving the using scope
+it will call the a reset delegate method.
+
+## ConcurrentIncrementableResettable
+
+Utilitarian class relying on Resettable to allow incrementing an int in a thread safe manner and automatically decrementing
+the value by the same amount when a helper object (Resettable) leaves the using scope.
