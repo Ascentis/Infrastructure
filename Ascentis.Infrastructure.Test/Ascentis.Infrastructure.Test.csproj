@@ -53,6 +53,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitTestAutoInit.cs" />
     <Compile Include="UnitTestGenericObjectBuilder.cs" />
     <Compile Include="UnitTestResettable.cs" />
     <Compile Include="UnitTestBoundedParallel.cs" />
