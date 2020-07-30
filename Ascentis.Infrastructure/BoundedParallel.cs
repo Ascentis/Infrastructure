@@ -26,8 +26,8 @@ namespace Ascentis.Infrastructure
     ///     3. If BoundedParallel goes serial on a particular invocation, it will retry to execute using Parallelism after each serial invocation. This allows for parallelism if the
     ///         threads within the ThreadPool are freed during the invocations done serially in another caller's thread.
     ///     4. BoundedParallel will perform the same argument checks than Parallel calls and throw the same exception types.
-    ///     5. BoundedParallel will collect exceptions the same way than Parallel and raise a single AggregateException as long as AbortInvocationsOnSerialInvocationException
-    ///         is set to false. Beware that AbortInvocationsOnSerialInvocationException default value is true, cutting control early in case an exception occurs when executing
+    ///     5. BoundedParallel will collect exceptions the same way than Parallel and raise a single AggregateException as long as AbortOnSerialInvocationException
+    ///         is set to false. Beware that AbortOnSerialInvocationException default value is true, cutting control early in case an exception occurs when executing
     ///         actions serially.
     ///     6. If passing -1 to maxParallelInvocations and maxParallelThreads constructor parameters BoundedParallel will behave the same way as Parallel.* method calls.
     ///
@@ -44,7 +44,6 @@ namespace Ascentis.Infrastructure
     {
         #region Public general declarations
 
-        //public delegate System.Threading.Tasks.ParallelLoopResult ParallelLoopDelegate(int allowedThreadCount);
         public delegate void ParallelInvokeDelegate(int allowedThreadCount);
         public const int DefaultMaxParallelInvocations = 2;
         public const int Unlimited = -1; // -1 equals to no limit in the number of threads or invocations that *could* run in parallel before going serial
@@ -66,7 +65,7 @@ namespace Ascentis.Infrastructure
         public BoundedParallelStats Stats { get; }
         public int ConcurrentInvocationsCount => _concurrentInvocationsCount.Value;
         public int ConcurrentThreadsCount => _concurrentThreadsCount.Value;
-        public bool AbortInvocationsOnSerialInvocationException { get; set; } // Default value is DIFFERENT than Parallel class normal behavior. Set to false to match behavior of Parallel class
+        public bool AbortOnSerialInvocationException { get; set; } // Default value is DIFFERENT than Parallel class normal behavior. Set to false to match behavior of Parallel class
         /* If MaxParallelInvocations is exceeded OR MaxParallelThreads is exceeded execution of Action array will be done serially */
         public int MaxParallelInvocations { get; set; } // Set to Unlimited (-1) to disable check on number of parallel invocations
         public int MaxParallelThreads { get; set; } // Set to Unlimited (-1) to disable check on number of potential active - utilized - threads
@@ -79,7 +78,7 @@ namespace Ascentis.Infrastructure
         {
             MaxParallelInvocations = maxParallelInvocations;
             MaxParallelThreads = maxParallelThreads;
-            AbortInvocationsOnSerialInvocationException = true;
+            AbortOnSerialInvocationException = true;
             Stats = new BoundedParallelStats();
             _concurrentInvocationsCount = new ConcurrentIncrementableResettableInt();
             _concurrentThreadsCount = new ConcurrentIncrementableResettableInt();
@@ -153,7 +152,7 @@ namespace Ascentis.Infrastructure
                 catch (Exception e)
                 {
                     AutoInit.Ref(ref exceptions).Add(e);
-                    if (AbortInvocationsOnSerialInvocationException)
+                    if (AbortOnSerialInvocationException)
                         break;
                 }
                 try
@@ -186,11 +185,11 @@ namespace Ascentis.Infrastructure
                 yield return fromInclusive++;
         }
 
-        private static void CheckForNullArguments<TE>(IEnumerable<object> args) where TE : Exception, new()
+        private static void CheckForNullArguments<TE>(IEnumerable<object> args, string exceptionStr) where TE : Exception, new()
         {
             if (args.All(arg => arg != null)) 
                 return;
-            throw new TE();
+            throw GenericObjectBuilder.Build<TE>(exceptionStr);
         }
 
         #endregion
@@ -199,8 +198,8 @@ namespace Ascentis.Infrastructure
 
         public void Invoke(ParallelOptions parallelOptions, params Action[] actions)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, actions});
-            CheckForNullArguments<ArgumentException>(actions.ToArray<object>());
+            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, actions}, "[parallelOptions or actions]");
+            CheckForNullArguments<ArgumentException>(actions.ToArray<object>(), "null action found when calling BoundedParallel.Invoke(ParallelOptions, Action[]");
             if (TryParallel(allowedThreadCount =>
             {
                 parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
@@ -217,7 +216,7 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult ForEach<T>(IEnumerable<T> source, ParallelOptions parallelOptions, Action<T> body)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {source, parallelOptions, body});
+            CheckForNullArguments<ArgumentNullException>(new object[] {source, parallelOptions, body}, "[source or parallelOptions or body]");
             var sourceCopy = new List<T>(source);
             if (!TryParallel(allowedThreadCount => SystemParallelForEach(sourceCopy, allowedThreadCount, parallelOptions, body), MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))) 
                 IterateInvokingActionsSeriallyRecurrentlyRetryParallel(sourceCopy, body);
@@ -231,7 +230,7 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, ParallelOptions parallelOptions, Action<long> body)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, body});
+            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, body}, "[fromInclusive or toExclusive or parallelOptions or body]");
             if (!TryParallel(allowedThreadCount =>
                 {
                     parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
@@ -242,6 +241,17 @@ namespace Ascentis.Infrastructure
         }
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, Action<long> body)
+        {
+            return For(fromInclusive, toExclusive, new ParallelOptions(), body);
+        }
+
+        public ParallelLoopResult For(int fromInclusive, int toExclusive, ParallelOptions parallelOptions, Action<int> body)
+        {
+            CheckForNullArguments<ArgumentNullException>(new object[] {body}, "[fromInclusive or toExclusive or parallelOptions or body]");
+            return For(fromInclusive, (long) toExclusive, parallelOptions, value => body.Invoke((int) value));
+        }
+
+        public ParallelLoopResult For(int fromInclusive, int toExclusive, Action<int> body)
         {
             return For(fromInclusive, toExclusive, new ParallelOptions(), body);
         }

@@ -319,7 +319,7 @@ namespace Ascentis.Infrastructure.Test
             var boundedParallel = new BoundedParallel(3);
             boundedParallel.For(0, 3, (idx) =>
             {
-                Interlocked.Add(ref sumItems, items[(int) idx]);
+                Interlocked.Add(ref sumItems, items[idx]);
             });
             Assert.AreEqual(6, sumItems);
             Assert.IsTrue(boundedParallel.Stats.TotalSerialRunCount == 0, "TotalSerialRunCount must be zero");
@@ -337,28 +337,28 @@ namespace Ascentis.Infrastructure.Test
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             });
 
@@ -379,28 +379,28 @@ namespace Ascentis.Infrastructure.Test
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             });
 
@@ -414,14 +414,14 @@ namespace Ascentis.Infrastructure.Test
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             }, () =>
             {
                 boundedParallel.For(0, 3, (idx) =>
                 {
                     Thread.Sleep(500);
-                    Interlocked.Add(ref sumItems, items[(int) idx]);
+                    Interlocked.Add(ref sumItems, items[idx]);
                 });
             });
 
@@ -496,7 +496,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var cnt = 0;
             // ReSharper disable once RedundantArgumentDefaultValue
-            var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
+            var boundedParallel = new BoundedParallel(2) {AbortOnSerialInvocationException = false};
             Assert.ThrowsException<AggregateException>(() =>
                 Parallel.Invoke(() =>
                 {
@@ -539,7 +539,7 @@ namespace Ascentis.Infrastructure.Test
 
             using var startedThread1Event = new ManualResetEvent(false);
             using var startedThread2Event = new ManualResetEvent(false);
-            boundedParallel.AbortInvocationsOnSerialInvocationException = true;
+            boundedParallel.AbortOnSerialInvocationException = true;
             cnt = 0;
             Assert.ThrowsException<AggregateException>(() =>
                 Parallel.Invoke(() =>
@@ -616,7 +616,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestPrivateGetAllowedThreadCount()
         {
             // ReSharper disable once RedundantArgumentDefaultValue
-            var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
+            var boundedParallel = new BoundedParallel(2) {AbortOnSerialInvocationException = false};
             var methodInfo = boundedParallel.GetType()
                 .GetMethod("GetAllowedThreadCount", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.IsNotNull(methodInfo);
@@ -638,7 +638,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestPrivateTryParallelDelegate()
         {
             // ReSharper disable once RedundantArgumentDefaultValue
-            var boundedParallel = new BoundedParallel(2) {AbortInvocationsOnSerialInvocationException = false};
+            var boundedParallel = new BoundedParallel(2) {AbortOnSerialInvocationException = false};
             var methodInfo = boundedParallel.GetType().GetMethod("TryParallel",
                 BindingFlags.NonPublic | BindingFlags.Instance, null,
                 new[] {typeof(BoundedParallel.ParallelInvokeDelegate), typeof(int)}, null);
