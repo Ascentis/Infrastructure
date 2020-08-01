@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArgNamePair.cs" />
+    <Compile Include="ArgsChecker.cs" />
     <Compile Include="AsyncDisposer.cs" />
     <Compile Include="AutoInit.cs" />
     <Compile Include="BoundedParallel.cs" />

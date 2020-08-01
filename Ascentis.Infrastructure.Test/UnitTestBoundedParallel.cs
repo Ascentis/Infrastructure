@@ -60,15 +60,15 @@ namespace Ascentis.Infrastructure.Test
         {
             var boundedParallel = new BoundedParallel();
             ParallelOptions nullParallelOptions = null;
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(nullParallelOptions, delegate { }));
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(new ParallelOptions(), null));
-            Assert.ThrowsException<ArgumentException>(() => boundedParallel.Invoke(new ParallelOptions(), new Action[] {null}));
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, nullParallelOptions, delegate { }));
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, new ParallelOptions(), null));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(nullParallelOptions, delegate { })).Message.Contains("parallelOptions"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.Invoke(new ParallelOptions(), null)).Message.Contains("actions"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentException>(() => boundedParallel.Invoke(new ParallelOptions(), new Action[] {null})).Message.Contains("null action"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, nullParallelOptions, delegate { })).Message.Contains("parallelOptions"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.For(0, 1, new ParallelOptions(), null)).Message.Contains("body"));
             IEnumerable<int> nullEnumerable = null;
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(nullEnumerable, new ParallelOptions(), delegate { }));
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), null, delegate { }));
-            Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), new ParallelOptions(), null));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(nullEnumerable, new ParallelOptions(), delegate { })).Message.Contains("source"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), null, delegate { })).Message.Contains("parallelOptions"));
+            Assert.IsTrue(Assert.ThrowsException<ArgumentNullException>(() => boundedParallel.ForEach(new List<int>(), new ParallelOptions(), null)).Message.Contains("body"));
         }
 
         [TestMethod]

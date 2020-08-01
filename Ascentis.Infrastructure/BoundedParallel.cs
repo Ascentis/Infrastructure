@@ -185,21 +185,18 @@ namespace Ascentis.Infrastructure
                 yield return fromInclusive++;
         }
 
-        private static void CheckForNullArguments<TE>(IEnumerable<object> args, string exceptionStr) where TE : Exception, new()
-        {
-            if (args.All(arg => arg != null)) 
-                return;
-            throw GenericObjectBuilder.Build<TE>(exceptionStr);
-        }
-
         #endregion
 
         #region System Parallel class replacement methods
 
         public void Invoke(ParallelOptions parallelOptions, params Action[] actions)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, actions}, "[parallelOptions or actions]");
-            CheckForNullArguments<ArgumentException>(actions.ToArray<object>(), "null action found when calling BoundedParallel.Invoke(ParallelOptions, Action[]");
+            ArgsChecker.CheckForNull<ArgumentNullException>(new []
+            {
+                ArgsChecker.Arg(parallelOptions, nameof(parallelOptions)), 
+                ArgsChecker.Arg(actions, nameof(actions))
+            });
+            ArgsChecker.CheckForNull<ArgumentException>(actions.ToArray<object>(), "null action found calling BoundedParallel.Invoke(ParallelOptions, Action[]");
             if (TryParallel(allowedThreadCount =>
             {
                 parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
@@ -216,7 +213,12 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult ForEach<T>(IEnumerable<T> source, ParallelOptions parallelOptions, Action<T> body)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {source, parallelOptions, body}, "[source or parallelOptions or body]");
+            ArgsChecker.CheckForNull<ArgumentNullException>(new []
+            {
+                ArgsChecker.Arg(source, nameof(source)), 
+                ArgsChecker.Arg(parallelOptions, nameof(parallelOptions)), 
+                ArgsChecker.Arg(body, nameof(body))
+            });
             var sourceCopy = new List<T>(source);
             if (!TryParallel(allowedThreadCount => SystemParallelForEach(sourceCopy, allowedThreadCount, parallelOptions, body), MaxDegreeOfParallelism(parallelOptions, sourceCopy.Count))) 
                 IterateInvokingActionsSeriallyRecurrentlyRetryParallel(sourceCopy, body);
@@ -230,7 +232,11 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(long fromInclusive, long toExclusive, ParallelOptions parallelOptions, Action<long> body)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {parallelOptions, body}, "[fromInclusive or toExclusive or parallelOptions or body]");
+            ArgsChecker.CheckForNull<ArgumentNullException>(new []
+            {
+                ArgsChecker.Arg(parallelOptions, nameof(parallelOptions)), 
+                ArgsChecker.Arg(body, nameof(body))
+            });
             if (!TryParallel(allowedThreadCount =>
                 {
                     parallelOptions.MaxDegreeOfParallelism = allowedThreadCount;
@@ -247,7 +253,7 @@ namespace Ascentis.Infrastructure
 
         public ParallelLoopResult For(int fromInclusive, int toExclusive, ParallelOptions parallelOptions, Action<int> body)
         {
-            CheckForNullArguments<ArgumentNullException>(new object[] {body}, "[fromInclusive or toExclusive or parallelOptions or body]");
+            ArgsChecker.CheckForNull<ArgumentNullException>(new object [] { body }, nameof(body));
             return For(fromInclusive, (long) toExclusive, parallelOptions, value => body.Invoke((int) value));
         }
 
