@@ -50,7 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Patterns\Conveyor.cs" />
+    <Compile Include="Threading\Conveyor.cs" />
     <Compile Include="SQL Utils\SqlToStream.cs" />
     <Compile Include="Patterns\ConcurrentReservoir.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />

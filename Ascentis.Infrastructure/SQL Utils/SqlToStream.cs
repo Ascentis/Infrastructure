@@ -1,9 +1,7 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
-using System.Threading;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
@@ -21,48 +19,27 @@ namespace Ascentis.Infrastructure
         {
             using var reader = _cmd.ExecuteReader(CommandBehavior.SequentialAccess);
             var formatString = "";
-            for (var i = 0; i < reader.FieldCount; i++)
+            var fieldCount = reader.FieldCount;
+            for (var i = 0; i < fieldCount; i++)
                 formatString += $"{{{i}}},";
             formatString = formatString.Remove(formatString.Length - 1) + "\r\n";
 
-            // ReSharper disable once AccessToDisposedClosure
-            var rowsFactory = new ConcurrentReservoir<object[]>(1000, () => new object[reader.FieldCount]);
-            var dataAvailable = new ManualResetEventSlim(false);
-            var rowsQueue = new ConcurrentQueue<object[]>();
-            var writerThread = new Thread(() =>
+            var rowsReservoir = new ConcurrentReservoir<object[]>(1000, () => new object[fieldCount]);
+            var writingConveyor = new Conveyor<object[]>(row =>
             {
-                while(true)
-                {
-                    object[] row;
-                    do
-                    {
-                        if (rowsQueue.TryDequeue(out row)) 
-                            break;
-                        dataAvailable.Wait();
-                        dataAvailable.Reset();
-                    } while (true);
-
-                    if (row == null)
-                        break;
-
-                    var s = string.Format(formatString, row);
-                    rowsFactory.Release(row);
-                    var buf = Encoding.UTF8.GetBytes(s);
-                    stream.Write(buf, 0, buf.Length);
-                }
+                var s = string.Format(formatString, row);
+                rowsReservoir.Release(row);
+                var buf = Encoding.UTF8.GetBytes(s);
+                stream.Write(buf, 0, buf.Length);
             });
-            writerThread.Start();
+            writingConveyor.Start();
             while (reader.Read())
             {
-                var row = rowsFactory.Acquire();
+                var row = rowsReservoir.Acquire();
                 reader.GetValues(row);
-                rowsQueue.Enqueue(row);
-                dataAvailable.Set();
+                writingConveyor.InsertPacket(row);
             }
-
-            rowsQueue.Enqueue(null);
-            dataAvailable.Set();
-            writerThread.Join();
+            writingConveyor.StopAndWait();
         }
 
         public void WriteToStreamSingleThreaded(Stream stream)

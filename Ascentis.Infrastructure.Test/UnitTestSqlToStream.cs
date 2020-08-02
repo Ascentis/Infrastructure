@@ -43,9 +43,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
-            using var stream = new BufferedStream(fileStream, 1024 * 1024);
+            //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlToStream(cmd);
-            streamer.WriteToStream(stream);
+            streamer.WriteToStream(fileStream);
         }
 
         [TestMethod]
@@ -53,9 +53,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
-            using var stream = new BufferedStream(fileStream, 1024 * 1024);
+            //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlToStream(cmd);
-            streamer.WriteToStreamSingleThreaded(stream);
+            streamer.WriteToStreamSingleThreaded(fileStream);
         }
     }
 }
