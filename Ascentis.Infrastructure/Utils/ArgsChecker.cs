@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public static class ArgsChecker
@@ -22,6 +23,11 @@ namespace Ascentis.Infrastructure
         {
             if (args.Any(arg => arg == null))
                 throw GenericObjectBuilder.Build<TE>(exceptionStr);
+        }
+
+        public static void CheckForNull<TE>(object arg, string argName) where TE : Exception
+        {
+            CheckForNull<TE>(new [] {Arg(arg, argName)});
         }
     }
 }

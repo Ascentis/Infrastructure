@@ -51,8 +51,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitTestConcurrentReservoir.cs" />
+    <Compile Include="UnitTestSqlToStream.cs" />
     <Compile Include="UnitTestAutoInit.cs" />
     <Compile Include="UnitTestGenericObjectBuilder.cs" />
     <Compile Include="UnitTestResettable.cs" />

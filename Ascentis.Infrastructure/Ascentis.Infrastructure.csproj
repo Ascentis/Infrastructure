@@ -50,9 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patterns\Conveyor.cs" />
+    <Compile Include="SQL Utils\SqlToStream.cs" />
+    <Compile Include="Patterns\ConcurrentReservoir.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />
     <Compile Include="Utils\ArgsChecker.cs" />
-    <Compile Include="Threading\AsyncDisposer.cs" />
+    <Compile Include="Patterns\AsyncDisposer.cs" />
     <Compile Include="Patterns\AutoInit.cs" />
     <Compile Include="Threading\BoundedParallel.cs" />
     <Compile Include="Threading\BoundedParallelStats.cs" />
