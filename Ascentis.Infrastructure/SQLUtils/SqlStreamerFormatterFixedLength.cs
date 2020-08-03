@@ -11,6 +11,8 @@ namespace Ascentis.Infrastructure
         public int[] FieldSizes { get; set; }
         public OverflowStringFieldWidthBehavior[] OverflowStringFieldWidthBehaviors { get; set; }
 
+        private int _rowSize;
+
         public override void Prepare(SqlDataReader reader, Stream stream)
         {
             const string crLf = "\r\n";
@@ -22,28 +24,40 @@ namespace Ascentis.Infrastructure
             if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != FieldCount)
                 throw new SqlStreamerFormatterException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
 
-            var bufferSize = 0;
+            _rowSize = 0;
             FormatString = "";
             for (var i = 0; i < FieldCount; i++)
             {
-                bufferSize += Math.Abs(FieldSizes[i]);
+                _rowSize += Math.Abs(FieldSizes[i]);
                 FormatString += $"{{{i},{FieldSizes[i]}{ColumnFormatString(i)}}}";
             }
-            WriteBuffer = new byte[bufferSize + crLf.Length];
+
+            _rowSize += crLf.Length;
+            WriteBuffer = new byte[_rowSize];
             FormatString += crLf;
+        }
+
+        protected override byte[] RowToBytes(object[] row, out int bytesWritten)
+        {
+            var buf = base.RowToBytes(row, out bytesWritten);
+            if (bytesWritten > _rowSize)
+                throw new SqlStreamerFormatterException("Total row size exceeds specified row size based on fixed column widths");
+            return buf;
         }
 
         public override void Process(object[] row, Stream stream)
         {
-            for (var i = 0; i < row.Length; i++)
-            {
-                if (!(row[i] is string) || ((string) row[i]).Length <= Math.Abs(FieldSizes[i])) 
-                    continue;
-                var strValue = (string)row[i];
-                if (OverflowStringFieldWidthBehaviors == null || OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
-                    throw new SqlStreamerFormatterException($"Field number {i} size overflow streaming using fixed length streamer");
-                row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
-            }
+            if (OverflowStringFieldWidthBehaviors != null)
+                for (var i = 0; i < row.Length; i++)
+                {
+                    if (!(row[i] is string) || ((string) row[i]).Length <= Math.Abs(FieldSizes[i]))
+                        continue;
+                    var strValue = (string) row[i];
+                    if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
+                        throw new SqlStreamerFormatterException(
+                            $"Field number {i} size overflow streaming using fixed length streamer");
+                    row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
+                }
 
             base.Process(row, stream);
         }

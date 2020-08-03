@@ -15,7 +15,7 @@ namespace Ascentis.Infrastructure
         public Encoding OutputEncoding { get; set; } = Encoding.UTF8;
         public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
-        protected byte[] RowToBytes(object[] row, out int bytesWritten)
+        protected virtual byte[] RowToBytes(object[] row, out int bytesWritten)
         {
             var buf = WriteBuffer;
             var s = string.Format(FormatCultureInfo, FormatString, row);

@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.IO;
 
 // ReSharper disable once CheckNamespace
@@ -23,7 +24,7 @@ namespace Ascentis.Infrastructure
                 return 14;
             if (meta.DataType == typeof(short) || meta.DataType == typeof(ushort))
                 return 6; 
-            return 32;
+            return 16;
         }
 
         public override void Prepare(SqlDataReader reader, Stream stream)

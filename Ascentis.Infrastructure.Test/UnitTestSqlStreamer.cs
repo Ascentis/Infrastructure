@@ -116,6 +116,21 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestSqlToFixedStreamErrorOnOverflowOnInt()
+        {
+            using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new SqlStreamer(cmd);
+            // ReSharper disable once AccessToDisposedClosure
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength
+            {
+                FieldSizes = new[] { 4, 1 },
+                ColumnFormatStrings = new [] {"", "N2"}
+            })).InnerException is SqlStreamerFormatterException);
+        }
+
+        [TestMethod]
         [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
         public void TestSqlToFixedStreamThrowsExceptionOnFieldSizes()
         {
