@@ -7,7 +7,7 @@ using System.Reflection;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class SqlStreamerFormatter : ISqlStreamerFormatter
+    public abstract class SqlStreamerFormatter : ISqlStreamerFormatter
     {
         protected int FieldCount { get; private set; }
 
@@ -38,7 +38,7 @@ namespace Ascentis.Infrastructure
             }
         }
 
-        public virtual void Process(object[] row, Stream stream) { }
+        public abstract void Process(object[] row, Stream stream);
 
         public virtual void UnPrepare(Stream stream) { }
 
