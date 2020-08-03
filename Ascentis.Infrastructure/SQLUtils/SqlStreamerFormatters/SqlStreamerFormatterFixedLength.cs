@@ -55,7 +55,7 @@ namespace Ascentis.Infrastructure
                     var strValue = (string) row[i];
                     if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
                         throw new SqlStreamerFormatterException(
-                            $"Field number {i} size overflow streaming using fixed length streamer");
+                            $"Field {ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
                     row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }
 
