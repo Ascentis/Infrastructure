@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patterns\WIP\ConcurrentBagSlim.cs" />
     <Compile Include="SQLUtils\ISqlStreamerFormatter.cs" />
     <Compile Include="SQLUtils\ColumnMetadata.cs" />
     <Compile Include="SQLUtils\SqlStreamerFormatter.cs" />
