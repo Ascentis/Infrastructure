@@ -18,7 +18,6 @@ namespace Ascentis.Infrastructure
         public string BaseSchemaName { get; set; }
         public string BaseTableName { get; set; }
         public Type DataType { get; set; }
-        // ReSharper disable once UnusedMember.Global
         // ReSharper disable once InconsistentNaming
         public bool? AllowDBNull { get; set; }
         public int? SqlColumnMetadata { get; set; }
