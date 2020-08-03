@@ -50,13 +50,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SQLStreamer\ISqlStreamerFormatter.cs" />
-    <Compile Include="SQLStreamer\SqlStreamerFormatterCsv.cs" />
-    <Compile Include="SQLStreamer\SqlStreamerFormatterException.cs" />
-    <Compile Include="SQLStreamer\SqlStreamerFormatterFixedLength.cs" />
-    <Compile Include="SQLStreamer\SqlStreamerFormatterText.cs" />
+    <Compile Include="SQLUtils\ISqlStreamerFormatter.cs" />
+    <Compile Include="SQLUtils\ColumnMetadata.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatter.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatterDelimited.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatterException.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatterFixedLength.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
-    <Compile Include="SQLStreamer\SqlStreamer.cs" />
+    <Compile Include="SQLUtils\SqlStreamer.cs" />
     <Compile Include="Patterns\Pool.cs" />
     <Compile Include="Threading\ConveyorException.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />

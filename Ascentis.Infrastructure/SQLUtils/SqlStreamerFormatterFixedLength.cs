@@ -13,18 +13,24 @@ namespace Ascentis.Infrastructure
 
         public override void Prepare(SqlDataReader reader, Stream stream)
         {
+            const string crLf = "\r\n";
             base.Prepare(reader, stream);
 
             ArgsChecker.CheckForNull<NullReferenceException>(FieldSizes, nameof(FieldSizes));
-            FormatString = "";
-
             if (FieldSizes.Length != FieldCount)
                 throw new SqlStreamerFormatterException("Provided FieldSizes array has a different length than result set column count");
             if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != FieldCount)
                 throw new SqlStreamerFormatterException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
+
+            var bufferSize = 0;
+            FormatString = "";
             for (var i = 0; i < FieldCount; i++)
+            {
+                bufferSize += Math.Abs(FieldSizes[i]);
                 FormatString += $"{{{i},{FieldSizes[i]}{ColumnFormatString(i)}}}";
-            FormatString += "\r\n";
+            }
+            WriteBuffer = new byte[bufferSize + crLf.Length];
+            FormatString += crLf;
         }
 
         public override void Process(object[] row, Stream stream)

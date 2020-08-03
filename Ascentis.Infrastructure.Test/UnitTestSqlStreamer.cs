@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -35,7 +34,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStream(stream, new SqlStreamerFormatterCsv());
+            streamer.WriteToStream(stream, new SqlStreamerFormatterDelimited());
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
@@ -135,7 +134,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStream(stream, new SqlStreamerFormatterCsv() { OutputHeaders = true });
+            streamer.WriteToStream(stream, new SqlStreamerFormatterDelimited() { OutputHeaders = true });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("CPCODE_EXP,NPAYCODE\r\nWKHR,0\r\nWKHR,0\r\n", str);
@@ -148,7 +147,7 @@ namespace Ascentis.Infrastructure.Test
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStream(fileStream, new SqlStreamerFormatterCsv());
+            streamer.WriteToStream(fileStream, new SqlStreamerFormatterDelimited());
         }
     }
 }
