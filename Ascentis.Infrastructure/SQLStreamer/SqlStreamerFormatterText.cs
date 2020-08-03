@@ -8,7 +8,9 @@ namespace Ascentis.Infrastructure
 {
     public class SqlStreamerFormatterText : ISqlStreamerFormatter
     {
+        protected int FieldCount { get; private set; }
         protected string FormatString { get; set; }
+        public string[] ColumnFormatStrings { get; set; }
 
         protected byte[] RowToBytes(object[] row)
         {
@@ -17,7 +19,17 @@ namespace Ascentis.Infrastructure
             return buf;
         }
 
-        public virtual void Prepare(SqlDataReader reader, Stream stream) { }
+        protected string ColumnFormatString(int index)
+        {
+            return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
+        }
+
+        public virtual void Prepare(SqlDataReader reader, Stream stream)
+        {
+            FieldCount = reader.FieldCount;
+            if (ColumnFormatStrings != null && ColumnFormatStrings.Length != FieldCount)
+                throw new SqlStreamerFormatterException("When ColumnFormatStrings is provided its length must match result set field count");
+        }
 
         public virtual void Process(object[] row, Stream stream)
         {

@@ -10,22 +10,20 @@ namespace Ascentis.Infrastructure
         public enum OverflowStringFieldWidthBehavior { Error, Truncate }
         public int[] FieldSizes { get; set; }
         public OverflowStringFieldWidthBehavior[] OverflowStringFieldWidthBehaviors { get; set; }
-        public string[] FormatStrings { get; set; }
 
         public override void Prepare(SqlDataReader reader, Stream stream)
         {
+            base.Prepare(reader, stream);
+
             ArgsChecker.CheckForNull<NullReferenceException>(FieldSizes, nameof(FieldSizes));
             FormatString = "";
-            
-            var fieldCount = reader.FieldCount;
-            if (FieldSizes.Length != fieldCount)
+
+            if (FieldSizes.Length != FieldCount)
                 throw new SqlStreamerFormatterException("Provided FieldSizes array has a different length than result set column count");
-            if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != fieldCount)
+            if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != FieldCount)
                 throw new SqlStreamerFormatterException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
-            if (FormatStrings != null && FormatStrings.Length != fieldCount)
-                throw new SqlStreamerFormatterException("When FormatStrings is provided its length must match result set field count");
-            for (var i = 0; i < fieldCount; i++)
-                FormatString += $"{{{i},{FieldSizes[i]}{(FormatStrings != null && FormatStrings[i] != "" ? ":" + FormatStrings[i] : "")}}}";
+            for (var i = 0; i < FieldCount; i++)
+                FormatString += $"{{{i},{FieldSizes[i]}{ColumnFormatString(i)}}}";
             FormatString += "\r\n";
         }
 
@@ -40,6 +38,7 @@ namespace Ascentis.Infrastructure
                     throw new SqlStreamerFormatterException($"Field number {i} size overflow streaming using fixed length streamer");
                 row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
             }
+
             base.Process(row, stream);
         }
     }

@@ -64,7 +64,7 @@ namespace Ascentis.Infrastructure.Test
             streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength
             {
                 FieldSizes = new[] { 6, 6 }, 
-                FormatStrings = new []{ "", "N2"}
+                ColumnFormatStrings = new []{ "", "N2"}
             });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
