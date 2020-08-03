@@ -50,9 +50,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SQLStreamer\ISqlStreamerFormatter.cs" />
+    <Compile Include="SQLStreamer\SqlStreamerFormatterCsv.cs" />
+    <Compile Include="SQLStreamer\SqlStreamerFormatterException.cs" />
+    <Compile Include="SQLStreamer\SqlStreamerFormatterFixedLen.cs" />
+    <Compile Include="SQLStreamer\SqlStreamerFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
-    <Compile Include="SQL Utils\SqlToStream.cs" />
-    <Compile Include="Patterns\ConcurrentReservoir.cs" />
+    <Compile Include="SQLStreamer\SqlStreamer.cs" />
+    <Compile Include="Patterns\Pool.cs" />
+    <Compile Include="Threading\ConveyorException.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />
     <Compile Include="Utils\ArgsChecker.cs" />
     <Compile Include="Patterns\AsyncDisposer.cs" />

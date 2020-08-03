@@ -5,18 +5,18 @@ using System.Threading;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class ConcurrentReservoir<T>
+    public class Pool<T>
     {
         public delegate T Builder();
-        private readonly ConcurrentBag<T> _reservoir;
+        private readonly ConcurrentBag<T> _bag;
         private readonly ManualResetEventSlim _releasedEvent;
         private readonly Builder _builder;
         private volatile int _allowance;
 
-        public ConcurrentReservoir(int maxCapacity, Builder builder)
+        public Pool(int maxCapacity, Builder builder)
         {
             _allowance = maxCapacity;
-            _reservoir = new ConcurrentBag<T>();
+            _bag = new ConcurrentBag<T>();
             _releasedEvent = new ManualResetEventSlim(false);
             _builder = builder;
         }
@@ -26,7 +26,7 @@ namespace Ascentis.Infrastructure
             T obj;
             do
             {
-                if (_reservoir.TryTake(out obj))
+                if (_bag.TryTake(out obj))
                     break;
                 if (_allowance > 0)
                 {
@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure
                     Interlocked.Increment(ref _allowance);
                 }
                 if (!_releasedEvent.Wait(timeout))
-                    throw new TimeoutException("No object available in Reservoir");
+                    throw new TimeoutException("No object available in bag");
                 _releasedEvent.Reset();
             } while (true);
 
@@ -48,7 +48,7 @@ namespace Ascentis.Infrastructure
 
         public void Release(T obj)
         {
-            _reservoir.Add(obj);
+            _bag.Add(obj);
             _releasedEvent.Set();
         }
     }

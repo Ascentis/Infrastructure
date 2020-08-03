@@ -14,6 +14,7 @@ namespace Ascentis.Infrastructure
         private readonly ProcessPacketDelegate _processPacketDelegate;
         private volatile ThreadStatus _threadStatus;
         private Thread _workerThread;
+        private Exception _exception;
 
         public Conveyor(ProcessPacketDelegate processPacketDelegate)
         {
@@ -26,44 +27,61 @@ namespace Ascentis.Infrastructure
 
         public void Start()
         {
+            if (_threadStatus == ThreadStatus.Started)
+                throw new InvalidOperationException("Worker thread already started");
+            _exception = null;
             _threadStatus = ThreadStatus.Started;
             _workerThread = new Thread(() =>
             {
-                while (true)
+                try
                 {
-                    T packet;
                     while (true)
                     {
-                        if (_packetsQueue.TryDequeue(out packet))
-                            break;
-                        _dataAvailable.Wait();
-                        _dataAvailable.Reset();
-                        if (_threadStatus == ThreadStatus.Stopped)
-                            return;
-                    }
+                        T packet;
+                        while (true)
+                        {
+                            if (_packetsQueue.TryDequeue(out packet))
+                                break;
+                            if (_threadStatus == ThreadStatus.Stopped)
+                                return;
+                            _dataAvailable.Wait();
+                            _dataAvailable.Reset();
+                        }
 
-                    _processPacketDelegate(packet);
+                        _processPacketDelegate(packet);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _exception = e;
                 }
             });
             _workerThread.Start();
         }
 
-        private void CheckThreadStarted()
+        private void CheckExceptionState()
         {
-            if (_threadStatus == ThreadStatus.Stopped)
+            if (_exception != null)
+                throw new ConveyorException(_exception);
+        }
+
+        private void CheckThreadState()
+        {
+            if (_threadStatus != ThreadStatus.Started)
                 throw new InvalidOperationException("Worker thread not started");
+            CheckExceptionState();
         }
 
         public void InsertPacket(T packet)
         {
-            CheckThreadStarted();
+            CheckThreadState();
             _packetsQueue.Enqueue(packet);
             _dataAvailable.Set();
         }
 
         public void Stop()
         {
-            CheckThreadStarted();
+            CheckThreadState();
             _threadStatus = ThreadStatus.Stopped;
             _dataAvailable.Set();
             _workerThread = null;
@@ -74,6 +92,7 @@ namespace Ascentis.Infrastructure
             var workerThread = _workerThread;
             Stop();
             workerThread.Join();
+            CheckExceptionState();
         }
     }
 }
