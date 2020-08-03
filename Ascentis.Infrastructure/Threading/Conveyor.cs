@@ -37,18 +37,17 @@ namespace Ascentis.Infrastructure
                 {
                     while (true)
                     {
-                        T packet;
-                        while (true)
+                        if (_packetsQueue.TryDequeue(out var packet))
                         {
-                            if (_packetsQueue.TryDequeue(out packet))
-                                break;
-                            if (_threadStatus == ThreadStatus.Stopped)
-                                return;
-                            _dataAvailable.Wait();
-                            _dataAvailable.Reset();
+                            _processPacketDelegate(packet);
+                            continue;
                         }
 
-                        _processPacketDelegate(packet);
+                        if (_threadStatus == ThreadStatus.Stopped)
+                            return;
+
+                        _dataAvailable.Wait();
+                        _dataAvailable.Reset();
                     }
                 }
                 catch (Exception e)
