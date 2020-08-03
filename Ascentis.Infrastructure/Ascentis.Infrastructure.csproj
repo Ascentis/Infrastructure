@@ -53,10 +53,10 @@
     <Compile Include="SQLUtils\ISqlStreamerFormatter.cs" />
     <Compile Include="SQLUtils\ColumnMetadata.cs" />
     <Compile Include="SQLUtils\SqlStreamerFormatter.cs" />
-    <Compile Include="SQLUtils\SqlStreamerFormatterDelimited.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatters\SqlStreamerFormatterDelimited.cs" />
     <Compile Include="SQLUtils\SqlStreamerFormatterException.cs" />
-    <Compile Include="SQLUtils\SqlStreamerFormatterFixedLength.cs" />
-    <Compile Include="SQLUtils\SqlStreamerFormatterText.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatters\SqlStreamerFormatterFixedLength.cs" />
+    <Compile Include="SQLUtils\SqlStreamerFormatters\SqlStreamerFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
     <Compile Include="SQLUtils\SqlStreamer.cs" />
     <Compile Include="Patterns\Pool.cs" />
