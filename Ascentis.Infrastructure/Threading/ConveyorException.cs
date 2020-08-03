@@ -8,4 +8,3 @@ namespace Ascentis.Infrastructure
         public ConveyorException(Exception innerException) : base(innerException) {}
     }
 }
-
