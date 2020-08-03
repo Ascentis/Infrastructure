@@ -1,5 +1,6 @@
 ﻿using System;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public readonly struct Resettable<T> : IDisposable

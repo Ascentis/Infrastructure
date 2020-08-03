@@ -53,7 +53,7 @@
     <Compile Include="SQLStreamer\ISqlStreamerFormatter.cs" />
     <Compile Include="SQLStreamer\SqlStreamerFormatterCsv.cs" />
     <Compile Include="SQLStreamer\SqlStreamerFormatterException.cs" />
-    <Compile Include="SQLStreamer\SqlStreamerFormatterFixedLen.cs" />
+    <Compile Include="SQLStreamer\SqlStreamerFormatterFixedLength.cs" />
     <Compile Include="SQLStreamer\SqlStreamerFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
     <Compile Include="SQLStreamer\SqlStreamer.cs" />

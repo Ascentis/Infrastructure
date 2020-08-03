@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
@@ -47,25 +46,6 @@ namespace Ascentis.Infrastructure
             {
                 sqlStreamerFormatter.AbortedWithException(e);
                 throw;
-            }
-        }
-
-        public void WriteToStreamSingleThreaded(Stream stream)
-        {
-            using var reader = _cmd.ExecuteReader(CommandBehavior.SequentialAccess);
-            var formatString = "";
-            for (var i = 0; i < reader.FieldCount; i++)
-                formatString += $"{{{i}}},";
-            formatString = formatString.Remove(formatString.Length - 1) + "\r\n";
-
-            // ReSharper disable once AccessToDisposedClosure
-            var row = new object[reader.FieldCount];
-            while (reader.Read())
-            {
-                reader.GetValues(row);
-                var s = string.Format(formatString, row);
-                var buf = Encoding.UTF8.GetBytes(s);
-                stream.Write(buf, 0, buf.Length);
             }
         }
     }

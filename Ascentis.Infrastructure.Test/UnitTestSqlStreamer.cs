@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -47,10 +48,40 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLen {FieldSizes = new []{6, 4}});
+            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength {FieldSizes = new []{6, 4}});
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestSqlToFixedStreamWithCustomFormats()
+        {
+            using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new SqlStreamer(cmd);
+            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength
+            {
+                FieldSizes = new[] { 6, 6 }, 
+                FormatStrings = new []{ "", "N2"}
+            });
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("  WKHR  0.00\r\n  WKHR  0.00\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestSqlToFixedStreamLeftAligned()
+        {
+            using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new SqlStreamer(cmd);
+            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength { FieldSizes = new[] { -6, -4 } });
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR  0   \r\nWKHR  0   \r\n", str);
         }
 
         [TestMethod]
@@ -60,13 +91,13 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLen
+            streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength
             {
                 FieldSizes = new[] { 3, 4 },
                 OverflowStringFieldWidthBehaviors = new []
                 {
-                    SqlStreamerFormatterFixedLen.OverflowStringFieldWidthBehavior.Truncate, 
-                    SqlStreamerFormatterFixedLen.OverflowStringFieldWidthBehavior.Truncate
+                    SqlStreamerFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate, 
+                    SqlStreamerFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate
                 }
             });
             stream.Flush();
@@ -82,7 +113,7 @@ namespace Ascentis.Infrastructure.Test
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
             // ReSharper disable once AccessToDisposedClosure
-            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLen {FieldSizes = new[] { 3, 4 }})).InnerException is SqlStreamerFormatterException);
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength {FieldSizes = new[] { 3, 4 }})).InnerException is SqlStreamerFormatterException);
         }
 
         [TestMethod]
@@ -93,8 +124,8 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlStreamer(cmd);
-            Assert.ThrowsException<NullReferenceException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLen()));
-            Assert.ThrowsException<SqlStreamerFormatterException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLen() { FieldSizes = new []{0}}));
+            Assert.ThrowsException<NullReferenceException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength()));
+            Assert.ThrowsException<SqlStreamerFormatterException>(() => streamer.WriteToStream(stream, new SqlStreamerFormatterFixedLength() { FieldSizes = new []{0}}));
         }
 
         [TestMethod]
@@ -118,16 +149,6 @@ namespace Ascentis.Infrastructure.Test
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlStreamer(cmd);
             streamer.WriteToStream(fileStream, new SqlStreamerFormatterCsv());
-        }
-
-        //[TestMethod]
-        public void TestSqlToCsvStreamToFileSingleThreaded()
-        {
-            using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
-            using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
-            //using var stream = new BufferedStream(fileStream, 1024 * 1024);
-            var streamer = new SqlStreamer(cmd);
-            streamer.WriteToStreamSingleThreaded(fileStream);
         }
     }
 }

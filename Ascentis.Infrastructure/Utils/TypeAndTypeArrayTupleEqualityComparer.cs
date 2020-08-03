@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public class TypeAndTypeArrayTupleEqualityComparer : IEqualityComparer<Tuple<Type, Type[]>>, IEqualityComparer

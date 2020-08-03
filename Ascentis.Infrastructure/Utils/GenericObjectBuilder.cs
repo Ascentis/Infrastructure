@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public static class GenericObjectBuilder

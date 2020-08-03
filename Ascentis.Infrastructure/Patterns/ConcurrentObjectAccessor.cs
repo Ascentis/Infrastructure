@@ -2,6 +2,7 @@
 using System.Threading;
 // ReSharper disable MemberCanBePrivate.Global
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public class ConcurrentObjectAccessor<T, TClass> where TClass : T

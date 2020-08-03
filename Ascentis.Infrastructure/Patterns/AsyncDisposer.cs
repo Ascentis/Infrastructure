@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public class AsyncDisposer

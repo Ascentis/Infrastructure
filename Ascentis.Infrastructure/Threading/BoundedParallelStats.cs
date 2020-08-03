@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public class BoundedParallelStats

@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure
         public T Acquire(int timeout = -1)
         {
             T obj;
-            do
+            while (true)
             {
                 if (_bag.TryTake(out obj))
                     break;
@@ -41,7 +41,7 @@ namespace Ascentis.Infrastructure
                 if (!_releasedEvent.Wait(timeout))
                     throw new TimeoutException("No object available in bag");
                 _releasedEvent.Reset();
-            } while (true);
+            }
 
             return obj;
         }

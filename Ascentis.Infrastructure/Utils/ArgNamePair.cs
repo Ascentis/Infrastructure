@@ -1,4 +1,5 @@
-﻿namespace Ascentis.Infrastructure
+﻿// ReSharper disable once CheckNamespace
+namespace Ascentis.Infrastructure
 {
     public class ArgNamePair
     {
