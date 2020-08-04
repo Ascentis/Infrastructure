@@ -77,3 +77,18 @@ it will call the a reset delegate method.
 
 Utilitarian class relying on Resettable to allow incrementing an int in a thread safe manner and automatically decrementing
 the value by the same amount when a helper object (Resettable) leaves the using scope.
+
+## Pool
+
+Generalized Pool class. Will build instances lazily and wait for new objects returned to the pool when exhausted. Usage relies on simple Acquire() and Release() methods.
+
+## Conveyor
+
+Abstraction on top of a Thread that allows for continous processing of objects passed by calling InsertPacket method. 
+
+## SqlStreamer
+
+Generalized streamer from SqlDataReader to any stream. The spirit of this class was to solve the problem of high performance exporting of results to text formats (fixed length, delimited).
+The class takes as a parameter a reference to a SqlCommand, a Stream object and a ISqlStreamerFormatter interface object.
+It will split the work in two parallel work streams. Reading is done in the caller's thread and writing is done in a separate thread using a Conveyor object (abstraction on top of a background
+worker thread picking up objects from a concurrent queue and writing to stream thorough the ISqlStreamerFormatter reference)

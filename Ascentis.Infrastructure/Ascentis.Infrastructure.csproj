@@ -81,8 +81,6 @@
     <None Include="Ascentis.Infrastructure.snk" />
     <Compile Include="Threading\Ascentis.ParallelLoopResult.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Patterns\WIP\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
