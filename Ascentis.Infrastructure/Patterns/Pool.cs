@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure
                     Interlocked.Increment(ref _allowance);
                 }
                 if (!_releasedEvent.Wait(timeout))
-                    throw new TimeoutException("No object available in bag");
+                    throw new TimeoutException("No object available in pool");
                 _releasedEvent.Reset();
             }
 
