@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
         private readonly Pool<object[]> _rowsPool;
         private readonly SqlDataReader _sqlDataReader;
-        private DataStreamerColumnMetadata[] _columnMetadatas;
+        private DataPipelineColumnMetadata[] _columnMetadatas;
 
         public SqlDataReaderDataPipelineSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
@@ -42,20 +42,20 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
         public int FieldCount => _sqlDataReader.FieldCount;
 
-        public DataStreamerColumnMetadata[] ColumnMetadatas {
+        public DataPipelineColumnMetadata[] ColumnMetadatas {
             get
             {
                 if (_columnMetadatas != null)
                     return _columnMetadatas;
 
                 var schemaTable = _sqlDataReader.GetSchemaTable();
-                _columnMetadatas = new DataStreamerColumnMetadata[FieldCount];
+                _columnMetadatas = new DataPipelineColumnMetadata[FieldCount];
     
                 var columnIndex = 0;
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (DataRow field in schemaTable.Rows)
                 {
-                    _columnMetadatas[columnIndex] = new DataStreamerColumnMetadata();
+                    _columnMetadatas[columnIndex] = new DataPipelineColumnMetadata();
                     foreach (DataColumn column in schemaTable.Columns)
                     {
                         var prop = _columnMetadatas[columnIndex].GetType().GetProperty(column.ColumnName, BindingFlags.Public | BindingFlags.Instance);

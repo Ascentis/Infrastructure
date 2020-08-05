@@ -27,7 +27,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             };
         }
 
-        private static int ColumnTypeToBufferSize(DataStreamerColumnMetadata meta)
+        private static int ColumnTypeToBufferSize(DataPipelineColumnMetadata meta)
         {
             if (meta.DataType == typeof(string) && meta.ColumnSize != null)
                 return (int) meta.ColumnSize;

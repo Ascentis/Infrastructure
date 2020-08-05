@@ -2,7 +2,7 @@
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
-    public class DataStreamerColumnMetadata
+    public class DataPipelineColumnMetadata
     {
         public string ColumnName { get; set; }
         public int? ColumnOrdinal { get; set; }

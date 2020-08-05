@@ -8,6 +8,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         void ReleaseRow(TRow row);
         IEnumerable<TRow> RowsEnumerable { get; }
         int FieldCount { get; }
-        DataStreamerColumnMetadata[] ColumnMetadatas { get; }
+        DataPipelineColumnMetadata[] ColumnMetadatas { get; }
     }
 }
