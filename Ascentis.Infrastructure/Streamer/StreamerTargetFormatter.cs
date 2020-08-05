@@ -4,11 +4,11 @@ using System.IO;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public abstract class StreamerFormatter : IStreamerFormatter
+    public abstract class StreamerTargetFormatter : IStreamerTargetFormatter
     {
-        protected IStreamerAdapter Source { get; private set; }
+        protected IStreamerSourceAdapter Source { get; private set; }
 
-        public virtual void Prepare(IStreamerAdapter source, object target)
+        public virtual void Prepare(IStreamerSourceAdapter source, object target)
         {
             Source = source;
         }

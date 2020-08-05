@@ -7,11 +7,11 @@ namespace Ascentis.Infrastructure
 {
     public static class StreamerSqlExtensions
     {
-        public static void Run(this Streamer streamer, SqlCommand source, Stream target, int rowsPoolCapacity = 1000)
+        public static void Run(this Streamer streamer, SqlCommand source, IStreamerTargetFormatter streamerTargetFormatter, Stream target, int rowsPoolCapacity = 1000)
         {
             using var reader = source.ExecuteReader(CommandBehavior.SequentialAccess);
-            var adapter = new SqlDataReaderStreamerAdapter(reader, rowsPoolCapacity);
-            streamer.Run(adapter, target);
+            var adapter = new SqlDataReaderStreamerSourceAdapter(reader, rowsPoolCapacity);
+            streamer.Run(adapter, streamerTargetFormatter, target);
         }
     }
 }

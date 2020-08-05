@@ -33,8 +33,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterDelimited());
-            streamer.Run(cmd, stream);
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterDelimited(), stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
@@ -46,8 +46,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength {FieldSizes = new []{6, 4}});
-            streamer.Run(cmd, stream);
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterFixedLength {FieldSizes = new []{6, 4}}, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
@@ -59,12 +59,12 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterFixedLength
             {
                 FieldSizes = new[] { 6, 6 },
                 ColumnFormatStrings = new[] { "", "N2" }
-            });
-            streamer.Run(cmd, stream);
+            }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR  0.00\r\n  WKHR  0.00\r\n", str);
@@ -76,8 +76,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength { FieldSizes = new[] { -6, -4 } });
-            streamer.Run(cmd, stream);
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterFixedLength { FieldSizes = new[] { -6, -4 } }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR  0   \r\nWKHR  0   \r\n", str);
@@ -89,16 +89,16 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterFixedLength
             {
                 FieldSizes = new[] { 3, 4 },
                 OverflowStringFieldWidthBehaviors = new[]
                 {
-                    StreamerFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate,
-                    StreamerFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate
+                    StreamerTargetFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate,
+                    StreamerTargetFormatterFixedLength.OverflowStringFieldWidthBehavior.Truncate
                 }
-            });
-            streamer.Run(cmd, stream);
+            }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKH   0\r\nWKH   0\r\n", str);
@@ -111,8 +111,9 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength {FieldSizes = new[] { 3, 4 }});
-            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Run(cmd, stream)).InnerException is StreamerFormatterException);
+            var streamer = new Streamer();
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => 
+                streamer.Run(cmd, new StreamerTargetFormatterFixedLength {FieldSizes = new[] { 3, 4 }}, stream)).InnerException is StreamerFormatterException);
         }
 
         [TestMethod]
@@ -122,13 +123,13 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength
+            var streamer = new Streamer();
+            // ReSharper disable once AccessToDisposedClosure
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Run(cmd, new StreamerTargetFormatterFixedLength
             {
                 FieldSizes = new[] { 4, 1 },
                 ColumnFormatStrings = new[] { "", "N2" }
-            });
-            // ReSharper disable once AccessToDisposedClosure
-            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Run(cmd, stream)).InnerException is StreamerFormatterException);
+            }, stream)).InnerException is StreamerFormatterException);
         }
 
         [TestMethod]
@@ -139,10 +140,10 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterFixedLength());
-            Assert.ThrowsException<NullReferenceException>(() => streamer.Run(cmd, stream));
-            streamer = new Streamer(new StreamerFormatterFixedLength() { FieldSizes = new []{0}});
-            Assert.ThrowsException<StreamerFormatterException>(() => streamer.Run(cmd, stream));
+            var streamer = new Streamer();
+            Assert.ThrowsException<NullReferenceException>(() => streamer.Run(cmd, new StreamerTargetFormatterFixedLength(), stream));
+            streamer = new Streamer();
+            Assert.ThrowsException<StreamerFormatterException>(() => streamer.Run(cmd, new StreamerTargetFormatterFixedLength() { FieldSizes = new []{0}}, stream));
         }
 
         [TestMethod]
@@ -151,8 +152,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new Streamer(new StreamerFormatterDelimited { OutputHeaders = true });
-            streamer.Run(cmd, stream);
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterDelimited { OutputHeaders = true }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("CPCODE_EXP,NPAYCODE\r\nWKHR,0\r\nWKHR,0\r\n", str);
@@ -164,8 +165,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
-            var streamer = new Streamer(new StreamerFormatterDelimited());
-            streamer.Run(cmd, fileStream);
+            var streamer = new Streamer();
+            streamer.Run(cmd, new StreamerTargetFormatterDelimited(), fileStream);
         }
     }
 }

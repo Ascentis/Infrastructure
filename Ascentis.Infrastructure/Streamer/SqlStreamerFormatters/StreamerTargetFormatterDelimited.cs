@@ -4,7 +4,7 @@ using System.IO;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class StreamerFormatterDelimited : StreamerFormatterText
+    public class StreamerTargetFormatterDelimited : StreamerTargetFormatterText
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
@@ -26,7 +26,7 @@ namespace Ascentis.Infrastructure
             return 16;
         }
 
-        public override void Prepare(IStreamerAdapter source, object target)
+        public override void Prepare(IStreamerSourceAdapter source, object target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);

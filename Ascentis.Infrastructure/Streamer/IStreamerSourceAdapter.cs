@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public interface IStreamerAdapter
+    public interface IStreamerSourceAdapter
     {
         void ReleaseRow(object[] row);
         IEnumerable<object[]> GetRowsEnumerable();

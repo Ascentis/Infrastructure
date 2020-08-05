@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class StreamerFormatterFixedLength : StreamerFormatterText
+    public class StreamerTargetFormatterFixedLength : StreamerTargetFormatterText
     {
         public enum OverflowStringFieldWidthBehavior { Error, Truncate }
         public int[] FieldSizes { get; set; }
@@ -11,7 +11,7 @@ namespace Ascentis.Infrastructure
 
         private int _rowSize;
 
-        public override void Prepare(IStreamerAdapter source, object target)
+        public override void Prepare(IStreamerSourceAdapter source, object target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);

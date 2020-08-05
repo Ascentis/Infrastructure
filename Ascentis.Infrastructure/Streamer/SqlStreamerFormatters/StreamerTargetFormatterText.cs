@@ -5,7 +5,7 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class StreamerFormatterText : StreamerFormatter
+    public class StreamerTargetFormatterText : StreamerTargetFormatter
     {
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
@@ -35,7 +35,7 @@ namespace Ascentis.Infrastructure
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IStreamerAdapter source, object target)
+        public override void Prepare(IStreamerSourceAdapter source, object target)
         {
             base.Prepare(source, target);
 

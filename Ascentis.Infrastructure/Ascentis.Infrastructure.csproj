@@ -50,16 +50,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Streamer\IStreamerFormatter.cs" />
+    <Compile Include="Streamer\IStreamerTargetFormatter.cs" />
     <Compile Include="Streamer\ColumnMetadata.cs" />
-    <Compile Include="Streamer\IStreamerAdapter.cs" />
-    <Compile Include="Streamer\SqlAdapter\SqlDataReaderStreamerAdapter.cs" />
+    <Compile Include="Streamer\IStreamerSourceAdapter.cs" />
+    <Compile Include="Streamer\SqlAdapter\SqlDataReaderStreamerSourceAdapter.cs" />
     <Compile Include="Streamer\SqlAdapter\SqlStreamer.cs" />
-    <Compile Include="Streamer\StreamerFormatter.cs" />
-    <Compile Include="Streamer\SqlStreamerFormatters\StreamerFormatterDelimited.cs" />
+    <Compile Include="Streamer\StreamerTargetFormatter.cs" />
+    <Compile Include="Streamer\SqlStreamerFormatters\StreamerTargetFormatterDelimited.cs" />
     <Compile Include="Streamer\StreamerFormatterException.cs" />
-    <Compile Include="Streamer\SqlStreamerFormatters\StreamerFormatterFixedLength.cs" />
-    <Compile Include="Streamer\SqlStreamerFormatters\StreamerFormatterText.cs" />
+    <Compile Include="Streamer\SqlStreamerFormatters\StreamerTargetFormatterFixedLength.cs" />
+    <Compile Include="Streamer\SqlStreamerFormatters\StreamerTargetFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
     <Compile Include="Streamer\Streamer.cs" />
     <Compile Include="Patterns\Pool.cs" />

@@ -8,20 +8,20 @@ using System.Reflection;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class SqlDataReaderStreamerAdapter : IEnumerable<object[]>, IStreamerAdapter
+    public class SqlDataReaderStreamerSourceAdapter : IEnumerable<object[]>, IStreamerSourceAdapter
     {
         public const int DefaultRowsCapacity = 1000;
         private readonly Pool<object[]> _rowsPool;
         private readonly SqlDataReader _sqlDataReader;
         private ColumnMetadata[] _columnMetadatas;
 
-        public SqlDataReaderStreamerAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
+        public SqlDataReaderStreamerSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, () => new object[_sqlDataReader.FieldCount]);
         }
 
-        public SqlDataReaderStreamerAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
+        public SqlDataReaderStreamerSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
 
         public IEnumerator<object[]> GetEnumerator()
         {

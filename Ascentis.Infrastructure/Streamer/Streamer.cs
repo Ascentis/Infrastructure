@@ -5,21 +5,14 @@ namespace Ascentis.Infrastructure
 {
     public class Streamer
     {
-        private readonly IStreamerFormatter _streamerFormatter;
-
-        public Streamer(IStreamerFormatter streamerFormatter)
+        public void Run(IStreamerSourceAdapter source, IStreamerTargetFormatter streamerTargetFormatter, object target)
         {
-            _streamerFormatter = streamerFormatter;
-        }
-
-        public void Run(IStreamerAdapter source, object target)
-        {
-            _streamerFormatter.Prepare(source, target);
+            streamerTargetFormatter.Prepare(source, target);
             try
             {
                 var writingConveyor = new Conveyor<object[]>(row =>
                 {
-                    _streamerFormatter.Process(row, target);
+                    streamerTargetFormatter.Process(row, target);
                     source.ReleaseRow(row);
                 });
                 writingConveyor.Start();
@@ -28,11 +21,11 @@ namespace Ascentis.Infrastructure
                     writingConveyor.InsertPacket(row);
 
                 writingConveyor.StopAndWait();
-                _streamerFormatter.UnPrepare(target);
+                streamerTargetFormatter.UnPrepare(target);
             }
             catch (Exception e)
             {
-                _streamerFormatter.AbortedWithException(e);
+                streamerTargetFormatter.AbortedWithException(e);
                 throw;
             }
         }
