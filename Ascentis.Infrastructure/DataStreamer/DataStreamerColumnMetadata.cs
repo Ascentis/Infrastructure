@@ -1,9 +1,8 @@
 ﻿using System;
 
-// ReSharper disable once CheckNamespace
-namespace Ascentis.Infrastructure
+namespace Ascentis.Infrastructure.DataStreamer
 {
-    public class ColumnMetadata
+    public class DataStreamerColumnMetadata
     {
         public string ColumnName { get; set; }
         public int? ColumnOrdinal { get; set; }

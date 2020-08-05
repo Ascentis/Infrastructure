@@ -1,9 +1,8 @@
 ﻿using System;
 
-// ReSharper disable once CheckNamespace
-namespace Ascentis.Infrastructure
+namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {
-    public class StreamerTargetFormatterFixedLength : StreamerTargetFormatterText
+    public class DataStreamerTargetFormatterFixedLength : DataStreamerTargetFormatterText
     {
         public enum OverflowStringFieldWidthBehavior { Error, Truncate }
         public int[] FieldSizes { get; set; }
@@ -11,16 +10,16 @@ namespace Ascentis.Infrastructure
 
         private int _rowSize;
 
-        public override void Prepare(IStreamerSourceAdapter source, object target)
+        public override void Prepare(IDataStreamerSourceAdapter source, object target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);
 
             ArgsChecker.CheckForNull<NullReferenceException>(FieldSizes, nameof(FieldSizes));
             if (FieldSizes.Length != Source.FieldCount)
-                throw new StreamerFormatterException("Provided FieldSizes array has a different length than result set column count");
+                throw new DataStreamerException("Provided FieldSizes array has a different length than result set column count");
             if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != Source.FieldCount)
-                throw new StreamerFormatterException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
+                throw new DataStreamerException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
 
             _rowSize = 0;
             FormatString = "";
@@ -39,7 +38,7 @@ namespace Ascentis.Infrastructure
         {
             var buf = base.RowToBytes(row, out bytesWritten);
             if (bytesWritten > _rowSize)
-                throw new StreamerFormatterException("Total row size exceeds specified row size based on fixed column widths");
+                throw new DataStreamerException("Total row size exceeds specified row size based on fixed column widths");
             return buf;
         }
 
@@ -52,7 +51,7 @@ namespace Ascentis.Infrastructure
                         continue;
                     var strValue = (string) row[i];
                     if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
-                        throw new StreamerFormatterException(
+                        throw new DataStreamerException(
                             $"Field {Source.ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
                     row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }

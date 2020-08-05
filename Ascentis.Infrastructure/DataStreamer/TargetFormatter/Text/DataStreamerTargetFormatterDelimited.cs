@@ -1,15 +1,13 @@
-﻿using System.Data.SqlClient;
-using System.IO;
+﻿using System.IO;
 
-// ReSharper disable once CheckNamespace
-namespace Ascentis.Infrastructure
+namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {
-    public class StreamerTargetFormatterDelimited : StreamerTargetFormatterText
+    public class DataStreamerTargetFormatterDelimited : DataStreamerTargetFormatterText
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
 
-        private static int ColumnTypeToBufferSize(ColumnMetadata meta)
+        private static int ColumnTypeToBufferSize(DataStreamerColumnMetadata meta)
         {
             if (meta.DataType == typeof(string))
                 return meta.ColumnSize ?? 16;
@@ -26,7 +24,7 @@ namespace Ascentis.Infrastructure
             return 16;
         }
 
-        public override void Prepare(IStreamerSourceAdapter source, object target)
+        public override void Prepare(IDataStreamerSourceAdapter source, object target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);

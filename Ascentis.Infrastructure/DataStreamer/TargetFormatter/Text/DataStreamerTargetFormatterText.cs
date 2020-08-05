@@ -2,10 +2,9 @@
 using System.IO;
 using System.Text;
 
-// ReSharper disable once CheckNamespace
-namespace Ascentis.Infrastructure
+namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {
-    public class StreamerTargetFormatterText : StreamerTargetFormatter
+    public class DataStreamerTargetFormatterText : DataStreamerTargetFormatter
     {
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
@@ -35,12 +34,12 @@ namespace Ascentis.Infrastructure
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IStreamerSourceAdapter source, object target)
+        public override void Prepare(IDataStreamerSourceAdapter source, object target)
         {
             base.Prepare(source, target);
 
             if (ColumnFormatStrings != null && ColumnFormatStrings.Length != Source.FieldCount)
-                throw new StreamerFormatterException("When ColumnFormatStrings is provided its length must match result set field count");
+                throw new DataStreamerException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
         public override void Process(object[] row, object target)
