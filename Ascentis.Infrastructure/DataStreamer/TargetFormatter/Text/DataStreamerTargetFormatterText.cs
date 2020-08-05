@@ -43,10 +43,10 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
                 throw new DataStreamerException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
-        public override void Process(object[] row, object target)
+        public override void Process(object[] row)
         {
             var bytes = RowToBytes(row, out var bytesWritten);
-            ((Stream)target).Write(bytes, 0, bytesWritten);
+            ((Stream)Target).Write(bytes, 0, bytesWritten);
         }
     }
 }

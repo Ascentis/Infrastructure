@@ -11,7 +11,7 @@ namespace Ascentis.Infrastructure.DataStreamer
             {
                 var writingConveyor = new Conveyor<object[]>(row =>
                 {
-                    dataStreamerTargetFormatter.Process(row, target);
+                    dataStreamerTargetFormatter.Process(row);
                     dataStreamerSourceAdapter.ReleaseRow(row);
                 });
                 writingConveyor.Start();

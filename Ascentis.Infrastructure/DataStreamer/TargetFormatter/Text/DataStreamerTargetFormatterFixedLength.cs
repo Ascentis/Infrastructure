@@ -43,7 +43,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
             return buf;
         }
 
-        public override void Process(object[] row, object target)
+        public override void Process(object[] row)
         {
             if (OverflowStringFieldWidthBehaviors != null)
                 for (var i = 0; i < row.Length; i++)
@@ -57,7 +57,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
                     row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }
 
-            base.Process(row, target);
+            base.Process(row);
         }
     }
 }
