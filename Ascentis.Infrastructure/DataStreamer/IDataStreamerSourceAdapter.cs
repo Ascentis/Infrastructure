@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ascentis.Infrastructure.DataStreamer.SourceAdapter;
 
 namespace Ascentis.Infrastructure.DataStreamer
 {

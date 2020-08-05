@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Ascentis.Infrastructure.DataStreamer.SourceAdapter;
 
 namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {
@@ -7,26 +10,34 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
 
+        private static readonly Dictionary<Type, int> TypeToBufferSize;
+
+        static DataStreamerTargetFormatterDelimited()
+        {
+            TypeToBufferSize = new Dictionary<Type, int>
+            {
+                {typeof(char), 1},
+                {typeof(byte), 3},
+                {typeof(bool), 5},
+                {typeof(ushort), 5},
+                {typeof(short), 6},
+                {typeof(uint), 13},
+                {typeof(int), 14},
+                {typeof(string), 16}
+            };
+        }
+
         private static int ColumnTypeToBufferSize(DataStreamerColumnMetadata meta)
         {
-            if (meta.DataType == typeof(string))
-                return meta.ColumnSize ?? 16;
-            if (meta.DataType == typeof(char))
-                return 1;
-            if (meta.DataType == typeof(bool))
-                return 5;
-            if (meta.DataType == typeof(byte))
-                return 3;
-            if (meta.DataType == typeof(int) || meta.DataType == typeof(uint))
-                return 14;
-            if (meta.DataType == typeof(short) || meta.DataType == typeof(ushort))
-                return 6; 
-            return 16;
+            if (meta.DataType == typeof(string) && meta.ColumnSize != null)
+                return (int) meta.ColumnSize;
+            return TypeToBufferSize.TryGetValue(meta.DataType, out var result) ? result : 16;
         }
 
         public override void Prepare(IDataStreamerSourceAdapter source, object target)
         {
             const string crLf = "\r\n";
+
             base.Prepare(source, target);
 
             FormatString = "";

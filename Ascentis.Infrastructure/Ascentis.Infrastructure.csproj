@@ -47,13 +47,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStreamer\IDataStreamerTargetFormatter.cs" />
-    <Compile Include="DataStreamer\DataStreamerColumnMetadata.cs" />
+    <Compile Include="DataStreamer\SourceAdapter\DataStreamerColumnMetadata.cs" />
     <Compile Include="DataStreamer\IDataStreamerSourceAdapter.cs" />
     <Compile Include="DataStreamer\SourceAdapter\SqlClient\SqlDataReaderDataStreamerSourceAdapter.cs" />
     <Compile Include="DataStreamer\SourceAdapter\SqlClient\DataStreamerSqlAdapterExtensions.cs" />
-    <Compile Include="DataStreamer\DataStreamerTargetFormatter.cs" />
+    <Compile Include="DataStreamer\TargetFormatter\DataStreamerTargetFormatter.cs" />
     <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterDelimited.cs" />
-    <Compile Include="DataStreamer\DataStreamerException.cs" />
+    <Compile Include="DataStreamer\Exceptions\DataStreamerException.cs" />
     <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterFixedLength.cs" />
     <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />

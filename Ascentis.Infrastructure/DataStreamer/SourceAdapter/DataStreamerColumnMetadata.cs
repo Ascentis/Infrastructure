@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ascentis.Infrastructure.DataStreamer
+namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter
 {
     public class DataStreamerColumnMetadata
     {

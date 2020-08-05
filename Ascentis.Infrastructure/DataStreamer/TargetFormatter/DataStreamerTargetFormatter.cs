@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ascentis.Infrastructure.DataStreamer
+﻿namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter
 {
     public abstract class DataStreamerTargetFormatter : IDataStreamerTargetFormatter
     {
@@ -13,6 +11,6 @@ namespace Ascentis.Infrastructure.DataStreamer
 
         public abstract void Process(object[] row, object target);
         public virtual void UnPrepare(object target) { }
-        public virtual void AbortedWithException(Exception e) { }
+        public virtual void AbortedWithException(System.Exception e) { }
     }
 }

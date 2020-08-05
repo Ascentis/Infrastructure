@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using Ascentis.Infrastructure.DataStreamer;
+using Ascentis.Infrastructure.DataStreamer.Exceptions;
 using Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

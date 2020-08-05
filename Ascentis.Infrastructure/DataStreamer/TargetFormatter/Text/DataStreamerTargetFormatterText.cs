@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Text;
+using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
 namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {

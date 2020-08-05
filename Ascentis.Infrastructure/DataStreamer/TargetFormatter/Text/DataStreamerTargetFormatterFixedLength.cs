@@ -1,4 +1,5 @@
 ﻿using System;
+using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
 namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 {
