@@ -51,6 +51,7 @@
     <Compile Include="DataStreamer\IDataStreamerSourceAdapter.cs" />
     <Compile Include="DataStreamer\SourceAdapter\SqlClient\SqlDataReaderDataStreamerSourceAdapter.cs" />
     <Compile Include="DataStreamer\SourceAdapter\SqlClient\DataStreamerSqlAdapterExtensions.cs" />
+    <Compile Include="DataStreamer\SourceAdapter\SqlClient\SqlDataStreamer.cs" />
     <Compile Include="DataStreamer\TargetFormatter\DataStreamerTargetFormatter.cs" />
     <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterDelimited.cs" />
     <Compile Include="DataStreamer\Exceptions\DataStreamerException.cs" />

@@ -34,7 +34,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
             return TypeToBufferSize.TryGetValue(meta.DataType, out var result) ? result : 16;
         }
 
-        public override void Prepare(IDataStreamerSourceAdapter source, object target)
+        public override void Prepare(IDataStreamerSourceAdapter<object[]> source, Stream target)
         {
             const string crLf = "\r\n";
 
@@ -56,7 +56,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
             for (var i = 0; i < Source.FieldCount; i++)
                 columnNames[i] = Source.ColumnMetadatas[i].ColumnName;
             var bytes = RowToBytes(columnNames, out var bytesWritten);
-            ((Stream) target).Write(bytes, 0, bytesWritten);
+            target.Write(bytes, 0, bytesWritten);
         }
     }
 }

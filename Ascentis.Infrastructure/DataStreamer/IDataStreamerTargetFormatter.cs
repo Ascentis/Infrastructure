@@ -2,11 +2,11 @@
 
 namespace Ascentis.Infrastructure.DataStreamer
 {
-    public interface IDataStreamerTargetFormatter
+    public interface IDataStreamerTargetFormatter<in TTarget, TRow>
     {
-        void Prepare(IDataStreamerSourceAdapter source, object target);
-        void Process(object[] row);
-        void UnPrepare(object target);
+        void Prepare(IDataStreamerSourceAdapter<TRow> source, TTarget target);
+        void Process(TRow row);
+        void UnPrepare();
         void AbortedWithException(Exception e);
     }
 }

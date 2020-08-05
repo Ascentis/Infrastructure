@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient
 {
-    public class SqlDataReaderDataStreamerSourceAdapter : IDataStreamerSourceAdapter
+    public class SqlDataReaderDataStreamerSourceAdapter : IDataStreamerSourceAdapter<object[]>
     {
         public const int DefaultRowsCapacity = 1000;
 

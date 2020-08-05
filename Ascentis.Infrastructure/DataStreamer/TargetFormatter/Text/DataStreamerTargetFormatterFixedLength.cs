@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
 namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
@@ -11,7 +12,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 
         private int _rowSize;
 
-        public override void Prepare(IDataStreamerSourceAdapter source, object target)
+        public override void Prepare(IDataStreamerSourceAdapter<object[]> source, Stream target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);

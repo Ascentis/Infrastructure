@@ -36,7 +36,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterDelimited(), stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
@@ -49,7 +49,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength {FieldSizes = new []{6, 4}}, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
@@ -62,7 +62,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength
             {
                 FieldSizes = new[] { 6, 6 },
@@ -79,7 +79,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength { FieldSizes = new[] { -6, -4 } }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
@@ -92,7 +92,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength
             {
                 FieldSizes = new[] { 3, 4 },
@@ -114,7 +114,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => 
                 streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength {FieldSizes = new[] { 3, 4 }}, stream)).InnerException is DataStreamerException);
         }
@@ -126,7 +126,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             // ReSharper disable once AccessToDisposedClosure
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength
             {
@@ -143,9 +143,9 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             Assert.ThrowsException<NullReferenceException>(() => streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength(), stream));
-            streamer = new DataStreamer.DataStreamer();
+            streamer = new SqlDataStreamer<Stream>();
             Assert.ThrowsException<DataStreamerException>(() => streamer.Run(cmd, new DataStreamerTargetFormatterFixedLength() { FieldSizes = new []{0}}, stream));
         }
 
@@ -155,7 +155,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterDelimited { OutputHeaders = true }, stream);
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
@@ -168,7 +168,7 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
-            var streamer = new DataStreamer.DataStreamer();
+            var streamer = new SqlDataStreamer<Stream>();
             streamer.Run(cmd, new DataStreamerTargetFormatterDelimited(), fileStream);
         }
     }

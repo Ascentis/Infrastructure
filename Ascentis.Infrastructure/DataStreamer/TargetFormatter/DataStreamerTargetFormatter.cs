@@ -1,18 +1,20 @@
-﻿namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter
-{
-    public abstract class DataStreamerTargetFormatter : IDataStreamerTargetFormatter
-    {
-        protected IDataStreamerSourceAdapter Source { get; private set; }
-        protected object Target { get; private set; }
+﻿using System.Data;
 
-        public virtual void Prepare(IDataStreamerSourceAdapter source, object target)
+namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter
+{
+    public abstract class DataStreamerTargetFormatter<TTarget, TRow> : IDataStreamerTargetFormatter<TTarget, TRow>
+    {
+        protected IDataStreamerSourceAdapter<TRow> Source { get; private set; }
+        protected TTarget Target { get; private set; }
+
+        public virtual void Prepare(IDataStreamerSourceAdapter<TRow> source, TTarget target)
         {
             Source = source;
             Target = target;
         }
 
-        public abstract void Process(object[] row);
-        public virtual void UnPrepare(object target) { }
+        public abstract void Process(TRow row);
+        public virtual void UnPrepare() { }
         public virtual void AbortedWithException(System.Exception e) { }
     }
 }
