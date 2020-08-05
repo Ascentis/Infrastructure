@@ -4,7 +4,9 @@ namespace Ascentis.Infrastructure.DataPipeline
 {
     public class DataPipeline<TTarget, TRow>
     {
-        public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, IDataPipelineTargetAdapter<TTarget, TRow> dataPipelineTargetAdapter, TTarget target)
+        public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, 
+            IDataPipelineTargetAdapter<TTarget, TRow> dataPipelineTargetAdapter, 
+            TTarget target)
         {
             dataPipelineTargetAdapter.Prepare(dataPipelineSourceAdapter, target);
             try
