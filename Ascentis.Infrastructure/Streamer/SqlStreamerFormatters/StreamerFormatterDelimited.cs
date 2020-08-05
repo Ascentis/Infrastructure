@@ -4,7 +4,7 @@ using System.IO;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class SqlStreamerFormatterDelimited : SqlStreamerFormatterText
+    public class StreamerFormatterDelimited : StreamerFormatterText
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
@@ -26,10 +26,10 @@ namespace Ascentis.Infrastructure
             return 16;
         }
 
-        public override void Prepare(SqlDataReader reader, Stream stream)
+        public override void Prepare(IStreamerAdapter source, object target)
         {
             const string crLf = "\r\n";
-            base.Prepare(reader, stream);
+            base.Prepare(source, target);
 
             FormatString = "";
             var bufferSize = 0;
@@ -43,11 +43,11 @@ namespace Ascentis.Infrastructure
 
             if (!OutputHeaders)
                 return;
-            var columnNames = new object[FieldCount];
+            /*var columnNames = new object[FieldCount];
             for (var i = 0; i < FieldCount; i++)
-                columnNames[i] = reader.GetName(i);
+                columnNames[i] = source.GetName(i);
             var bytes = RowToBytes(columnNames, out var bytesWritten);
-            stream.Write(bytes, 0, bytesWritten);
+            ((Stream) target).Write(bytes, 0, bytesWritten);*/
         }
     }
 }

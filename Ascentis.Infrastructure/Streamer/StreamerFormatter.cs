@@ -1,23 +1,21 @@
 ﻿using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.IO;
-using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public abstract class SqlStreamerFormatter : ISqlStreamerFormatter
+    public abstract class StreamerFormatter : IStreamerFormatter
     {
         protected int FieldCount { get; private set; }
 
         protected ColumnMetadata[] ColumnMetadatas { get; private set; }
 
-        public virtual void Prepare(SqlDataReader reader, Stream stream)
+        public virtual void Prepare(IStreamerAdapter source, object target)
         {
-            FieldCount = reader.FieldCount;
+            var stream = (Stream) target;
+            FieldCount = source.FieldCount;
 
-            var schemaTable = reader.GetSchemaTable();
+            /*var schemaTable = reader.GetSchemaTable();
             ColumnMetadatas = new ColumnMetadata[FieldCount];
 
             var columnIndex = 0;
@@ -35,12 +33,12 @@ namespace Ascentis.Infrastructure
                 }
 
                 columnIndex++;
-            }
+            }*/
         }
 
-        public abstract void Process(object[] row, Stream stream);
+        public abstract void Process(object[] row, object target);
 
-        public virtual void UnPrepare(Stream stream) { }
+        public virtual void UnPrepare(object target) { }
 
         public virtual void AbortedWithException(Exception e) { }
     }

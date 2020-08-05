@@ -41,7 +41,7 @@ namespace Ascentis.Infrastructure
             return result;
         }
 
-        public bool Equals(object x, object y)
+        public new bool Equals(object x, object y)
         {
             return Equals((Tuple<Type, Type[]>) x, (Tuple<Type, Type[]>) y);
         }

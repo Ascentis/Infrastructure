@@ -1,12 +1,11 @@
-﻿using System.Data.SqlClient;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class SqlStreamerFormatterText : SqlStreamerFormatter
+    public class StreamerFormatterText : StreamerFormatter
     {
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
@@ -36,18 +35,18 @@ namespace Ascentis.Infrastructure
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(SqlDataReader reader, Stream stream)
+        public override void Prepare(IStreamerAdapter source, object target)
         {
-            base.Prepare(reader, stream);
+            base.Prepare(source, target);
 
             if (ColumnFormatStrings != null && ColumnFormatStrings.Length != FieldCount)
-                throw new SqlStreamerFormatterException("When ColumnFormatStrings is provided its length must match result set field count");
+                throw new StreamerFormatterException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
-        public override void Process(object[] row, Stream stream)
+        public override void Process(object[] row, object target)
         {
             var bytes = RowToBytes(row, out var bytesWritten);
-            stream.Write(bytes, 0, bytesWritten);
+            ((Stream)target).Write(bytes, 0, bytesWritten);
         }
     }
 }
