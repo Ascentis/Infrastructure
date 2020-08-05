@@ -4,9 +4,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 
-namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 {
-    public class SqlDataReaderDataStreamerSourceAdapter : IDataStreamerSourceAdapter<object[]>
+    public class SqlDataReaderDataPipelineSourceAdapter : IDataPipelineSourceAdapter<object[]>
     {
         public const int DefaultRowsCapacity = 1000;
 
@@ -14,13 +14,13 @@ namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient
         private readonly SqlDataReader _sqlDataReader;
         private DataStreamerColumnMetadata[] _columnMetadatas;
 
-        public SqlDataReaderDataStreamerSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
+        public SqlDataReaderDataPipelineSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, () => new object[_sqlDataReader.FieldCount]);
         }
 
-        public SqlDataReaderDataStreamerSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
+        public SqlDataReaderDataPipelineSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
 
         public void ReleaseRow(object[] row)
         {

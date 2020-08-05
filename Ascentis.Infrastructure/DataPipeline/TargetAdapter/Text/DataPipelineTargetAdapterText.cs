@@ -1,12 +1,11 @@
 ﻿using System.Globalization;
 using System.IO;
-using System.Runtime.Remoting.Channels;
 using System.Text;
 using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
-namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataStreamerTargetFormatterText : DataStreamerTargetFormatter<Stream, object[]>
+    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<Stream, object[]>
     {
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
@@ -36,7 +35,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IDataStreamerSourceAdapter<object[]> source, Stream target)
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
         {
             base.Prepare(source, target);
 

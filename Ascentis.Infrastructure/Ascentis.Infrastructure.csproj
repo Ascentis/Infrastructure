@@ -46,19 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataStreamer\IDataStreamerTargetFormatter.cs" />
-    <Compile Include="DataStreamer\SourceAdapter\DataStreamerColumnMetadata.cs" />
-    <Compile Include="DataStreamer\IDataStreamerSourceAdapter.cs" />
-    <Compile Include="DataStreamer\SourceAdapter\SqlClient\SqlDataReaderDataStreamerSourceAdapter.cs" />
-    <Compile Include="DataStreamer\SourceAdapter\SqlClient\DataStreamerSqlAdapterExtensions.cs" />
-    <Compile Include="DataStreamer\SourceAdapter\SqlClient\SqlDataStreamer.cs" />
-    <Compile Include="DataStreamer\TargetFormatter\DataStreamerTargetFormatter.cs" />
-    <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterDelimited.cs" />
-    <Compile Include="DataStreamer\Exceptions\DataStreamerException.cs" />
-    <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterFixedLength.cs" />
-    <Compile Include="DataStreamer\TargetFormatter\Text\DataStreamerTargetFormatterText.cs" />
+    <Compile Include="DataPipeline\IDataPipelineTargetAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\DataStreamerColumnMetadata.cs" />
+    <Compile Include="DataPipeline\IDataPipelineSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataReaderDataPipelineSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSqlAdapterExtensions.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataPipeline.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\DataPipelineTargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterDelimited.cs" />
+    <Compile Include="DataPipeline\Exceptions\DataStreamerException.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterFixedLength.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterText.cs" />
     <Compile Include="Threading\Conveyor.cs" />
-    <Compile Include="DataStreamer\DataStreamer.cs" />
+    <Compile Include="DataPipeline\DataPipeline.cs" />
     <Compile Include="Patterns\Pool.cs" />
     <Compile Include="Threading\ConveyorException.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Ascentis.Infrastructure.DataStreamer.SourceAdapter;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 
-namespace Ascentis.Infrastructure.DataStreamer
+namespace Ascentis.Infrastructure.DataPipeline
 {
-    public interface IDataStreamerSourceAdapter<TRow>
+    public interface IDataPipelineSourceAdapter<TRow>
     {
         void ReleaseRow(TRow row);
         IEnumerable<TRow> RowsEnumerable { get; }

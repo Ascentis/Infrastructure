@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Ascentis.Infrastructure.DataStreamer.SourceAdapter;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 
-namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataStreamerTargetFormatterDelimited : DataStreamerTargetFormatterText
+    public class DataPipelineTargetAdapterDelimited : DataPipelineTargetAdapterText
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
 
         private static readonly Dictionary<Type, int> TypeToBufferSize;
 
-        static DataStreamerTargetFormatterDelimited()
+        static DataPipelineTargetAdapterDelimited()
         {
             TypeToBufferSize = new Dictionary<Type, int>
             {
@@ -34,7 +34,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
             return TypeToBufferSize.TryGetValue(meta.DataType, out var result) ? result : 16;
         }
 
-        public override void Prepare(IDataStreamerSourceAdapter<object[]> source, Stream target)
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
         {
             const string crLf = "\r\n";
 

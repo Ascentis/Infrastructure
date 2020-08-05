@@ -56,7 +56,7 @@
   <ItemGroup>
     <Compile Include="UnitTestPool.cs" />
     <Compile Include="UnitTestConveyor.cs" />
-    <Compile Include="UnitTestDataStreamer.cs" />
+    <Compile Include="UnitTestDataPipeline.cs" />
     <Compile Include="UnitTestAutoInit.cs" />
     <Compile Include="UnitTestGenericObjectBuilder.cs" />
     <Compile Include="UnitTestResettable.cs" />

@@ -2,9 +2,9 @@
 using System.IO;
 using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
-namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataStreamerTargetFormatterFixedLength : DataStreamerTargetFormatterText
+    public class DataPipelineTargetAdapterFixedLength : DataPipelineTargetAdapterText
     {
         public enum OverflowStringFieldWidthBehavior { Error, Truncate }
         public int[] FieldSizes { get; set; }
@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure.DataStreamer.TargetFormatter.Text
 
         private int _rowSize;
 
-        public override void Prepare(IDataStreamerSourceAdapter<object[]> source, Stream target)
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);
