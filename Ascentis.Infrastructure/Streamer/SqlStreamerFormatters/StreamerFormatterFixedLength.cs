@@ -17,14 +17,14 @@ namespace Ascentis.Infrastructure
             base.Prepare(source, target);
 
             ArgsChecker.CheckForNull<NullReferenceException>(FieldSizes, nameof(FieldSizes));
-            if (FieldSizes.Length != FieldCount)
+            if (FieldSizes.Length != Source.FieldCount)
                 throw new StreamerFormatterException("Provided FieldSizes array has a different length than result set column count");
-            if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != FieldCount)
+            if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != Source.FieldCount)
                 throw new StreamerFormatterException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
 
             _rowSize = 0;
             FormatString = "";
-            for (var i = 0; i < FieldCount; i++)
+            for (var i = 0; i < Source.FieldCount; i++)
             {
                 _rowSize += Math.Abs(FieldSizes[i]);
                 FormatString += $"{{{i},{FieldSizes[i]}{ColumnFormatString(i)}}}";
@@ -53,7 +53,7 @@ namespace Ascentis.Infrastructure
                     var strValue = (string) row[i];
                     if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
                         throw new StreamerFormatterException(
-                            $"Field {ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
+                            $"Field {Source.ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
                     row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }
 

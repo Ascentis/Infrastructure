@@ -17,14 +17,13 @@ namespace Ascentis.Infrastructure
             _streamerFormatter.Prepare(source, target);
             try
             {
-
                 var writingConveyor = new Conveyor<object[]>(row =>
                 {
                     _streamerFormatter.Process(row, target);
                     source.ReleaseRow(row);
                 });
                 writingConveyor.Start();
-                var sourceRows = source.GetEnumerable();
+                var sourceRows = source.GetRowsEnumerable();
                 foreach(var row in sourceRows)
                     writingConveyor.InsertPacket(row);
 

@@ -33,21 +33,21 @@ namespace Ascentis.Infrastructure
 
             FormatString = "";
             var bufferSize = 0;
-            for (var i = 0; i < FieldCount; i++)
+            for (var i = 0; i < Source.FieldCount; i++)
             {
                 FormatString += $"{{{i}{ColumnFormatString(i)}}}{Delimiter}";
-                bufferSize += ColumnTypeToBufferSize(ColumnMetadatas[i]) + Delimiter.Length;
+                bufferSize += ColumnTypeToBufferSize(Source.ColumnMetadatas[i]) + Delimiter.Length;
             }
             FormatString = FormatString.Remove(FormatString.Length - 1) + "\r\n";
             WriteBuffer = new byte[bufferSize + crLf.Length];
 
             if (!OutputHeaders)
                 return;
-            /*var columnNames = new object[FieldCount];
-            for (var i = 0; i < FieldCount; i++)
-                columnNames[i] = source.GetName(i);
+            var columnNames = new object[Source.FieldCount];
+            for (var i = 0; i < Source.FieldCount; i++)
+                columnNames[i] = Source.ColumnMetadatas[i].ColumnName;
             var bytes = RowToBytes(columnNames, out var bytesWritten);
-            ((Stream) target).Write(bytes, 0, bytesWritten);*/
+            ((Stream) target).Write(bytes, 0, bytesWritten);
         }
     }
 }

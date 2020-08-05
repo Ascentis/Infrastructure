@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure
         {
             base.Prepare(source, target);
 
-            if (ColumnFormatStrings != null && ColumnFormatStrings.Length != FieldCount)
+            if (ColumnFormatStrings != null && ColumnFormatStrings.Length != Source.FieldCount)
                 throw new StreamerFormatterException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
