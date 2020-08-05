@@ -2,7 +2,7 @@
 using System.Data.SqlClient;
 using System.IO;
 
-namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.Sql
+namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient
 {
     public static class DataStreamerSqlAdapterExtensions
     {

@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 
-namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.Sql
+namespace Ascentis.Infrastructure.DataStreamer.SourceAdapter.SqlClient
 {
     public class SqlDataReaderDataStreamerSourceAdapter : IDataStreamerSourceAdapter
     {
