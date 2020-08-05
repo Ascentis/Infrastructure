@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Text;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
@@ -28,6 +29,13 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             else
                 buf = OutputEncoding.GetBytes(s);
             return buf;
+        }
+
+        protected static int ColumnTypeToBufferSize(DataPipelineColumnMetadata meta)
+        {
+            if (meta.DataType == typeof(string) && meta.ColumnSize != null)
+                return (int)meta.ColumnSize;
+            return DataPipelineTypeSizeMap.Map.TryGetValue(meta.DataType, out var result) ? result : 16;
         }
 
         protected string ColumnFormatString(int index)

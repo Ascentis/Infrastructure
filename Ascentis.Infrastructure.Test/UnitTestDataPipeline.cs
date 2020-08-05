@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -54,6 +53,19 @@ namespace Ascentis.Infrastructure.Test
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestSqlToFixedWithDefaultSizesStreamBasic()
+        {
+            using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new SqlDataPipeline<Stream>();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(), stream);
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR               0\r\nWKHR               0\r\n", str);
         }
 
         [TestMethod]
@@ -144,8 +156,6 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlDataPipeline<Stream>();
-            Assert.ThrowsException<NullReferenceException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(), stream));
-            streamer = new SqlDataPipeline<Stream>();
             Assert.ThrowsException<DataStreamerException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength() { FieldSizes = new []{0}}, stream));
         }
 

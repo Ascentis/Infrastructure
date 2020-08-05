@@ -49,6 +49,7 @@
     <Compile Include="DataPipeline\IDataPipelineTargetAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\DataPipelineColumnMetadata.cs" />
     <Compile Include="DataPipeline\IDataPipelineSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\DataPipelineTypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataReaderDataPipelineSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSqlAdapterExtensions.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataPipeline.cs" />

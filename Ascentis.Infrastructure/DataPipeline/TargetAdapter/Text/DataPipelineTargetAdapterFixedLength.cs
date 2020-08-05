@@ -12,12 +12,21 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         private int _rowSize;
 
+        private void InitializeFieldSizesWithDefaults()
+        {
+            FieldSizes = new int[Source.FieldCount];
+            var columnIndex = 0;
+            foreach (var columnMetadata in Source.ColumnMetadatas)
+                FieldSizes[columnIndex++] = ColumnTypeToBufferSize(columnMetadata);
+        }
+
         public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
         {
             const string crLf = "\r\n";
             base.Prepare(source, target);
 
-            ArgsChecker.CheckForNull<NullReferenceException>(FieldSizes, nameof(FieldSizes));
+            if (FieldSizes == null || FieldSizes.Length <= 0)
+                InitializeFieldSizesWithDefaults();
             if (FieldSizes.Length != Source.FieldCount)
                 throw new DataStreamerException("Provided FieldSizes array has a different length than result set column count");
             if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != Source.FieldCount)

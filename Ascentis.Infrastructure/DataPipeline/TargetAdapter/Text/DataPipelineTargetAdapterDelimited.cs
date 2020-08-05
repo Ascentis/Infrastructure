@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
+﻿using System.IO;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
@@ -9,30 +6,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
-
-        private static readonly Dictionary<Type, int> TypeToBufferSize;
-
-        static DataPipelineTargetAdapterDelimited()
-        {
-            TypeToBufferSize = new Dictionary<Type, int>
-            {
-                {typeof(char), 1},
-                {typeof(byte), 3},
-                {typeof(bool), 5},
-                {typeof(ushort), 5},
-                {typeof(short), 6},
-                {typeof(uint), 13},
-                {typeof(int), 14},
-                {typeof(string), 16}
-            };
-        }
-
-        private static int ColumnTypeToBufferSize(DataPipelineColumnMetadata meta)
-        {
-            if (meta.DataType == typeof(string) && meta.ColumnSize != null)
-                return (int) meta.ColumnSize;
-            return TypeToBufferSize.TryGetValue(meta.DataType, out var result) ? result : 16;
-        }
 
         public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
         {
