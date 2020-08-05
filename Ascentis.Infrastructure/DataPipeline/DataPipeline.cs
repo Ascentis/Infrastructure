@@ -11,18 +11,18 @@ namespace Ascentis.Infrastructure.DataPipeline
             dataPipelineTargetAdapter.Prepare(dataPipelineSourceAdapter, target);
             try
             {
-                var targetFormatterConveyor = new Conveyor<TRow>(row =>
+                var targetAdapterConveyor = new Conveyor<TRow>(row =>
                 {
                     dataPipelineTargetAdapter.Process(row);
                     dataPipelineSourceAdapter.ReleaseRow(row);
                 });
-                targetFormatterConveyor.Start();
+                targetAdapterConveyor.Start();
 
                 var sourceRows = dataPipelineSourceAdapter.RowsEnumerable;
                 foreach(var row in sourceRows)
-                    targetFormatterConveyor.InsertPacket(row);
+                    targetAdapterConveyor.InsertPacket(row);
 
-                targetFormatterConveyor.StopAndWait();
+                targetAdapterConveyor.StopAndWait();
                 dataPipelineTargetAdapter.UnPrepare();
             }
             catch (Exception e)
