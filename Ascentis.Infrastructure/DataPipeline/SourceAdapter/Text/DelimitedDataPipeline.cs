@@ -33,6 +33,18 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
         }
 
         public void Pump(
+            string sourceFileName,
+            DataPipelineColumnMetadata[] sourceMetadatas,
+            IDataPipelineTargetAdapter<PoolEntry<object[]>> dataPipelineTargetAdapter,
+            string delimiter = DataPipelineDelimitedSourceAdapter.DefaultDelimiter,
+            int rowsPoolCapacity = DataPipelineTextSourceAdapter.DefaultRowsPoolCapacity)
+        {
+            using var stream = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read);
+            using var reader = new StreamReader(stream);
+            Pump(reader, sourceMetadatas, dataPipelineTargetAdapter, delimiter, rowsPoolCapacity);
+        }
+
+        public void Pump(
             TextReader source,
             DataPipelineColumnMetadata[] sourceMetadatas,
             IEnumerable<IDataPipelineTargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
@@ -56,6 +68,18 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             int rowsPoolCapacity = DataPipelineTextSourceAdapter.DefaultRowsPoolCapacity)
         {
             using var reader = new StreamReader(source);
+            Pump(reader, sourceMetadatas, dataPipelineTargetAdapters, delimiter, rowsPoolCapacity);
+        }
+
+        public void Pump(
+            string sourceFileName,
+            DataPipelineColumnMetadata[] sourceMetadatas,
+            IEnumerable<IDataPipelineTargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
+            string delimiter = DataPipelineDelimitedSourceAdapter.DefaultDelimiter,
+            int rowsPoolCapacity = DataPipelineTextSourceAdapter.DefaultRowsPoolCapacity)
+        {
+            using var stream = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read);
+            using var reader = new StreamReader(stream);
             Pump(reader, sourceMetadatas, dataPipelineTargetAdapters, delimiter, rowsPoolCapacity);
         }
     }
