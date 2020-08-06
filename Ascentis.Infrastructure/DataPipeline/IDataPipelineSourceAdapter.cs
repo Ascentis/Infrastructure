@@ -5,6 +5,8 @@ namespace Ascentis.Infrastructure.DataPipeline
 {
     public interface IDataPipelineSourceAdapter<TRow>
     {
+        void Prepare();
+        void UnPrepare();
         void ReleaseRow(TRow row);
         IEnumerable<TRow> RowsEnumerable { get; }
         int FieldCount { get; }

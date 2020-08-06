@@ -22,6 +22,10 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
         public DataPipelineSqlSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
 
+        public void Prepare() { }
+
+        public void UnPrepare() { }
+
         public void ReleaseRow(object[] row)
         {
             _rowsPool.Release(row);
