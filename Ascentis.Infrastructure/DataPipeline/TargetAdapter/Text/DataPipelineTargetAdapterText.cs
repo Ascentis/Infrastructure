@@ -26,14 +26,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             var buf = WriteBuffer;
             var s = string.Format(FormatCultureInfo, FormatString, row);
             bytesWritten = s.Length;
-            if (buf != null)
-            {
-                if (bytesWritten > buf.Length)
-                    buf = new byte[(int)(bytesWritten * 1.25)];
-                OutputEncoding.GetBytes(s, 0, s.Length, buf, 0);
-            }
-            else
-                buf = OutputEncoding.GetBytes(s);
+            if (buf == null || bytesWritten > buf.Length)
+                buf = new byte[(int)(bytesWritten * 1.25)];
+            OutputEncoding.GetBytes(s, 0, s.Length, buf, 0);
             return buf;
         }
 
