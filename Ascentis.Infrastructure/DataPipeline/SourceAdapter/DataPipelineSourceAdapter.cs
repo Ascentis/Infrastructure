@@ -9,6 +9,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
         public event DataPipeline<T>.RowErrorDelegate OnSourceAdapterRowReadError;
         public bool AbortOnReadException { get; set; }
         public abstract int FieldCount { get; }
+        public int ParallelLevel { get; set; }
         public virtual DataPipelineColumnMetadata[] ColumnMetadatas { get; set; }
 
         protected void InvokeRowReadErrorEvent(object sourceData, Exception e)

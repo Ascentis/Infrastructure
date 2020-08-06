@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestMethodConveyorBasic()
         {
             var sum = 0;
-            var conveyor = new Conveyor<int>(packet =>
+            var conveyor = new Conveyor<int>((packet, context) =>
             {
                 sum += packet;
             });
@@ -27,7 +27,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestMethodConveyorBadUsageThrowExceptions()
         {
             var sum = 0;
-            var conveyor = new Conveyor<int>(packet =>
+            var conveyor = new Conveyor<int>((packet, context) =>
             {
                 sum += packet;
             });
@@ -47,7 +47,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestMethodConveyorThrowExceptionWithin()
         {
             var sum = 0;
-            var conveyor = new Conveyor<int>(packet =>
+            var conveyor = new Conveyor<int>((packet, context) =>
             {
                 sum += packet;
                 if (sum >= 3)
@@ -66,7 +66,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestMethodConveyorStopOnExceptedState()
         {
             var sum = 0;
-            var conveyor = new Conveyor<int>(packet =>
+            var conveyor = new Conveyor<int>((packet, context) =>
             {
                 sum += packet;
                 if (sum >= 3)
@@ -85,7 +85,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestMethodConveyorStopAndWaitOnExceptedState()
         {
             var sum = 0;
-            var conveyor = new Conveyor<int>(packet =>
+            var conveyor = new Conveyor<int>((packet, context) =>
             {
                 sum += packet;
                 if (sum >= 3)

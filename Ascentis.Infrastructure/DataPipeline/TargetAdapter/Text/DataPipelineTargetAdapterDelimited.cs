@@ -9,7 +9,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         public DataPipelineTargetAdapterDelimited(Stream stream) : base(stream) {}
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
+        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
         {
             const string crLf = "\r\n";
 

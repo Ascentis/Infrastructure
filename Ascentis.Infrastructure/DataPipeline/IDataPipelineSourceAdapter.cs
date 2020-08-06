@@ -13,5 +13,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         IEnumerable<TRow> RowsEnumerable { get; }
         int FieldCount { get; }
         DataPipelineColumnMetadata[] ColumnMetadatas { get; }
+        int ParallelLevel { get; set; }
     }
 }

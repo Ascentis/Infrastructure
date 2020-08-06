@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<object[]>
+    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<PoolEntry<object[]>>
     {
         protected Stream Target { get; }
         protected string FormatString { get; set; }
@@ -44,7 +44,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
+        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 
@@ -52,9 +52,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                 throw new DataPipelineException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
-        public override void Process(object[] row)
+        public override void Process(PoolEntry<object[]> row)
         {
-            var bytes = RowToBytes(row, out var bytesWritten);
+            var bytes = RowToBytes(row.Value, out var bytesWritten);
             Target.Write(bytes, 0, bytesWritten);
         }
     }

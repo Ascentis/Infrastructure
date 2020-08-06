@@ -11,7 +11,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestMethodPoolBasic()
         {
-            var pool = new Pool<object>(2, () => new object());
+            var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
             Assert.IsNotNull(obj1);
             var obj2 = pool.Acquire();
@@ -21,7 +21,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestMethodPoolRetrieveTimeout()
         {
-            var pool = new Pool<object>(2, () => new object());
+            var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
             Assert.IsNotNull(obj1);
             var obj2 = pool.Acquire();
@@ -32,7 +32,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestMethodPoolSimpleReleaseSemantics()
         {
-            var pool = new Pool<object>(2, () => new object());
+            var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
             Assert.IsNotNull(obj1);
             var obj2 = pool.Acquire();
@@ -46,7 +46,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestMethodPoolReleaseInSeparateThread()
         {
-            var pool = new Pool<object>(2, () => new object());
+            var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
             Assert.IsNotNull(obj1);
             var obj2 = pool.Acquire();
@@ -60,6 +60,22 @@ namespace Ascentis.Infrastructure.Test
             obj2 = pool.Acquire();
             Assert.IsNotNull(obj2);
             Assert.AreEqual(obj3, obj2);
+        }
+
+        [TestMethod]
+        public void TestMethodPoolWithRefCount()
+        {
+            var pool = new Pool<object>(10, pool => pool.NewPoolEntry(new object(), 2));
+            var obj1 = pool.Acquire();
+            Assert.IsNotNull(obj1);
+            var obj2 = pool.Acquire();
+            Assert.IsNotNull(obj2);
+            pool.Release(obj2);
+            var obj3 = pool.Acquire();
+            Assert.AreNotEqual(obj3, obj2);
+            pool.Release(obj2);
+            var obj4 = pool.Acquire();
+            Assert.AreEqual(obj4, obj2);
         }
     }
 }

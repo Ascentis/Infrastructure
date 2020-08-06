@@ -6,6 +6,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
         public bool AbortOnProcessException { get; set; }
+        public int ParallelLevel { get; set; }
         protected IDataPipelineSourceAdapter<TRow> Source { get; private set; }
 
         public virtual void Prepare(IDataPipelineSourceAdapter<TRow> source)

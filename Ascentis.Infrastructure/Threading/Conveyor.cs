@@ -8,21 +8,23 @@ namespace Ascentis.Infrastructure
     public class Conveyor<T>
     {
         private enum ThreadStatus {NotStarted, Started, Stopped}
-        public delegate void ProcessPacketDelegate(T packet);
+        public delegate void ProcessPacketDelegate(T packet, object context);
         private readonly ManualResetEventSlim _dataAvailable;
         private readonly ConcurrentQueue<T> _packetsQueue;
         private readonly ProcessPacketDelegate _processPacketDelegate;
         private volatile ThreadStatus _threadStatus;
         private Thread _workerThread;
         private Exception _exception;
+        private readonly object _context;
 
-        public Conveyor(ProcessPacketDelegate processPacketDelegate)
+        public Conveyor(ProcessPacketDelegate processPacketDelegate, object context = null)
         {
             ArgsChecker.CheckForNull<NullReferenceException>(processPacketDelegate, nameof(processPacketDelegate));
             _dataAvailable = new ManualResetEventSlim(false);
             _packetsQueue = new ConcurrentQueue<T>();
             _processPacketDelegate = processPacketDelegate;
             _threadStatus = ThreadStatus.NotStarted;
+            _context = context;
         }
 
         public void Start()
@@ -39,7 +41,7 @@ namespace Ascentis.Infrastructure
                     {
                         if (_packetsQueue.TryDequeue(out var packet))
                         {
-                            _processPacketDelegate(packet);
+                            _processPacketDelegate(packet, _context);
                             continue;
                         }
 

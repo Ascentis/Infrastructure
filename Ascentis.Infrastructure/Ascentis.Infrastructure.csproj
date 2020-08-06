@@ -60,6 +60,8 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthDataPipeline.cs" />
     <Compile Include="DataPipeline\TargetAdapter\DataPipelineTargetAdapter.cs" />
+    <Compile Include="Patterns\PoolEntry.cs" />
+    <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterDelimited.cs" />
     <Compile Include="DataPipeline\Exceptions\DataPipelineException.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterFixedLength.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Threading\BoundedParallelStats.cs" />
     <Compile Include="Patterns\ConcurrentObjectAccessor.cs" />
     <Compile Include="Patterns\ConcurrentIncrementableResettableInt.cs" />
+    <Compile Include="Utils\Except.cs" />
     <Compile Include="Utils\GenericObjectBuilder.cs" />
     <Compile Include="Patterns\Resettable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

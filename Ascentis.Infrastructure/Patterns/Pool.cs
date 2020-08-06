@@ -7,8 +7,8 @@ namespace Ascentis.Infrastructure
 {
     public class Pool<T>
     {
-        public delegate T Builder();
-        private readonly ConcurrentBag<T> _bag;
+        public delegate PoolEntry<T> Builder(Pool<T> pool);
+        private readonly ConcurrentBag<PoolEntry<T>> _bag;
         private readonly ManualResetEventSlim _releasedEvent;
         private readonly Builder _builder;
         private volatile int _allowance;
@@ -16,14 +16,19 @@ namespace Ascentis.Infrastructure
         public Pool(int maxCapacity, Builder builder)
         {
             _allowance = maxCapacity;
-            _bag = new ConcurrentBag<T>();
+            _bag = new ConcurrentBag<PoolEntry<T>>();
             _releasedEvent = new ManualResetEventSlim(false);
             _builder = builder;
         }
 
-        public T Acquire(int timeout = -1)
+        public PoolEntry<T> NewPoolEntry(T value, int initialRefCount = -1)
         {
-            T obj;
+            return new PoolEntry<T>(value, initialRefCount);
+        }
+
+        public PoolEntry<T> Acquire(int timeout = -1)
+        {
+            PoolEntry<T> obj;
             while (true)
             {
                 if (_bag.TryTake(out obj))
@@ -33,7 +38,7 @@ namespace Ascentis.Infrastructure
                     var allowance = Interlocked.Decrement(ref _allowance);
                     if (allowance >= 0)
                     {
-                        obj = _builder();
+                        obj = _builder(this);
                         break;
                     }
                     Interlocked.Increment(ref _allowance);
@@ -46,8 +51,11 @@ namespace Ascentis.Infrastructure
             return obj;
         }
 
-        public void Release(T obj)
+        public void Release(PoolEntry<T> obj)
         {
+            if (!obj.Release())
+                return;
+            obj.ResetRefCount();
             _bag.Add(obj);
             _releasedEvent.Set();
         }

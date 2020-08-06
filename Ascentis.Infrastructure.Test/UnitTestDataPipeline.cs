@@ -178,7 +178,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToCsvStreamToFile()
         {
-            using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
+            using var cmd = new SqlCommand( "SELECT TOP 10000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlDataPipeline();
@@ -349,6 +349,48 @@ namespace Ascentis.Infrastructure.Test
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("            WKHR             0\r\n            WKHR             0\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestSqlToDualCvsAndDelimitedStream()
+        {
+            using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+
+            var buf2 = new byte[1000];
+            using var stream2 = new MemoryStream(buf2);
+
+            var targets = new DataPipelineTargetAdapterText[]
+                {
+                    new DataPipelineTargetAdapterDelimited(stream), 
+                    new DataPipelineTargetAdapterFixedLength(stream2) {FieldSizes = new []{6, 4}}
+                };
+            var streamer = new SqlDataPipeline();
+
+            streamer.Pump(cmd, targets);
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
+
+            stream2.Flush();
+            str = Encoding.UTF8.GetString(buf2, 0, (int)stream2.Position);
+            Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestSqlToDualCsvAndFixedStreamToFile()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 10000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
+            using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
+            using var fileStream2 = new FileStream("T:\\dump2.txt", FileMode.Create, FileAccess.ReadWrite);
+            var streamer = new SqlDataPipeline();
+            var targets = new DataPipelineTargetAdapterText[]
+            {
+                new DataPipelineTargetAdapterDelimited(fileStream),
+                new DataPipelineTargetAdapterFixedLength(fileStream2) {FieldSizes = new []{40, 40, 20, 20, 30, 30, 30}}
+            };
+            streamer.Pump(cmd, targets);
         }
     }
 }

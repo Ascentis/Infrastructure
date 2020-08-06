@@ -22,7 +22,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                 FieldSizes[columnIndex++] = ColumnTypeToBufferSize(columnMetadata);
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
+        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
         {
             const string crLf = "\r\n";
             base.Prepare(source);
@@ -55,18 +55,18 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return buf;
         }
 
-        public override void Process(object[] row)
+        public override void Process(PoolEntry<object[]> row)
         {
             if (OverflowStringFieldWidthBehaviors != null)
-                for (var i = 0; i < row.Length; i++)
+                for (var i = 0; i < row.Value.Length; i++)
                 {
-                    if (!(row[i] is string) || ((string) row[i]).Length <= Math.Abs(FieldSizes[i]))
+                    if (!(row.Value[i] is string) || ((string) row.Value[i]).Length <= Math.Abs(FieldSizes[i]))
                         continue;
-                    var strValue = (string) row[i];
+                    var strValue = (string) row.Value[i];
                     if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
                         throw new DataPipelineException(
                             $"Field {Source.ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
-                    row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
+                    row.Value[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }
 
             base.Process(row);

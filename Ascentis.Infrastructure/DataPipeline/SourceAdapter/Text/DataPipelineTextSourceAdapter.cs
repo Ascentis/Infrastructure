@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public abstract class DataPipelineTextSourceAdapter : DataPipelineSourceAdapter<object[]>
+    public abstract class DataPipelineTextSourceAdapter : DataPipelineSourceAdapter<PoolEntry<object[]>>
     {
         protected Regex RegexParser { get; set; }
         private TextToObject[] _textToObjects;
@@ -58,7 +58,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             return result;
         }
 
-        public override void ReleaseRow(object[] row)
+        public override void ReleaseRow(PoolEntry<object[]> row)
         {
             RowsPool.Release(row);
         }
@@ -66,7 +66,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
         public override void Prepare()
         {
             base.Prepare();
-            RowsPool = new Pool<object[]>(RowsPoolCapacity, () => new object[FieldCount]);
+            RowsPool = new Pool<object[]>(RowsPoolCapacity, pool => pool.NewPoolEntry(new object[FieldCount], ParallelLevel));
             _textToObjects = BuildConversionArray();
         }
 
@@ -78,7 +78,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             }
         }
 
-        public override IEnumerable<object[]> RowsEnumerable
+        public override IEnumerable<PoolEntry<object[]>> RowsEnumerable
         {
             get
             {
@@ -97,7 +97,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
                         if (match.Groups.Count != FieldCount + 1)
                             throw new DataPipelineException("Number of individual data elements read in fixed length streamer line don't match layout");
                         for (var i = 1; i < match.Groups.Count; i++)
-                            values[i - 1] = _textToObjects[i - 1](match.Groups[i].Value);
+                            values.Value[i - 1] = _textToObjects[i - 1](match.Groups[i].Value);
                     }
                     catch (Exception e)
                     {

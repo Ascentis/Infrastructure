@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             _prepared = false;
         }
 
-        public override IEnumerable<object[]> RowsEnumerable
+        public override IEnumerable<PoolEntry<object[]>> RowsEnumerable
         {
             get
             {
