@@ -5,6 +5,8 @@ namespace Ascentis.Infrastructure.DataPipeline
 {
     public interface IDataPipelineSourceAdapter<TRow>
     {
+        public event DataPipeline<TRow>.RowErrorDelegate OnSourceAdapterRowReadError;
+        public bool AbortOnReadException { get; set; }
         void Prepare();
         void UnPrepare();
         void ReleaseRow(TRow row);

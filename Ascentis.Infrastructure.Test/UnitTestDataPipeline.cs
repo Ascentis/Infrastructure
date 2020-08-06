@@ -211,6 +211,65 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestFixedLengthToCsvErrorReading()
+        {
+            var exceptionCalled = false;
+            var reader = new StringReader("WKHR-               A\r\nWKHR-               0\r\n");
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new FixedLengthDataPipeline();
+            streamer.OnSourceAdapterRowReadError += (sourceObject, e) =>
+            {
+                exceptionCalled = (string)sourceObject == "WKHR-               A";
+            };
+            streamer.Pump(reader, new[]
+            {
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(string),
+                    ColumnSize = 4,
+                    StartPosition = 0
+                },
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(int),
+                    ColumnSize = 16,
+                    StartPosition = 5
+                }
+            }, new DataPipelineTargetAdapterDelimited(stream));
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR,0\r\n", str);
+            Assert.IsTrue(exceptionCalled);
+        }
+
+        [TestMethod]
+        public void TestFixedLengthToCsvErrorPreparing()
+        {
+            var reader = new StringReader("WKHR-               A\r\nWKHR-               0\r\n");
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new FixedLengthDataPipeline();
+            // ReSharper disable once PossibleNullReferenceException
+            Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => streamer.Pump(reader, new[]
+                {
+                    new DataPipelineColumnMetadata
+                    {
+                        DataType = typeof(string),
+                        ColumnSize = 4,
+                        StartPosition = 0
+                    },
+                    new DataPipelineColumnMetadata
+                    {
+                        DataType = typeof(int),
+                        ColumnSize = 16,
+                        StartPosition = 3 // Not a valid position
+                    }
+                    // ReSharper disable once AccessToDisposedClosure
+                }, new DataPipelineTargetAdapterDelimited(stream))).Message.Contains("Field position can't"));
+        }
+
+        [TestMethod]
         // ReSharper disable once InconsistentNaming
         public void TestSqlToFixedStreamToFile1MMRowsAndToCsv()
         {

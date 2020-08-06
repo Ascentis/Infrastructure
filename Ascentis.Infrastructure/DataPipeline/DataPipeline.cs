@@ -1,11 +1,25 @@
 ﻿using System;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
     public class DataPipeline<TRow>
     {
+        public delegate void RowErrorDelegate(object data, Exception e);
+
+        public event RowErrorDelegate OnSourceAdapterRowReadError;
+        public event RowErrorDelegate OnTargetAdapterRowProcessError;
+        public bool AbortOnSourceAdapterException { get; set; }
+        public bool AbortOnTargetAdapterException { get; set; }
+
         public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, IDataPipelineTargetAdapter<TRow> dataPipelineTargetAdapter)
         {
+            dataPipelineSourceAdapter.OnSourceAdapterRowReadError += OnSourceAdapterRowReadError;
+            dataPipelineSourceAdapter.AbortOnReadException = AbortOnSourceAdapterException;
+
+            dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
+            dataPipelineTargetAdapter.AbortOnProcessException = AbortOnTargetAdapterException;
+
             dataPipelineTargetAdapter.Prepare(dataPipelineSourceAdapter);
             var targetAdapterConveyor = new Conveyor<TRow>(row =>
             {
@@ -37,10 +51,7 @@ namespace Ascentis.Infrastructure.DataPipeline
                 {
                     targetAdapterConveyor.Stop();
                 }
-                catch (InvalidOperationException)
-                {
-                    // We will catch and ignore invalid attempt to Stop a not yet running Conveyor
-                }
+                catch (InvalidOperationException) { }
 
                 dataPipelineTargetAdapter.AbortedWithException(e);
                 throw;

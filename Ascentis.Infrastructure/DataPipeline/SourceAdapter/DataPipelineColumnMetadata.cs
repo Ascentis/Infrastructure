@@ -36,5 +36,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
         public string UdtAssemblyQualifiedName { get; set; }
         public int? NonVersionedProviderType { get; set; }
         public bool? IsColumnSet { get; set; }
+        public int? StartPosition { get; set; }
     }
 }

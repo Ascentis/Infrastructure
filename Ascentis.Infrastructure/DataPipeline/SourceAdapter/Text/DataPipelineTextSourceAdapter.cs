@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Remoting.Messaging;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public abstract class DataPipelineTextSourceAdapter : IDataPipelineSourceAdapter<object[]>
+    public abstract class DataPipelineTextSourceAdapter : DataPipelineSourceAdapter<object[]>
     {
         public const int DefaultRowsPoolCapacity = 1000;
 
@@ -29,7 +27,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             {
                 if (ColumnMetadatas[i].DataType == typeof(string))
                     result[i] = text => text.Trim();
-                if (ColumnMetadatas[i].DataType == typeof(char))
+                else if (ColumnMetadatas[i].DataType == typeof(char))
                     result[i] = text => text.Trim() != "" ? text.Trim()[0] : ' ';
                 else if (ColumnMetadatas[i].DataType == typeof(int))
                     result[i] = text => int.Parse(text.Trim());
@@ -47,33 +45,30 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
                     result[i] = text => float.Parse(text.Trim());
                 else if (ColumnMetadatas[i].DataType == typeof(DateTime))
                     result[i] = text => DateTime.Parse(text.Trim());
+                else
+                    result[i] = text => text.Trim();
             }
 
             return result;
         }
 
-        public virtual void ReleaseRow(object[] row)
+        public override void ReleaseRow(object[] row)
         {
             RowsPool.Release(row);
         }
 
-        public virtual void Prepare()
+        public override void Prepare()
         {
+            base.Prepare();
             RowsPool = new Pool<object[]>(RowsPoolCapacity, () => new object[FieldCount]);
         }
 
-        public virtual void UnPrepare() { }
-
-        public abstract IEnumerable<object[]> RowsEnumerable { get; }
-
-        public virtual int FieldCount {
+        public override int FieldCount {
             get
             {
                 ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
                 return ColumnMetadatas.Length;
             }
         }
-
-        public DataPipelineColumnMetadata[] ColumnMetadatas { get; set; }
     }
 }

@@ -6,9 +6,11 @@ using System.Reflection;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 {
-    public class DataPipelineSqlSourceAdapter : IDataPipelineSourceAdapter<object[]>
+    public class DataPipelineSqlSourceAdapter : DataPipelineSourceAdapter<object[]>
     {
         public const int DefaultRowsCapacity = 1000;
+
+        public event DataPipeline<object[]>.RowErrorDelegate OnSourceAdapterRowReadError;
 
         private readonly Pool<object[]> _rowsPool;
         private readonly SqlDataReader _sqlDataReader;
@@ -21,17 +23,13 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
         }
 
         public DataPipelineSqlSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
-
-        public void Prepare() { }
-
-        public void UnPrepare() { }
-
-        public void ReleaseRow(object[] row)
+        
+        public override void ReleaseRow(object[] row)
         {
             _rowsPool.Release(row);
         }
 
-        public IEnumerable<object[]> RowsEnumerable
+        public override IEnumerable<object[]> RowsEnumerable
         {
             get
             {
@@ -44,9 +42,9 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
             }
         }
 
-        public int FieldCount => _sqlDataReader.FieldCount;
+        public override int FieldCount => _sqlDataReader.FieldCount;
 
-        public DataPipelineColumnMetadata[] ColumnMetadatas {
+        public override DataPipelineColumnMetadata[] ColumnMetadatas {
             get
             {
                 if (_columnMetadatas != null)
@@ -74,6 +72,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
                 return _columnMetadatas;
             }
+            set => throw new InvalidOperationException($"Can't set ColumnMetadatas for {GetType().Name}");
         }
     }
 }
