@@ -1,19 +1,25 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Text;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
-using Ascentis.Infrastructure.DataStreamer.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<Stream, object[]>
+    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<object[]>
     {
+        protected Stream Target { get; }
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
 
         public string[] ColumnFormatStrings { get; set; }
         public Encoding OutputEncoding { get; set; } = Encoding.UTF8;
         public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
+
+        public DataPipelineTargetAdapterText(Stream target)
+        {
+            Target = target;
+        }
 
         protected virtual byte[] RowToBytes(object[] row, out int bytesWritten)
         {
@@ -43,12 +49,12 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
         {
-            base.Prepare(source, target);
+            base.Prepare(source);
 
             if (ColumnFormatStrings != null && ColumnFormatStrings.Length != Source.FieldCount)
-                throw new DataStreamerException("When ColumnFormatStrings is provided its length must match result set field count");
+                throw new DataPipelineException("When ColumnFormatStrings is provided its length must match result set field count");
         }
 
         public override void Process(object[] row)

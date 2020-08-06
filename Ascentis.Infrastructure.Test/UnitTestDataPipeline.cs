@@ -2,9 +2,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
-using Ascentis.Infrastructure.DataStreamer.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable once CheckNamespace
@@ -35,8 +37,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited(), stream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
@@ -48,8 +50,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength {FieldSizes = new []{6, 4}}, stream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream) {FieldSizes = new []{6, 4}});
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
@@ -61,8 +63,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(), stream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR               0\r\nWKHR               0\r\n", str);
@@ -74,12 +76,12 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream)
             {
                 FieldSizes = new[] { 6, 6 },
                 ColumnFormatStrings = new[] { "", "N2" }
-            }, stream);
+            });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR  0.00\r\n  WKHR  0.00\r\n", str);
@@ -91,8 +93,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength { FieldSizes = new[] { -6, -4 } }, stream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream) { FieldSizes = new[] { -6, -4 } });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR  0   \r\nWKHR  0   \r\n", str);
@@ -104,8 +106,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream)
             {
                 FieldSizes = new[] { 3, 4 },
                 OverflowStringFieldWidthBehaviors = new[]
@@ -113,7 +115,7 @@ namespace Ascentis.Infrastructure.Test
                     DataPipelineTargetAdapterFixedLength.OverflowStringFieldWidthBehavior.Truncate,
                     DataPipelineTargetAdapterFixedLength.OverflowStringFieldWidthBehavior.Truncate
                 }
-            }, stream);
+            });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKH   0\r\nWKH   0\r\n", str);
@@ -126,9 +128,9 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
+            var streamer = new SqlDataPipeline();
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => 
-                streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength {FieldSizes = new[] { 3, 4 }}, stream)).InnerException is DataStreamerException);
+                streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream) {FieldSizes = new[] { 3, 4 }})).InnerException is DataPipelineException);
         }
 
         [TestMethod]
@@ -138,13 +140,13 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
+            var streamer = new SqlDataPipeline();
             // ReSharper disable once AccessToDisposedClosure
-            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream)
             {
                 FieldSizes = new[] { 4, 1 },
                 ColumnFormatStrings = new[] { "", "N2" }
-            }, stream)).InnerException is DataStreamerException);
+            })).InnerException is DataPipelineException);
         }
 
         [TestMethod]
@@ -155,8 +157,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            Assert.ThrowsException<DataStreamerException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength() { FieldSizes = new []{0}}, stream));
+            var streamer = new SqlDataPipeline();
+            Assert.ThrowsException<DataPipelineException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream) { FieldSizes = new []{0}}));
         }
 
         [TestMethod]
@@ -165,8 +167,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited { OutputHeaders = true }, stream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited(stream) { OutputHeaders = true });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("CPCODE_EXP,NPAYCODE\r\nWKHR,0\r\nWKHR,0\r\n", str);
@@ -178,8 +180,33 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
-            var streamer = new SqlDataPipeline<Stream>();
-            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited(), fileStream);
+            var streamer = new SqlDataPipeline();
+            streamer.Pump(cmd, new DataPipelineTargetAdapterDelimited(fileStream));
+        }
+
+        [TestMethod]
+        public void TestFixedLengthToCsvBasic()
+        {
+            var reader = new StringReader("WKHR               0\r\nWKHR               0\r\n");
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new FixedLengthDataPipeline<Stream>();
+            streamer.Pump(reader, new []
+            {
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(string),
+                    ColumnSize = 4
+                },
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(int),
+                    ColumnSize = 16
+                }
+            }, new DataPipelineTargetAdapterDelimited(stream));
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
         }
     }
 }

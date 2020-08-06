@@ -7,11 +7,13 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
+        public DataPipelineTargetAdapterDelimited(Stream stream) : base(stream) {}
+
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
         {
             const string crLf = "\r\n";
 
-            base.Prepare(source, target);
+            base.Prepare(source);
 
             FormatString = "";
             var bufferSize = 0;
@@ -29,7 +31,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             for (var i = 0; i < Source.FieldCount; i++)
                 columnNames[i] = Source.ColumnMetadatas[i].ColumnName;
             var bytes = RowToBytes(columnNames, out var bytesWritten);
-            target.Write(bytes, 0, bytesWritten);
+            Target.Write(bytes, 0, bytesWritten);
         }
     }
 }

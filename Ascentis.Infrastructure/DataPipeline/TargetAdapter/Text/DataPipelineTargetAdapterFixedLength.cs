@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Ascentis.Infrastructure.DataStreamer.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
@@ -12,6 +12,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         private int _rowSize;
 
+        public  DataPipelineTargetAdapterFixedLength(Stream stream) : base(stream) {}
+
         private void InitializeFieldSizesWithDefaults()
         {
             FieldSizes = new int[Source.FieldCount];
@@ -20,17 +22,17 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                 FieldSizes[columnIndex++] = ColumnTypeToBufferSize(columnMetadata);
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<object[]> source, Stream target)
+        public override void Prepare(IDataPipelineSourceAdapter<object[]> source)
         {
             const string crLf = "\r\n";
-            base.Prepare(source, target);
+            base.Prepare(source);
 
             if (FieldSizes == null || FieldSizes.Length <= 0)
                 InitializeFieldSizesWithDefaults();
             if (FieldSizes.Length != Source.FieldCount)
-                throw new DataStreamerException("Provided FieldSizes array has a different length than result set column count");
+                throw new DataPipelineException("Provided FieldSizes array has a different length than result set column count");
             if (OverflowStringFieldWidthBehaviors != null && OverflowStringFieldWidthBehaviors.Length != Source.FieldCount)
-                throw new DataStreamerException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
+                throw new DataPipelineException("When OverflowStringFieldWidthBehaviors is provided its length must match result set field count");
 
             _rowSize = 0;
             FormatString = "";
@@ -49,7 +51,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         {
             var buf = base.RowToBytes(row, out bytesWritten);
             if (bytesWritten > _rowSize)
-                throw new DataStreamerException("Total row size exceeds specified row size based on fixed column widths");
+                throw new DataPipelineException("Total row size exceeds specified row size based on fixed column widths");
             return buf;
         }
 
@@ -62,7 +64,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                         continue;
                     var strValue = (string) row[i];
                     if (OverflowStringFieldWidthBehaviors[i] == OverflowStringFieldWidthBehavior.Error)
-                        throw new DataStreamerException(
+                        throw new DataPipelineException(
                             $"Field {Source.ColumnMetadatas[i].ColumnName} size overflow streaming using fixed length streamer");
                     row[i] = strValue.Remove(FieldSizes[i], strValue.Length - FieldSizes[i]);
                 }

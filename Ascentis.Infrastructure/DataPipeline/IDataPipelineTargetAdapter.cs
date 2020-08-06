@@ -2,9 +2,9 @@
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
-    public interface IDataPipelineTargetAdapter<in TTarget, TRow>
+    public interface IDataPipelineTargetAdapter<TRow>
     {
-        void Prepare(IDataPipelineSourceAdapter<TRow> source, TTarget target);
+        void Prepare(IDataPipelineSourceAdapter<TRow> source);
         void Process(TRow row);
         void UnPrepare();
         void AbortedWithException(Exception e);
