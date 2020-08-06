@@ -1,5 +1,4 @@
 ﻿using System;
-using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
@@ -12,49 +11,58 @@ namespace Ascentis.Infrastructure.DataPipeline
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
 
-        public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, IDataPipelineTargetAdapter<TRow> dataPipelineTargetAdapter)
+        private void SetupAdaptersEvents(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter,
+            IDataPipelineTargetAdapter<TRow> dataPipelineTargetAdapter)
         {
             dataPipelineSourceAdapter.OnSourceAdapterRowReadError += OnSourceAdapterRowReadError;
             dataPipelineSourceAdapter.AbortOnReadException = AbortOnSourceAdapterException;
 
             dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
             dataPipelineTargetAdapter.AbortOnProcessException = AbortOnTargetAdapterException;
+        }
 
-            dataPipelineTargetAdapter.Prepare(dataPipelineSourceAdapter);
-            var targetAdapterConveyor = new Conveyor<TRow>(row =>
-            {
-                dataPipelineTargetAdapter.Process(row);
-                dataPipelineSourceAdapter.ReleaseRow(row);
-            });
+        public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, 
+            IDataPipelineTargetAdapter<TRow> dataPipelineTargetAdapter)
+        {
+            SetupAdaptersEvents(dataPipelineSourceAdapter, dataPipelineTargetAdapter);
+
+            dataPipelineSourceAdapter.Prepare();
             try
             {
-                targetAdapterConveyor.Start();
-
-                dataPipelineSourceAdapter.Prepare();
+                dataPipelineTargetAdapter.Prepare(dataPipelineSourceAdapter);
+                var targetAdapterConveyor = new Conveyor<TRow>(row =>
+                {
+                    dataPipelineTargetAdapter.Process(row);
+                    dataPipelineSourceAdapter.ReleaseRow(row);
+                });
                 try
                 {
+                    targetAdapterConveyor.Start();
+
                     var sourceRows = dataPipelineSourceAdapter.RowsEnumerable;
                     foreach (var row in sourceRows)
                         targetAdapterConveyor.InsertPacket(row);
-                }
-                finally
-                {
-                    dataPipelineSourceAdapter.UnPrepare();
-                }
 
-                targetAdapterConveyor.StopAndWait();
-                dataPipelineTargetAdapter.UnPrepare();
+                    targetAdapterConveyor.StopAndWait();
+                    dataPipelineTargetAdapter.UnPrepare();
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        targetAdapterConveyor.Stop();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+
+                    dataPipelineTargetAdapter.AbortedWithException(e);
+                    throw;
+                }
             }
-            catch (Exception e)
+            finally
             {
-                try
-                {
-                    targetAdapterConveyor.Stop();
-                }
-                catch (InvalidOperationException) { }
-
-                dataPipelineTargetAdapter.AbortedWithException(e);
-                throw;
+                dataPipelineSourceAdapter.UnPrepare();
             }
         }
     }

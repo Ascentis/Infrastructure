@@ -267,6 +267,22 @@ namespace Ascentis.Infrastructure.Test
                     }
                     // ReSharper disable once AccessToDisposedClosure
                 }, new DataPipelineTargetAdapterDelimited(stream))).Message.Contains("Field position can't"));
+            Assert.IsTrue(Assert.ThrowsException<NullReferenceException>(() => streamer.Pump(reader, new[]
+            {
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(string),
+                    ColumnSize = null, // Not valid
+                    StartPosition = 0
+                },
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(int),
+                    ColumnSize = 16,
+                    StartPosition = 3
+                }
+                // ReSharper disable once AccessToDisposedClosure
+            }, new DataPipelineTargetAdapterDelimited(stream))).Message.Contains("ColumnSize[0]"));
         }
 
         [TestMethod]
@@ -310,6 +326,29 @@ namespace Ascentis.Infrastructure.Test
                     }
                 }
             }, new DataPipelineTargetAdapterDelimited(targetFileStream));
+        }
+
+        [TestMethod]
+        public void TestCsvToFixedBasic()
+        {
+            var reader = new StringReader("WKHR;;0\r\nWKHR;;0\r\n");
+            var buf = new byte[1000];
+            using var stream = new MemoryStream(buf);
+            var streamer = new DelimitedDataPipeline();
+            streamer.Pump(reader, new[]
+            {
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(string)
+                },
+                new DataPipelineColumnMetadata
+                {
+                    DataType = typeof(int)
+                }
+            }, new DataPipelineTargetAdapterFixedLength(stream), ";;");
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("            WKHR             0\r\n            WKHR             0\r\n", str);
         }
     }
 }

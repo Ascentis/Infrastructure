@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
     public abstract class DataPipelineTextSourceAdapter : DataPipelineSourceAdapter<object[]>
     {
+        protected Regex RegexParser { get; set; }
+        private TextToObject[] _textToObjects;
+
         public const int DefaultRowsPoolCapacity = 1000;
 
         public int RowsPoolCapacity { get; set; } = DefaultRowsPoolCapacity;
@@ -61,6 +67,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
         {
             base.Prepare();
             RowsPool = new Pool<object[]>(RowsPoolCapacity, () => new object[FieldCount]);
+            _textToObjects = BuildConversionArray();
         }
 
         public override int FieldCount {
@@ -68,6 +75,39 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             {
                 ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
                 return ColumnMetadatas.Length;
+            }
+        }
+
+        public override IEnumerable<object[]> RowsEnumerable
+        {
+            get
+            {
+                while (true)
+                {
+                    var values = RowsPool.Acquire();
+                    var s = Reader.ReadLine();
+                    try
+                    {
+                        if (string.IsNullOrEmpty(s))
+                            yield break;
+
+                        var match = RegexParser.Match(s);
+                        if (match.Value == "")
+                            throw new DataPipelineException("No match parsing fixed length line");
+                        if (match.Groups.Count != FieldCount + 1)
+                            throw new DataPipelineException("Number of individual data elements read in fixed length streamer line don't match layout");
+                        for (var i = 1; i < match.Groups.Count; i++)
+                            values[i - 1] = _textToObjects[i - 1](match.Groups[i].Value);
+                    }
+                    catch (Exception e)
+                    {
+                        InvokeRowReadErrorEvent(s, e);
+                        if (AbortOnReadException)
+                            throw;
+                        continue;
+                    }
+                    yield return values;
+                }
             }
         }
     }

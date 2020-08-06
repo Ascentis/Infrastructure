@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
@@ -14,7 +15,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
         private readonly Pool<object[]> _rowsPool;
         private readonly SqlDataReader _sqlDataReader;
-        private DataPipelineColumnMetadata[] _columnMetadatas;
 
         public DataPipelineSqlSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
@@ -22,7 +22,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, () => new object[_sqlDataReader.FieldCount]);
         }
 
-        public DataPipelineSqlSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) {}
+        public DataPipelineSqlSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
         
         public override void ReleaseRow(object[] row)
         {
@@ -44,34 +44,36 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 
         public override int FieldCount => _sqlDataReader.FieldCount;
 
-        public override DataPipelineColumnMetadata[] ColumnMetadatas {
-            get
-            {
-                if (_columnMetadatas != null)
-                    return _columnMetadatas;
+        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+        public override void Prepare()
+        {
+            base.Prepare();
 
-                var schemaTable = _sqlDataReader.GetSchemaTable();
-                _columnMetadatas = new DataPipelineColumnMetadata[FieldCount];
-    
-                var columnIndex = 0;
-                // ReSharper disable once PossibleNullReferenceException
-                foreach (DataRow field in schemaTable.Rows)
+            if (ColumnMetadatas != null)
+                return;
+
+            var schemaTable = _sqlDataReader.GetSchemaTable();
+            base.ColumnMetadatas = new DataPipelineColumnMetadata[FieldCount];
+
+            var columnIndex = 0;
+            foreach (DataRow field in schemaTable.Rows)
+            {
+                ColumnMetadatas[columnIndex] = new DataPipelineColumnMetadata();
+                foreach (DataColumn column in schemaTable.Columns)
                 {
-                    _columnMetadatas[columnIndex] = new DataPipelineColumnMetadata();
-                    foreach (DataColumn column in schemaTable.Columns)
-                    {
-                        var prop = _columnMetadatas[columnIndex].GetType().GetProperty(column.ColumnName, BindingFlags.Public | BindingFlags.Instance);
-                        if (prop == null)
-                            continue;
-                        var value = field[column];
-                        prop.SetValue(_columnMetadatas[columnIndex], !(value is DBNull) ? value : null);
-                    }
-    
-                    columnIndex++;
+                    var prop = ColumnMetadatas[columnIndex].GetType().GetProperty(column.ColumnName, BindingFlags.Public | BindingFlags.Instance);
+                    if (prop == null)
+                        continue;
+                    var value = field[column];
+                    prop.SetValue(ColumnMetadatas[columnIndex], !(value is DBNull) ? value : null);
                 }
 
-                return _columnMetadatas;
+                columnIndex++;
             }
+        }
+
+        public override DataPipelineColumnMetadata[] ColumnMetadatas {
+            get => base.ColumnMetadatas;
             set => throw new InvalidOperationException($"Can't set ColumnMetadatas for {GetType().Name}");
         }
     }

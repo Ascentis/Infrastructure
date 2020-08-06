@@ -30,12 +30,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
         public bool? IsReadOnly { get; set; }
         public Type ProviderSpecificDataType { get; set; }
         public string DataTypeName { get; set; }
-        public string XmlSchemaCollectionDatabase { get; set; }
-        public string XmlSchemaCollectionOwningSchema { get; set; }
-        public string XmlSchemaCollectionName { get; set; }
-        public string UdtAssemblyQualifiedName { get; set; }
-        public int? NonVersionedProviderType { get; set; }
-        public bool? IsColumnSet { get; set; }
         public int? StartPosition { get; set; }
     }
 }

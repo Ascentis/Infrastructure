@@ -56,6 +56,8 @@
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLengthSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineTextSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimitedSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthDataPipeline.cs" />
     <Compile Include="DataPipeline\TargetAdapter\DataPipelineTargetAdapter.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterDelimited.cs" />
