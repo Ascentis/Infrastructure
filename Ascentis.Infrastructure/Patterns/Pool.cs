@@ -23,7 +23,7 @@ namespace Ascentis.Infrastructure
 
         public PoolEntry<T> NewPoolEntry(T value, int initialRefCount = -1)
         {
-            return new PoolEntry<T>(value, initialRefCount);
+            return new PoolEntry<T>(this, value, initialRefCount);
         }
 
         public PoolEntry<T> Acquire(int timeout = -1)
@@ -53,7 +53,7 @@ namespace Ascentis.Infrastructure
 
         public void Release(PoolEntry<T> obj)
         {
-            if (!obj.Release())
+            if (!obj.ReleaseOne())
                 return;
             obj.ResetRefCount();
             _bag.Add(obj);

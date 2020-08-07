@@ -8,6 +8,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -131,6 +132,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlDataPipeline();
+            streamer.AbortOnTargetAdapterException = true;
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => 
                 streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream) {FieldSizes = new[] { 3, 4 }})).InnerException is DataPipelineException);
         }
@@ -143,6 +145,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new SqlDataPipeline();
+            streamer.AbortOnTargetAdapterException = true;
             // ReSharper disable once AccessToDisposedClosure
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => streamer.Pump(cmd, new DataPipelineTargetAdapterFixedLength(stream)
             {
@@ -397,14 +400,27 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToSqlBasic()
         {
-            using var cmd = new SqlCommand("SELECT TOP 1000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var cmd = new SqlCommand("SELECT TOP 100 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
             using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
             targetConn.Open();
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
             var pipeline = new SqlDataPipeline();
-            pipeline.Pump(cmd, new DataPipelineTargetAdapterSql(targetCmd));
+            pipeline.Pump(cmd, new DataPipelineTargetAdapterSqlCommand(targetCmd));
+        }
+
+        [TestMethod]
+        public void TestSqlToSqlBulkInsert()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 1015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn.Open();
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            var pipeline = new SqlDataPipeline();
+            //pipeline.AbortOnTargetAdapterException = true;
+            pipeline.Pump(cmd, new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new []{"CEMPID", "NPAYCODE", "DWORKDATE", "TIN", "TOUT"}, targetConn, 100));
         }
     }
 }

@@ -6,12 +6,14 @@ namespace Ascentis.Infrastructure
     public class PoolEntry<T>
     {
         public T Value { get; }
+        public Pool<T> Pool { get; }
         private readonly int _initialRefCount;
         private volatile int _refCount;
 
-        public PoolEntry(T value, int initialRefCount = -1)
+        public PoolEntry(Pool<T> pool, T value, int initialRefCount = -1)
         {
             Value = value;
+            Pool = pool;
             _refCount = initialRefCount;
             _initialRefCount = initialRefCount;
         }
@@ -21,9 +23,15 @@ namespace Ascentis.Infrastructure
             _refCount = _initialRefCount;
         }
 
-        public bool Release()
+        public bool ReleaseOne()
         {
             return _refCount <= -1 || Interlocked.Decrement(ref _refCount) <= 0;
+        }
+
+        public void Retain()
+        {
+            if (_refCount > -1)
+                Interlocked.Increment(ref _refCount);
         }
     }
 }

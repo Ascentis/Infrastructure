@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
@@ -54,7 +55,21 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         public override void Process(PoolEntry<object[]> row)
         {
-            var bytes = RowToBytes(row.Value, out var bytesWritten);
+
+            byte[] bytes;
+            int bytesWritten;
+            try
+            {
+
+                bytes = RowToBytes(row.Value, out bytesWritten);
+            }
+            catch (Exception e)
+            {
+                if (AbortOnProcessException ?? false)
+                    throw;
+                InvokeProcessErrorEvent(row, e);
+                return;
+            }
             Target.Write(bytes, 0, bytesWritten);
         }
     }

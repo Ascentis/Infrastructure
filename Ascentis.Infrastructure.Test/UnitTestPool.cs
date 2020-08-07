@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -6,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
+    [SuppressMessage("ReSharper", "VariableHidesOuterVariable")]
     public class UnitTestPool
     {
         [TestMethod]
@@ -75,6 +77,25 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreNotEqual(obj3, obj2);
             pool.Release(obj2);
             var obj4 = pool.Acquire();
+            Assert.AreEqual(obj4, obj2);
+        }
+        [TestMethod]
+        public void TestMethodPoolWithRefCountandRetainSemantics()
+        {
+            var pool = new Pool<object>(10, pool => pool.NewPoolEntry(new object(), 2));
+            var obj1 = pool.Acquire();
+            Assert.IsNotNull(obj1);
+            var obj2 = pool.Acquire();
+            Assert.IsNotNull(obj2);
+            pool.Release(obj2);
+            var obj3 = pool.Acquire();
+            Assert.AreNotEqual(obj3, obj2);
+            obj2.Retain();
+            pool.Release(obj2);
+            var obj4 = pool.Acquire();
+            Assert.AreNotEqual(obj4, obj2);
+            obj2.Pool.Release(obj2);
+            obj4 = pool.Acquire();
             Assert.AreEqual(obj4, obj2);
         }
     }

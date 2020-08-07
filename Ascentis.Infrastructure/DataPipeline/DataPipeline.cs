@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure.DataPipeline
             foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
             {
                 dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
-                dataPipelineTargetAdapter.AbortOnProcessException = AbortOnTargetAdapterException;
+                dataPipelineTargetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
             }
 
