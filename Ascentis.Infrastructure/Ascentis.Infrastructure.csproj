@@ -52,14 +52,15 @@
     <Compile Include="DataPipeline\IDataPipelineSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\DataPipelineSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\DataPipelineTypeSizeMap.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSqlSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSourceAdapterSql.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SqlDataPipeline.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLengthSourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineTextSourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimitedSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineSourceAdapterFixedLength.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineSourceAdapterText.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineSourceAdapterDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthDataPipeline.cs" />
     <Compile Include="DataPipeline\TargetAdapter\DataPipelineTargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\DataPipelineTargetAdapterSql.cs" />
     <Compile Include="Patterns\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DataPipelineTargetAdapterDelimited.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Misc\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
     <Compile Include="Utils\TypeAndTypeArrayTupleEqualityComparer.cs" />
+    <Compile Include="Utils\TypeToSqlDbType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ascentis.Infrastructure.snk" />

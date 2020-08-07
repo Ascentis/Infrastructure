@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public class DataPipelineDelimitedSourceAdapter : DataPipelineTextSourceAdapter
+    public class DataPipelineSourceAdapterDelimited : DataPipelineSourceAdapterText
     {
         public const string DefaultDelimiter = ",";
 
@@ -14,7 +14,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public string Delimiter { get; set; } = DefaultDelimiter;
 
-        public DataPipelineDelimitedSourceAdapter(TextReader textReader) : base(textReader) { }
+        public DataPipelineSourceAdapterDelimited(TextReader textReader) : base(textReader) { }
 
         public override void Prepare()
         {

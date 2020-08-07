@@ -8,9 +8,9 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             TextReader source,
             DataPipelineColumnMetadata[] sourceMetadatas,
             IDataPipelineTargetAdapter<PoolEntry<object[]>> dataPipelineTargetAdapter,
-            int rowsPoolCapacity = DataPipelineTextSourceAdapter.DefaultRowsPoolCapacity)
+            int rowsPoolCapacity = DataPipelineSourceAdapterText.DefaultRowsPoolCapacity)
         {
-            var sourceAdapter = new DataPipelineFixedLengthSourceAdapter(source)
+            var sourceAdapter = new DataPipelineSourceAdapterFixedLength(source)
             {
                 ColumnMetadatas = sourceMetadatas, 
                 RowsPoolCapacity = rowsPoolCapacity

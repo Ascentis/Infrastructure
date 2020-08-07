@@ -7,6 +7,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -178,7 +179,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToCsvStreamToFile()
         {
-            using var cmd = new SqlCommand( "SELECT TOP 10000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
+            using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var streamer = new SqlDataPipeline();
@@ -300,7 +301,7 @@ namespace Ascentis.Infrastructure.Test
             using var fileSourceReader = new StreamReader(fileStreamSource);
             using var targetFileStream = new FileStream("T:\\dump2.txt", FileMode.Create, FileAccess.ReadWrite);
             var textStreamer = new FixedLengthDataPipeline();
-            textStreamer.Pump(new DataPipelineFixedLengthSourceAdapter(fileSourceReader)
+            textStreamer.Pump(new DataPipelineSourceAdapterFixedLength(fileSourceReader)
             {
                 ColumnMetadatas = new []
                 {
@@ -381,7 +382,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToDualCsvAndFixedStreamToFile()
         {
-            using var cmd = new SqlCommand("SELECT TOP 10000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
+            using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             using var fileStream2 = new FileStream("T:\\dump2.txt", FileMode.Create, FileAccess.ReadWrite);
             var streamer = new SqlDataPipeline();
@@ -391,6 +392,19 @@ namespace Ascentis.Infrastructure.Test
                 new DataPipelineTargetAdapterFixedLength(fileStream2) {FieldSizes = new []{40, 40, 20, 20, 30, 30, 30}}
             };
             streamer.Pump(cmd, targets);
+        }
+
+        [TestMethod]
+        public void TestSqlToSqlBasic()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 1000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn.Open();
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
+            var pipeline = new SqlDataPipeline();
+            pipeline.Pump(cmd, new DataPipelineTargetAdapterSql(targetCmd));
         }
     }
 }

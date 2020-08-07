@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public abstract class DataPipelineTextSourceAdapter : DataPipelineSourceAdapter<PoolEntry<object[]>>
+    public abstract class DataPipelineSourceAdapterText : DataPipelineSourceAdapter<PoolEntry<object[]>>
     {
         protected Regex RegexParser { get; set; }
         private TextToObject[] _textToObjects;
@@ -21,7 +21,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         protected Pool<object[]> RowsPool { get; private set; }
 
-        protected DataPipelineTextSourceAdapter(TextReader textReader)
+        protected DataPipelineSourceAdapterText(TextReader textReader)
         {
             Reader = textReader;
         }
