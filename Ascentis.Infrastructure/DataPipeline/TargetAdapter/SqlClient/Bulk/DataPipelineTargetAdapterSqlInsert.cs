@@ -59,9 +59,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             return sqlText;
         }
 
-        private void BuildSqlCommand(int rowCount, ref SqlCommand sqlCommand)
+        private static void DisposeAndNullify(ref SqlCommand sqlCommand)
         {
             sqlCommand?.Dispose();
+            sqlCommand = null;
+        }
+
+        private void BuildSqlCommand(int rowCount, ref SqlCommand sqlCommand)
+        {
+            DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkInsertSql(rowCount);
             sqlCommand = new SqlCommand(sqlCommandText, _sqlConnection);
             ParamMapper.Map(Source.ColumnMetadatas, sqlCommand.Parameters, rowCount);
@@ -137,10 +143,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
             finally
             {
-                _sqlCommand?.Dispose();
-                _sqlCommand = null;
-                _sqlCommandRowByRow?.Dispose();
-                _sqlCommandRowByRow = null;
+                DisposeAndNullify(ref _sqlCommand);
+                DisposeAndNullify(ref _sqlCommandRowByRow);
             }
             base.UnPrepare();
         }
