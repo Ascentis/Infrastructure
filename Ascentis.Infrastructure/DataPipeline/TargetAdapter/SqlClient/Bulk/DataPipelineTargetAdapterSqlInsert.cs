@@ -16,12 +16,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             };
 
         private readonly string _tableName;
+        private readonly IDictionary<string, int> _columnNameToMetadataIndexMap;
         private readonly IEnumerable<string> _columnNames;
         private readonly SqlConnection _sqlConnection;
         private readonly int _batchSize;
         private readonly List<PoolEntry<object[]>> _rows;
         private SqlCommand _sqlCommand;
         private SqlCommand _sqlCommandRowByRow;
+
+        public bool UseTakeSemantics;
 
         public DataPipelineTargetAdapterSqlInsert(string tableName, 
             IEnumerable<string> columnNames, 
@@ -32,6 +35,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             _columnNames = columnNames;
             _sqlConnection = sqlConnection;
             _batchSize = batchSize;
+            _columnNameToMetadataIndexMap = new Dictionary<string, int>();
             _rows = new List<PoolEntry<object[]>>();
         }
 
@@ -51,6 +55,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
                 var columnIndex = 0;
                 foreach (var dummy in _columnNames)
                     sqlText += $"@P{columnIndex++}_{i},";
+
                 sqlText = sqlText.Remove(sqlText.Length - 1, 1);
                 sqlText += $"){rowSeparator}";
             }
@@ -70,10 +75,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkInsertSql(rowCount);
             sqlCommand = new SqlCommand(sqlCommandText, _sqlConnection);
-            ParamMapper.Map(Source.ColumnMetadatas, sqlCommand.Parameters, rowCount);
+            ParamMapper.Map(_columnNameToMetadataIndexMap, Source.ColumnMetadatas, sqlCommand.Parameters, rowCount);
             sqlCommand.Prepare();
         }
-        
+
+        private static object SourceValueToParamValue(int columnIndex, object[] row)
+        {
+            var value = columnIndex >= 0 ? row[columnIndex] : null;
+            return value ?? DBNull.Value;
+        }
+
         private void ExecuteFallbackRowByRow()
         {
             if(_sqlCommandRowByRow == null)
@@ -81,8 +92,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             foreach (var row in _rows)
             {
                 var paramIndex = 0;
-                foreach (var value in row.Value)
-                    _sqlCommandRowByRow.Parameters[paramIndex++].Value = value;
+                foreach (var column in _columnNameToMetadataIndexMap)
+                    _sqlCommandRowByRow.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
+
                 try
                 {
                     _sqlCommandRowByRow.ExecuteNonQuery();
@@ -104,14 +116,14 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
                 var paramIndex = 0;
                 // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
                 foreach (var row in _rows)
-                foreach (var value in row.Value)
-                    _sqlCommand.Parameters[paramIndex++].Value = value;
+                    foreach (var column in _columnNameToMetadataIndexMap)
+                        _sqlCommand.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
 
                 try
                 {
                     _sqlCommand.ExecuteNonQuery();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     if (AbortOnProcessException??false)
                         throw;
@@ -126,8 +138,21 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
         }
 
+        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
+        {
+            base.Prepare(source);
+
+            foreach (var columnName in _columnNames)
+            {
+                var metaIndex = Source.MetadatasColumnToIndexMap.TryGetValue(columnName, out var index) ? index : -1;
+                _columnNameToMetadataIndexMap.Add(columnName, metaIndex);
+            }
+        }
+
         public override void Process(PoolEntry<object[]> row)
         {
+            if (UseTakeSemantics && !row.Take())
+                return;
             row.Retain();
             _rows.Add(row);
             if (_rows.Count >= _batchSize)

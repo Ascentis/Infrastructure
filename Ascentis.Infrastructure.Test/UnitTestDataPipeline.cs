@@ -406,21 +406,38 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
-            var pipeline = new SqlDataPipeline();
+            var pipeline = new SqlDataPipeline {AbortOnTargetAdapterException = true};
             pipeline.Pump(cmd, new DataPipelineTargetAdapterSqlCommand(targetCmd));
         }
 
         [TestMethod]
         public void TestSqlToSqlBulkInsert()
         {
-            using var cmd = new SqlCommand("SELECT TOP 1015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
-            targetConn.Open();
-            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
+            using var cmd = new SqlCommand("SELECT TOP 40015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+            
+            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn0.Open();
+            using var targetConn1 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn1.Open();
+            using var targetConn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn2.Open();
+            using var targetConn3 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn3.Open();
+
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
             truncateCmd.ExecuteNonQuery();
-            var pipeline = new SqlDataPipeline();
-            //pipeline.AbortOnTargetAdapterException = true;
-            pipeline.Pump(cmd, new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new []{"CEMPID", "NPAYCODE", "DWORKDATE", "TIN", "TOUT"}, targetConn, 100));
+
+            var pipeline = new SqlDataPipeline {AbortOnTargetAdapterException = true};
+
+            var outPipes = new []
+            { 
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3) {UseTakeSemantics = true}
+            };
+            // ReSharper disable once RedundantArgumentDefaultValue
+            pipeline.Pump(cmd, outPipes, 1000);
         }
     }
 }

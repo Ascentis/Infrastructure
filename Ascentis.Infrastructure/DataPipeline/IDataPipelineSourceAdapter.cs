@@ -14,5 +14,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         int FieldCount { get; }
         DataPipelineColumnMetadata[] ColumnMetadatas { get; }
         int ParallelLevel { get; set; }
+        Dictionary<string, int> MetadatasColumnToIndexMap { get; }
     }
 }

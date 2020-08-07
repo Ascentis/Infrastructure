@@ -43,6 +43,7 @@ namespace Ascentis.Infrastructure
                     }
                     Interlocked.Increment(ref _allowance);
                 }
+
                 if (!_releasedEvent.Wait(timeout))
                     throw new TimeoutException("No object available in pool");
                 _releasedEvent.Reset();
@@ -55,7 +56,7 @@ namespace Ascentis.Infrastructure
         {
             if (!obj.ReleaseOne())
                 return;
-            obj.ResetRefCount();
+            obj.Reset();
             _bag.Add(obj);
             _releasedEvent.Set();
         }

@@ -88,6 +88,7 @@
     <Compile Include="Patterns\Retrier.cs" />
     <Compile Include="Misc\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
+    <Compile Include="Utils\SqlCommandExtensions.cs" />
     <Compile Include="Utils\TypeAndTypeArrayTupleEqualityComparer.cs" />
     <Compile Include="Utils\TypeToSqlDbType.cs" />
   </ItemGroup>

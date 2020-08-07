@@ -9,12 +9,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
     {
         public bool UseShortParam { get; set; }
 
-        public void Map(IEnumerable<DataPipelineColumnMetadata> source, SqlParameterCollection target, string paramSuffix = "")
+        public void Map(IDictionary<string, int> columns, DataPipelineColumnMetadata[] metadatas, SqlParameterCollection target, string paramSuffix = "")
         {
             var index = 0;
-            foreach(var meta in source)
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach(var column in columns)
             {
-                var param = target.Add((UseShortParam ? $"P{index++}" : meta.ColumnName) + paramSuffix, TypeToSqlDbType.From(meta.DataType));
+                var meta = column.Value >= 0 ? metadatas[column.Value] : DataPipelineColumnMetadata.NullMeta;
+
+                var param = target.Add((UseShortParam ? $"P{index++}" : column.Key) + paramSuffix, TypeToSqlDbType.From(meta.DataType));
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (param.DbType)
                 {
                     case DbType.AnsiString:
@@ -33,11 +37,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
             }
         }
 
-        public void Map(IEnumerable<DataPipelineColumnMetadata> source, SqlParameterCollection target, int batchCount)
+        public void Map(IDictionary<string, int> columns, DataPipelineColumnMetadata[] metadatas, SqlParameterCollection target, int batchCount)
         {
             for (var i = 0; i < batchCount; i++)
                 // ReSharper disable once PossibleMultipleEnumeration
-                Map(source, target, $"_{i}");
+                Map(columns, metadatas, target, $"_{i}");
         }
     }
 }

@@ -4,6 +4,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
     public class DataPipelineColumnMetadata
     {
+        public static DataPipelineColumnMetadata NullMeta = new DataPipelineColumnMetadata()
+        {
+            DataType = typeof(string),
+            ColumnSize = 1
+        };
+
         public string ColumnName { get; set; }
         public int? ColumnOrdinal { get; set; }
         public int? ColumnSize { get; set; }
