@@ -134,6 +134,12 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
                 Flush();
         }
 
+        private void DisposeSqlCommands()
+        {
+            DisposeAndNullify(ref _sqlCommand);
+            DisposeAndNullify(ref _sqlCommandRowByRow);
+        }
+
         public override void UnPrepare()
         {
             try
@@ -143,15 +149,14 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
             finally
             {
-                DisposeAndNullify(ref _sqlCommand);
-                DisposeAndNullify(ref _sqlCommandRowByRow);
+                DisposeSqlCommands();
             }
             base.UnPrepare();
         }
 
         public override void AbortedWithException(Exception e)
         {
-            UnPrepare();
+            DisposeSqlCommands();
             base.AbortedWithException(e);
         }
     }
