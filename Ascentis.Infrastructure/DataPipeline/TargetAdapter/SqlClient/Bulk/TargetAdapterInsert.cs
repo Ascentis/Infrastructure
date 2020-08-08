@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 {
     public class TargetAdapterInsert : TargetAdapter<PoolEntry<object[]>>
     {
         public const int DefaultBatchSize = 100;
+        // ReSharper disable once InconsistentNaming
+        public const int MaxMSSQLParams = 2100;
 
         private static readonly ColumnMetadataToDbTypeMapper ParamMapper = 
             new ColumnMetadataToDbTypeMapper
@@ -149,6 +152,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
                 var metaIndex = Source.MetadatasColumnToIndexMap.TryGetValue(columnName, out var index) ? index : -1;
                 _columnNameToMetadataIndexMap.Add(columnName, metaIndex);
             }
+
+            if (_columnNameToMetadataIndexMap.Count * _batchSize > MaxMSSQLParams)
+                throw new TargetAdapterException($"Number of columns * target adapter buffer size exceeds MSSQL limit of {MaxMSSQLParams} parameters in a query");
         }
 
         public override void Process(PoolEntry<object[]> row)
