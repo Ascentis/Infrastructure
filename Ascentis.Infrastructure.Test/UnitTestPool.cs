@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable once CheckNamespace
@@ -78,6 +80,74 @@ namespace Ascentis.Infrastructure.Test
             pool.Release(obj2);
             var obj4 = pool.Acquire();
             Assert.AreEqual(obj4, obj2);
+        }
+
+        [TestMethod]
+        public void TestMethodPoolParallelAcquireAndRelease()
+        {
+            var pool = new Pool<object>(100000, pool => pool.NewPoolEntry(new object()));
+            var items = new ConcurrentBag<PoolEntry<object>>();
+            Parallel.Invoke(() =>
+            {
+                for (var i = 0; i < 20000; i++)
+                    items.Add(pool.Acquire(1));
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                    items.Add(pool.Acquire(1));
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                    items.Add(pool.Acquire(1));
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                    items.Add(pool.Acquire(1));
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                    items.Add(pool.Acquire(1));
+            });
+            Assert.ThrowsException<TimeoutException>(() => pool.Acquire(1));
+            Assert.AreEqual(pool.MaxCapacity, items.Count);
+            Parallel.Invoke(() =>
+            {
+                for (var i = 0; i < 20000; i++)
+                {
+                    Assert.IsTrue(items.TryTake(out var item));
+                    pool.Release(item);
+                }
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                {
+                    Assert.IsTrue(items.TryTake(out var item));
+                    pool.Release(item);
+                }
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                {
+                    Assert.IsTrue(items.TryTake(out var item));
+                    pool.Release(item);
+                }
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                {
+                    Assert.IsTrue(items.TryTake(out var item));
+                    pool.Release(item);
+                }
+            }, () =>
+            {
+                for (var i = 0; i < 20000; i++)
+                {
+                    Assert.IsTrue(items.TryTake(out var item));
+                    pool.Release(item);
+                }
+            });
+            Assert.AreEqual(0, items.Count);
+            pool.Acquire(1);
         }
 
         [TestMethod]

@@ -46,28 +46,28 @@ namespace Ascentis.Infrastructure
 
         public PoolEntry<T> Acquire(int timeout = -1)
         {
-            PoolEntry<T> obj;
             while (true)
             {
-                if (_bag.TryTake(out obj))
-                    break;
+                if (_bag.TryTake(out var obj))
+                    return obj;
+
                 if (_allowance > 0)
                 {
-                    var allowance = Interlocked.Decrement(ref _allowance);
-                    if (allowance >= 0)
+                    int allowance;
+                    do
                     {
-                        obj = _builder(this);
-                        break;
-                    }
-                    Interlocked.Increment(ref _allowance);
+                        allowance = _allowance;
+                        if (allowance <= 0)
+                            break;
+                    } while (Interlocked.CompareExchange(ref _allowance, allowance - 1, allowance) != allowance);
+                    if (allowance > 0)
+                        return _builder(this);
                 }
 
                 if (!_releasedEvent.Wait(timeout))
                     throw new TimeoutException("No object available in pool");
                 _releasedEvent.Reset();
             }
-
-            return obj;
         }
 
         public void Release(PoolEntry<T> obj)
