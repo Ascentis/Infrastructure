@@ -90,23 +90,48 @@ namespace Ascentis.Infrastructure.Test
             Parallel.Invoke(() =>
             {
                 for (var i = 0; i < 20000; i++)
+                {
                     items.Add(pool.Acquire(1));
+                    if (i != 1000) continue;
+                    pool.MaxCapacity += 1;
+                    pool.MaxCapacity -= 1;
+                }
             }, () =>
             {
                 for (var i = 0; i < 20000; i++)
+                {
                     items.Add(pool.Acquire(1));
+                    if (i != 1000) continue;
+                    pool.MaxCapacity += 1;
+                    pool.MaxCapacity -= 1;
+                }
             }, () =>
             {
                 for (var i = 0; i < 20000; i++)
+                {
                     items.Add(pool.Acquire(1));
+                    if (i != 1000) continue;
+                    pool.MaxCapacity += 1;
+                    pool.MaxCapacity -= 1;
+                }
             }, () =>
             {
                 for (var i = 0; i < 20000; i++)
+                {
                     items.Add(pool.Acquire(1));
+                    if (i != 1000) continue;
+                    pool.MaxCapacity += 1;
+                    pool.MaxCapacity -= 1;
+                }
             }, () =>
             {
                 for (var i = 0; i < 20000; i++)
+                {
                     items.Add(pool.Acquire(1));
+                    if (i != 1000) continue;
+                    pool.MaxCapacity += 1;
+                    pool.MaxCapacity -= 1;
+                }
             });
             Assert.ThrowsException<TimeoutException>(() => pool.Acquire(1));
             Assert.AreEqual(pool.MaxCapacity, items.Count);
@@ -173,7 +198,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestMethodPoolChangeMaxCapacity()
         {
-            var pool = new Pool<object>(3, pool => pool.NewPoolEntry(new object(), 2));
+            var pool = new Pool<object>(3, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire(1);
             Assert.IsNotNull(obj1);
             var obj2 = pool.Acquire(1);
@@ -185,6 +210,17 @@ namespace Ascentis.Infrastructure.Test
             var obj4 = pool.Acquire(1);
             Assert.IsNotNull(obj4);
             Assert.ThrowsException<TimeoutException>(() => pool.Acquire(1));
+            pool.MaxCapacity = 3;
+            pool.Release(obj4);
+            pool.Release(obj3);
+            pool.Release(obj2);
+            pool.Release(obj1);
+            obj1 = pool.Acquire(1);
+            pool.Acquire(1);
+            pool.Acquire(1);
+            Assert.ThrowsException<TimeoutException>(() => pool.Acquire(1));
+            pool.Release(obj1);
+            pool.Acquire(1);
         }
     }
 }

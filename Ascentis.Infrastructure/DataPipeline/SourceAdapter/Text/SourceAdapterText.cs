@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public abstract class DataPipelineSourceAdapterText : DataPipelineSourceAdapter<PoolEntry<object[]>>
+    public abstract class SourceAdapterText : SourceAdapter<PoolEntry<object[]>>
     {
         protected Regex RegexParser { get; set; }
         private TextToObject[] _textToObjects;
@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         protected Pool<object[]> RowsPool { get; }
 
-        protected DataPipelineSourceAdapterText(TextReader textReader)
+        protected SourceAdapterText(TextReader textReader)
         {
             Reader = textReader;
             RowsPool = new Pool<object[]>(DefaultRowsPoolCapacity, pool => pool.NewPoolEntry(new object[FieldCount], ParallelLevel));
@@ -96,9 +96,9 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
                         var match = RegexParser.Match(s);
                         if (match.Value == "")
-                            throw new DataPipelineException("No match parsing fixed length line");
+                            throw new SourceAdapterException(s, "No match parsing fixed length line");
                         if (match.Groups.Count != FieldCount + 1)
-                            throw new DataPipelineException("Number of individual data elements read in fixed length streamer line don't match layout");
+                            throw new SourceAdapterException(s, "Number of individual data elements read in fixed length streamer line don't match layout");
                         for (var i = 1; i < match.Groups.Count; i++)
                             values.Value[i - 1] = _textToObjects[i - 1](match.Groups[i].Value);
                     }

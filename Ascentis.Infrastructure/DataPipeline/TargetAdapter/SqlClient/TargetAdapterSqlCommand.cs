@@ -5,18 +5,18 @@ using Ascentis.Infrastructure.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
 {
-    public class DataPipelineTargetAdapterSqlCommand : DataPipelineTargetAdapter<PoolEntry<object[]>>
+    public class TargetAdapterSqlCommand : TargetAdapter<PoolEntry<object[]>>
     {
-        private static readonly DataPipelineColumnMetadataToDbTypeMapper ParamMapper = new DataPipelineColumnMetadataToDbTypeMapper();
+        private static readonly ColumnMetadataToDbTypeMapper ParamMapper = new ColumnMetadataToDbTypeMapper();
         private readonly SqlCommand _cmd;
         private int[] _paramToMetaMap;
 
-        public DataPipelineTargetAdapterSqlCommand(SqlCommand cmd)
+        public TargetAdapterSqlCommand(SqlCommand cmd)
         {
             _cmd = cmd;
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
+        public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 

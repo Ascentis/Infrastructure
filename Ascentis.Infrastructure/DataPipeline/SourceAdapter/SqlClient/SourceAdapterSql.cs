@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 {
-    public class DataPipelineSourceAdapterSql : DataPipelineSourceAdapter<PoolEntry<object[]>>
+    public class SourceAdapterSql : SourceAdapter<PoolEntry<object[]>>
     {
         public const int DefaultRowsCapacity = 1000;
 
@@ -22,13 +22,13 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
             set => _rowsPool.MaxCapacity = value;
         }
 
-        public DataPipelineSourceAdapterSql(SqlDataReader sqlDataReader, int rowsPoolCapacity)
+        public SourceAdapterSql(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
         }
 
-        public DataPipelineSourceAdapterSql(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
+        public SourceAdapterSql(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
         
         public override void ReleaseRow(PoolEntry<object[]> row)
         {
@@ -59,12 +59,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
                 return;
 
             var schemaTable = _sqlDataReader.GetSchemaTable();
-            base.ColumnMetadatas = new DataPipelineColumnMetadata[FieldCount];
+            base.ColumnMetadatas = new ColumnMetadata[FieldCount];
 
             var columnIndex = 0;
             foreach (DataRow field in schemaTable.Rows)
             {
-                ColumnMetadatas[columnIndex] = new DataPipelineColumnMetadata();
+                ColumnMetadatas[columnIndex] = new ColumnMetadata();
                 foreach (DataColumn column in schemaTable.Columns)
                 {
                     var prop = ColumnMetadatas[columnIndex].GetType().GetProperty(column.ColumnName, BindingFlags.Public | BindingFlags.Instance);
@@ -78,7 +78,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
             }
         }
 
-        public override DataPipelineColumnMetadata[] ColumnMetadatas {
+        public override ColumnMetadata[] ColumnMetadatas {
             get => base.ColumnMetadatas;
             set => throw new InvalidOperationException($"Can't set ColumnMetadatas for {GetType().Name}");
         }

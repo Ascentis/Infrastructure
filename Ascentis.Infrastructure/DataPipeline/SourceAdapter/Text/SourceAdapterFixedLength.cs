@@ -7,11 +7,11 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public class DataPipelineSourceAdapterFixedLength : DataPipelineSourceAdapterText
+    public class SourceAdapterFixedLength : SourceAdapterText
     {
         private bool _prepared;
 
-        public DataPipelineSourceAdapterFixedLength(TextReader textReader) : base(textReader) { }
+        public SourceAdapterFixedLength(TextReader textReader) : base(textReader) { }
 
         [SuppressMessage("ReSharper", "PossibleInvalidOperationException")]
         public override void Prepare()

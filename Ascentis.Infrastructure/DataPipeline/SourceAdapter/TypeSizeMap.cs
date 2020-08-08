@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
-    public class DataPipelineTypeSizeMap
+    public class TypeSizeMap
     {
         public static Dictionary<Type, int> Map { get; }
 
-        static DataPipelineTypeSizeMap()
+        static TypeSizeMap()
         {
             Map = new Dictionary<Type, int>
             {

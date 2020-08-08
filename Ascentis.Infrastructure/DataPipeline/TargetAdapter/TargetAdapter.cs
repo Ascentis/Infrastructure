@@ -2,14 +2,14 @@
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter
 {
-    public abstract class DataPipelineTargetAdapter<TRow> : IDataPipelineTargetAdapter<TRow>
+    public abstract class TargetAdapter<TRow> : ITargetAdapter<TRow>
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
         public bool? AbortOnProcessException { get; set; }
-        protected IDataPipelineSourceAdapter<TRow> Source { get; private set; }
+        protected ISourceAdapter<TRow> Source { get; private set; }
         public virtual int BufferSize => 1;
 
-        public virtual void Prepare(IDataPipelineSourceAdapter<TRow> source)
+        public virtual void Prepare(ISourceAdapter<TRow> source)
         {
             Source = source;
         }

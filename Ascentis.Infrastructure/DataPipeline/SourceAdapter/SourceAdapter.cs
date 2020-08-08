@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
-    public abstract class DataPipelineSourceAdapter<T> : IDataPipelineSourceAdapter<T>
+    public abstract class SourceAdapter<T> : ISourceAdapter<T>
     {
         private IEnumerable<T> _rowsEnumerable;
         private Dictionary<string, int> _columnMetadatasMap;
-        private DataPipelineColumnMetadata[] _dataPipelineColumnMetadata;
+        private ColumnMetadata[] _dataPipelineColumnMetadata;
 
         public event DataPipeline<T>.RowErrorDelegate OnSourceAdapterRowReadError;
         public bool AbortOnReadException { get; set; }
@@ -19,7 +19,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
             set => throw new NotImplementedException();
         }
 
-        public virtual DataPipelineColumnMetadata[] ColumnMetadatas
+        public virtual ColumnMetadata[] ColumnMetadatas
         {
             get => _dataPipelineColumnMetadata;
             set

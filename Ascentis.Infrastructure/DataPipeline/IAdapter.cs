@@ -1,6 +1,6 @@
 ﻿namespace Ascentis.Infrastructure.DataPipeline
 {
-    public interface IDataPipelineAdapter
+    public interface IAdapter
     {
         string Id {get; set; }
     }

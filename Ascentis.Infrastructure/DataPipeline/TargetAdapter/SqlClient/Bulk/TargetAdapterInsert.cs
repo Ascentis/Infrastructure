@@ -5,12 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 {
-    public class DataPipelineTargetAdapterSqlInsert : DataPipelineTargetAdapter<PoolEntry<object[]>>
+    public class TargetAdapterInsert : TargetAdapter<PoolEntry<object[]>>
     {
         public const int DefaultBatchSize = 100;
 
-        private static readonly DataPipelineColumnMetadataToDbTypeMapper ParamMapper = 
-            new DataPipelineColumnMetadataToDbTypeMapper
+        private static readonly ColumnMetadataToDbTypeMapper ParamMapper = 
+            new ColumnMetadataToDbTypeMapper
             {
                 UseShortParam = true
             };
@@ -28,7 +28,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 
         public override int BufferSize => _batchSize;
 
-        public DataPipelineTargetAdapterSqlInsert(string tableName, 
+        public TargetAdapterInsert(string tableName, 
             IEnumerable<string> columnNames, 
             SqlConnection sqlConnection, 
             int batchSize = DefaultBatchSize)
@@ -140,7 +140,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
+        public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 

@@ -8,30 +8,38 @@ namespace Ascentis.Infrastructure
     public class Pool<T>
     {
         public delegate PoolEntry<T> Builder(Pool<T> pool);
+
         private readonly ConcurrentBag<PoolEntry<T>> _bag;
         private readonly ManualResetEventSlim _releasedEvent;
         private readonly Builder _builder;
         private volatile int _allowance;
-        private int _maxCapacity;
+        private readonly object _maxCapacityLock;
+        private volatile int _maxCapacity;
 
         public int MaxCapacity
         {
             get => _maxCapacity;
             set
             {
-                if (_maxCapacity == value)
-                    return;
-                int allowance;
-                do
+                lock (_maxCapacityLock)
                 {
-                    allowance = _allowance;
-                } while (Interlocked.CompareExchange(ref _allowance, allowance + value - _maxCapacity, allowance) != allowance);
-                _maxCapacity = value;
+                    if (_maxCapacity == value)
+                        return;
+
+                    int allowance;
+                    do
+                    {
+                        allowance = _allowance;
+                    } while (Interlocked.CompareExchange(ref _allowance, allowance + value - _maxCapacity, allowance) != allowance);
+
+                    _maxCapacity = value;
+                }
             }
         }
 
         public Pool(int maxCapacity, Builder builder)
         {
+            _maxCapacityLock = new object();
             _allowance = maxCapacity;
             _bag = new ConcurrentBag<PoolEntry<T>>();
             _releasedEvent = new ManualResetEventSlim(false);
@@ -74,6 +82,17 @@ namespace Ascentis.Infrastructure
         {
             if (!obj.ReleaseOne())
                 return;
+            if (_allowance < 0 && _bag.Count >= _maxCapacity)
+            {
+                int allowance;
+                do
+                {
+                    allowance = _allowance;
+                } while(allowance < 0 && Interlocked.CompareExchange(ref _allowance, allowance + 1, allowance) != allowance);
+
+                if (allowance < 0)
+                    return;
+            }
             obj.Reset();
             _bag.Add(obj);
             _releasedEvent.Set();

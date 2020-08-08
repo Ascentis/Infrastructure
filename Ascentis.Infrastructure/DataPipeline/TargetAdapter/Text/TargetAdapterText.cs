@@ -7,7 +7,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class DataPipelineTargetAdapterText : DataPipelineTargetAdapter<PoolEntry<object[]>>
+    public class TargetAdapterText : TargetAdapter<PoolEntry<object[]>>
     {
         protected Stream Target { get; }
         protected string FormatString { get; set; }
@@ -17,7 +17,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         public Encoding OutputEncoding { get; set; } = Encoding.UTF8;
         public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
-        public DataPipelineTargetAdapterText(Stream target)
+        public TargetAdapterText(Stream target)
         {
             Target = target;
         }
@@ -33,11 +33,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return buf;
         }
 
-        protected static int ColumnTypeToBufferSize(DataPipelineColumnMetadata meta)
+        protected static int ColumnTypeToBufferSize(ColumnMetadata meta)
         {
             if (meta.DataType == typeof(string) && meta.ColumnSize != null)
                 return (int)meta.ColumnSize;
-            return DataPipelineTypeSizeMap.Map.TryGetValue(meta.DataType, out var result) ? result : 16;
+            return TypeSizeMap.Map.TryGetValue(meta.DataType, out var result) ? result : 16;
         }
 
         protected string ColumnFormatString(int index)
@@ -45,7 +45,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
-        public override void Prepare(IDataPipelineSourceAdapter<PoolEntry<object[]>> source)
+        public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 

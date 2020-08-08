@@ -2,9 +2,9 @@
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
-    public class DataPipelineColumnMetadata
+    public class ColumnMetadata
     {
-        public static DataPipelineColumnMetadata NullMeta = new DataPipelineColumnMetadata()
+        public static ColumnMetadata NullMeta = new ColumnMetadata()
         {
             DataType = typeof(string),
             ColumnSize = 1
