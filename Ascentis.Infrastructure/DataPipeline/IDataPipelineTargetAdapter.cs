@@ -2,7 +2,7 @@
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
-    public interface IDataPipelineTargetAdapter<TRow>
+    public interface IDataPipelineTargetAdapter<TRow> : IDataPipelineAdapter
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
         public bool? AbortOnProcessException { get; set; }
@@ -10,5 +10,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         void Process(TRow row);
         void UnPrepare();
         void AbortedWithException(Exception e);
+        int BufferSize { get; }
     }
 }

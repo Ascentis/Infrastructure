@@ -24,7 +24,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
         private SqlCommand _sqlCommand;
         private SqlCommand _sqlCommandRowByRow;
 
-        public bool UseTakeSemantics;
+        public bool UseTakeSemantics { get; set; }
+
+        public override int BufferSize => _batchSize;
 
         public DataPipelineTargetAdapterSqlInsert(string tableName, 
             IEnumerable<string> columnNames, 

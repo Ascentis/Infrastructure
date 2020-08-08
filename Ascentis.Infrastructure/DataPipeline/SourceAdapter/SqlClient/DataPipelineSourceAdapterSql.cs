@@ -16,11 +16,16 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
         private readonly Pool<object[]> _rowsPool;
         private readonly SqlDataReader _sqlDataReader;
 
+        public override int RowsPoolSize
+        {
+            get => _rowsPool.MaxCapacity; 
+            set => _rowsPool.MaxCapacity = value;
+        }
+
         public DataPipelineSourceAdapterSql(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
             _sqlDataReader = sqlDataReader;
-            _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => 
-                pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
+            _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
         }
 
         public DataPipelineSourceAdapterSql(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }

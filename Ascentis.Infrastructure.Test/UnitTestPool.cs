@@ -79,8 +79,9 @@ namespace Ascentis.Infrastructure.Test
             var obj4 = pool.Acquire();
             Assert.AreEqual(obj4, obj2);
         }
+
         [TestMethod]
-        public void TestMethodPoolWithRefCountandRetainSemantics()
+        public void TestMethodPoolWithRefCountAndRetainSemantics()
         {
             var pool = new Pool<object>(10, pool => pool.NewPoolEntry(new object(), 2));
             var obj1 = pool.Acquire();
@@ -97,6 +98,23 @@ namespace Ascentis.Infrastructure.Test
             obj2.Pool.Release(obj2);
             obj4 = pool.Acquire();
             Assert.AreEqual(obj4, obj2);
+        }
+
+        [TestMethod]
+        public void TestMethodPoolChangeMaxCapacity()
+        {
+            var pool = new Pool<object>(3, pool => pool.NewPoolEntry(new object(), 2));
+            var obj1 = pool.Acquire(1);
+            Assert.IsNotNull(obj1);
+            var obj2 = pool.Acquire(1);
+            Assert.IsNotNull(obj2);
+            Assert.AreNotEqual(obj1, obj2);
+            pool.MaxCapacity = 4;
+            var obj3 = pool.Acquire(1);
+            Assert.IsNotNull(obj3);
+            var obj4 = pool.Acquire(1);
+            Assert.IsNotNull(obj4);
+            Assert.ThrowsException<TimeoutException>(() => pool.Acquire(1));
         }
     }
 }

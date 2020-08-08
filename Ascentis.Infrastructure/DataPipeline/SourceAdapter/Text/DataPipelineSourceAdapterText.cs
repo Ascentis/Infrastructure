@@ -13,17 +13,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public const int DefaultRowsPoolCapacity = 1000;
 
-        public int RowsPoolCapacity { get; set; } = DefaultRowsPoolCapacity;
+        public override int RowsPoolSize { 
+            get => RowsPool.MaxCapacity; 
+            set => RowsPool.MaxCapacity = value;
+        }
 
         protected delegate object TextToObject(string text);
 
         protected TextReader Reader { get; }
 
-        protected Pool<object[]> RowsPool { get; private set; }
+        protected Pool<object[]> RowsPool { get; }
 
         protected DataPipelineSourceAdapterText(TextReader textReader)
         {
             Reader = textReader;
+            RowsPool = new Pool<object[]>(DefaultRowsPoolCapacity, pool => pool.NewPoolEntry(new object[FieldCount], ParallelLevel));
         }
 
         protected TextToObject[] BuildConversionArray()
@@ -66,7 +70,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
         public override void Prepare()
         {
             base.Prepare();
-            RowsPool = new Pool<object[]>(RowsPoolCapacity, pool => pool.NewPoolEntry(new object[FieldCount], ParallelLevel));
             _textToObjects = BuildConversionArray();
         }
 

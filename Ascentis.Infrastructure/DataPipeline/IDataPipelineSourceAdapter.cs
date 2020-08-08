@@ -3,7 +3,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
-    public interface IDataPipelineSourceAdapter<TRow>
+    public interface IDataPipelineSourceAdapter<TRow> : IDataPipelineAdapter
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnSourceAdapterRowReadError;
         public bool AbortOnReadException { get; set; }
@@ -15,5 +15,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         DataPipelineColumnMetadata[] ColumnMetadatas { get; }
         int ParallelLevel { get; set; }
         Dictionary<string, int> MetadatasColumnToIndexMap { get; }
+        int RowsPoolSize { get; }
     }
 }

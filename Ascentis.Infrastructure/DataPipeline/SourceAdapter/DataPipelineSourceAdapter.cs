@@ -13,6 +13,11 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
         public bool AbortOnReadException { get; set; }
         public abstract int FieldCount { get; }
         public int ParallelLevel { get; set; }
+        public virtual int RowsPoolSize
+        {
+            get => 0;
+            set => throw new NotImplementedException();
+        }
 
         public virtual DataPipelineColumnMetadata[] ColumnMetadatas
         {
@@ -28,7 +33,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 
         protected void InvokeRowReadErrorEvent(object sourceData, Exception e)
         {
-            OnSourceAdapterRowReadError?.Invoke(sourceData, e);
+            OnSourceAdapterRowReadError?.Invoke(this, sourceData, e);
         }
 
         public virtual void UnPrepare() { }
@@ -48,5 +53,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
                 return _columnMetadatasMap;
             }
         }
+
+        public string Id { get; set; }
     }
 }

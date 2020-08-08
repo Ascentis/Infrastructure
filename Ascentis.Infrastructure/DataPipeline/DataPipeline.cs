@@ -1,34 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
     public class DataPipeline<TRow>
     {
-        public delegate void RowErrorDelegate(object data, Exception e);
+        public delegate void RowErrorDelegate(IDataPipelineAdapter adapter, object data, Exception e);
 
         public event RowErrorDelegate OnSourceAdapterRowReadError;
         public event RowErrorDelegate OnTargetAdapterRowProcessError;
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
 
-        private void SetupAdapters(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter,
+        private void SetupAndHealthCheckAdapters(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter,
             IEnumerable<IDataPipelineTargetAdapter<TRow>> dataPipelineTargetAdapters,
             out int targetAdaptersCount)
         {
+            if (string.IsNullOrEmpty(dataPipelineSourceAdapter.Id))
+                dataPipelineSourceAdapter.Id = "src";
             dataPipelineSourceAdapter.OnSourceAdapterRowReadError += OnSourceAdapterRowReadError;
             dataPipelineSourceAdapter.AbortOnReadException = AbortOnSourceAdapterException;
 
             targetAdaptersCount = 0;
+            var totalTargetBufferSize = 0;
             foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
             {
                 dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
                 dataPipelineTargetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
+                totalTargetBufferSize += dataPipelineTargetAdapter.BufferSize;
             }
 
             dataPipelineSourceAdapter.ParallelLevel = targetAdaptersCount;
+            if (dataPipelineSourceAdapter.RowsPoolSize > 0 && dataPipelineSourceAdapter.RowsPoolSize < totalTargetBufferSize)
+                throw new DataPipelineException("Source adapter rows pool size can't be lesser than the sum of all target adapters buffer sizes. Deadlock would occur upon call to Pump()");
         }
 
         public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter, 
@@ -42,7 +49,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         public void Pump(IDataPipelineSourceAdapter<TRow> dataPipelineSourceAdapter,
             IEnumerable<IDataPipelineTargetAdapter<TRow>> dataPipelineTargetAdapters)
         {
-            SetupAdapters(dataPipelineSourceAdapter, dataPipelineTargetAdapters, out var targetAdaptersCount);
+            SetupAndHealthCheckAdapters(dataPipelineSourceAdapter, dataPipelineTargetAdapters, out var targetAdaptersCount);
 
             dataPipelineSourceAdapter.Prepare();
             try

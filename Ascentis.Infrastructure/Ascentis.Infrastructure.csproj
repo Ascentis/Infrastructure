@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataPipeline\Exceptions\DataPipelineSourceAdapterException.cs" />
+    <Compile Include="DataPipeline\IDataPipelineAdapter.cs" />
     <Compile Include="DataPipeline\IDataPipelineTargetAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\DataPipelineColumnMetadata.cs" />
     <Compile Include="DataPipeline\IDataPipelineSourceAdapter.cs" />

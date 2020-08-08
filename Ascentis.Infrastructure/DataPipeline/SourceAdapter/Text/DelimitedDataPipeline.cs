@@ -15,7 +15,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             var sourceAdapter = new DataPipelineSourceAdapterDelimited(source)
             {
                 ColumnMetadatas = sourceMetadatas,
-                RowsPoolCapacity = rowsPoolCapacity,
+                RowsPoolSize = rowsPoolCapacity,
                 Delimiter = delimiter
             };
             base.Pump(sourceAdapter, dataPipelineTargetAdapter);
@@ -54,7 +54,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             var sourceAdapter = new DataPipelineSourceAdapterDelimited(source)
             {
                 ColumnMetadatas = sourceMetadatas,
-                RowsPoolCapacity = rowsPoolCapacity,
+                RowsPoolSize = rowsPoolCapacity,
                 Delimiter = delimiter
             };
             base.Pump(sourceAdapter, dataPipelineTargetAdapters);

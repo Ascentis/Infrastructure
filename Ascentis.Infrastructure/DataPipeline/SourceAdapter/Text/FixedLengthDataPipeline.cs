@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             var sourceAdapter = new DataPipelineSourceAdapterFixedLength(source)
             {
                 ColumnMetadatas = sourceMetadatas, 
-                RowsPoolCapacity = rowsPoolCapacity
+                RowsPoolSize = rowsPoolCapacity
             };
             base.Pump(sourceAdapter, dataPipelineTargetAdapter);
         }

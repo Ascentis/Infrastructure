@@ -167,6 +167,18 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+        public void TestSqlToFixedStreamThrowsExceptionOnBufferSizes()
+        {
+            using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
+            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn0.Open();
+            var streamer = new SqlDataPipeline();
+            Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => streamer.Pump(cmd,
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1000), 10)).Message.Contains("Deadlock"));
+        }
+
+        [TestMethod]
         public void TestSqlToCsvStreamWithHeaders()
         {
             using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
@@ -222,9 +234,10 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var streamer = new FixedLengthDataPipeline();
-            streamer.OnSourceAdapterRowReadError += (sourceObject, e) =>
+            streamer.OnSourceAdapterRowReadError += (adapter, sourceObject, e) =>
             {
                 exceptionCalled = (string)sourceObject == "WKHR-               A";
+                Assert.AreEqual("src", adapter.Id);
             };
             streamer.Pump(reader, new[]
             {

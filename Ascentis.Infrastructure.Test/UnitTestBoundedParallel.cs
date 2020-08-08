@@ -173,6 +173,27 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestBoundedParallelInvokeWithThreadLimitDiffIncrements()
+        {
+            var cnt = 0;
+            var boundedParallel = new BoundedParallel();
+            boundedParallel.Invoke(() =>
+            {
+                Interlocked.Add(ref cnt, 1);
+            }, () =>
+            {
+                Interlocked.Add(ref cnt, 2);
+            }, () =>
+            {
+                Interlocked.Add(ref cnt, 3);
+            }, () =>
+            {
+                Interlocked.Add(ref cnt, 4);
+            });
+            Assert.AreEqual(10, cnt);
+        }
+
+        [TestMethod]
         public void TestBoundedParallelInvokeForceSerialWithThreadLimiterForcingAllowance()
         {
             var cnt = 0;

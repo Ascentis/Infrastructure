@@ -12,6 +12,23 @@ namespace Ascentis.Infrastructure
         private readonly ManualResetEventSlim _releasedEvent;
         private readonly Builder _builder;
         private volatile int _allowance;
+        private int _maxCapacity;
+
+        public int MaxCapacity
+        {
+            get => _maxCapacity;
+            set
+            {
+                if (_maxCapacity == value)
+                    return;
+                int allowance;
+                do
+                {
+                    allowance = _allowance;
+                } while (Interlocked.CompareExchange(ref _allowance, allowance + value - _maxCapacity, allowance) != allowance);
+                _maxCapacity = value;
+            }
+        }
 
         public Pool(int maxCapacity, Builder builder)
         {
@@ -19,6 +36,7 @@ namespace Ascentis.Infrastructure
             _bag = new ConcurrentBag<PoolEntry<T>>();
             _releasedEvent = new ManualResetEventSlim(false);
             _builder = builder;
+            _maxCapacity = maxCapacity;
         }
 
         public PoolEntry<T> NewPoolEntry(T value, int initialRefCount = -1)
