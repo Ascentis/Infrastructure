@@ -444,13 +444,13 @@ namespace Ascentis.Infrastructure.Test
 
             var outPipes = new []
             { 
-                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0) {UseTakeSemantics = true},
-                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1) {UseTakeSemantics = true},
-                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2) {UseTakeSemantics = true},
-                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3) {UseTakeSemantics = true}
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2, 300) {UseTakeSemantics = true},
+                new DataPipelineTargetAdapterSqlInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3, 300) {UseTakeSemantics = true}
             };
             // ReSharper disable once RedundantArgumentDefaultValue
-            pipeline.Pump(cmd, outPipes, 1000);
+            pipeline.Pump(cmd, outPipes, 2400);
         }
     }
 }
