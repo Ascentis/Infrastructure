@@ -52,6 +52,7 @@
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\ColumnMetadata.cs" />
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Manual\DataPipelineManual.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\SourceAdapterManual.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\TypeSizeMap.cs" />

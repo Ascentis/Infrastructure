@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
@@ -503,7 +502,6 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestManualToCsvBasic()
         {
-            var completedEvent = new ManualResetEvent(false);
             var buf = new byte[1000];
             var stream = new MemoryStream(buf);
             var source = new SourceAdapterManual<PoolEntry<object[]>>
@@ -514,18 +512,11 @@ namespace Ascentis.Infrastructure.Test
                     new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
                 }
             };
-            var pipeline = new DataPipeline<PoolEntry<object[]>>();
-            Assert.IsTrue(ThreadPool.QueueUserWorkItem((obj) =>
-            {
-                pipeline.Pump(source, new TargetAdapterDelimited(stream));
-                completedEvent.Set();
-            }));
-            var entry = new PoolEntry<object[]>(new object[] {"WKHR", 0});
-            source.Insert(entry);
-            source.Insert(entry);
-            source.Finish();
-            completedEvent.WaitOne();
-            stream.Flush();
+            var pipeline = new DataPipelineManual<object[]>();
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new TargetAdapterDelimited(stream))));
+            var entry = new object[] {"WKHR", 0};
+            pipeline.Insert(new List<object[]>{entry, entry});
+            pipeline.Finish(true);
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
         }

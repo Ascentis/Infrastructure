@@ -22,7 +22,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
             {
                 while (true)
                 {
-                    if(!_dataQueue.TryDequeue(out var obj))
+                    if (!_dataQueue.TryDequeue(out var obj))
                     {
                         if (_finished)
                             yield break;
@@ -30,6 +30,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
                         _dataAvailable.Reset();
                         continue;
                     }
+
                     yield return obj;
                 }
             }
