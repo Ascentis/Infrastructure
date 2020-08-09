@@ -520,7 +520,7 @@ namespace Ascentis.Infrastructure.Test
                 pipeline.Pump(source, new TargetAdapterDelimited(stream));
                 completedEvent.Set();
             }));
-            var entry = new PoolEntry<object[]>(null, new object[] {"WKHR", 0});
+            var entry = new PoolEntry<object[]>(new object[] {"WKHR", 0});
             source.Insert(entry);
             source.Insert(entry);
             source.Finish();

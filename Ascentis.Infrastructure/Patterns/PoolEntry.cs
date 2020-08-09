@@ -22,6 +22,8 @@ namespace Ascentis.Infrastructure
             _initialRefCount = initialRefCount;
         }
 
+        public PoolEntry(T value) : this(null, value) { }
+
         public void Reset()
         {
             _refCount = _initialRefCount;
