@@ -73,14 +73,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
             _textToObjects = BuildConversionArray();
         }
 
-        public override int FieldCount {
-            get
-            {
-                ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
-                return ColumnMetadatas.Length;
-            }
-        }
-
         public override IEnumerable<PoolEntry<object[]>> RowsEnumerable
         {
             get

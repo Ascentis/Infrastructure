@@ -3,8 +3,12 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
@@ -494,6 +498,36 @@ namespace Ascentis.Infrastructure.Test
             SELECT '124'
             /*</DATA>*/) SRC ON 
             T.CEMPID = SRC.CEMPID", new[] { "CEMPID" }, targetConn, 500), 2000);
+        }
+
+        [TestMethod]
+        public void TestManualToCsvBasic()
+        {
+            var completedEvent = new ManualResetEvent(false);
+            var buf = new byte[1000];
+            var stream = new MemoryStream(buf);
+            var source = new SourceAdapterManual<PoolEntry<object[]>>
+            {
+                ColumnMetadatas = new[]
+                {
+                    new ColumnMetadata {DataType = typeof(string), ColumnSize = 4},
+                    new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
+                }
+            };
+            var pipeline = new DataPipeline<PoolEntry<object[]>>();
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem((obj) =>
+            {
+                pipeline.Pump(source, new TargetAdapterDelimited(stream));
+                completedEvent.Set();
+            }));
+            var entry = new PoolEntry<object[]>(null, new object[] {"WKHR", 0});
+            source.Insert(entry);
+            source.Insert(entry);
+            source.Finish();
+            completedEvent.WaitOne();
+            stream.Flush();
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
         }
     }
 }
