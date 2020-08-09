@@ -175,9 +175,9 @@ namespace Ascentis.Infrastructure.Test
             targetConn0.Open();
             var pipeline = new DataPipelineSql();
             Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(cmd,
-                new TargetAdapterInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1000), 10)).Message.Contains("Deadlock"));
+                new TargetAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1000), 10)).Message.Contains("Deadlock"));
             Assert.IsTrue(Assert.ThrowsException<TargetAdapterException>(() => pipeline.Pump(cmd,
-                new TargetAdapterInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1500), 10000)).Message.Contains("exceeds"));
+                new TargetAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1500), 10000)).Message.Contains("exceeds"));
         }
 
         [TestMethod]
@@ -446,13 +446,54 @@ namespace Ascentis.Infrastructure.Test
 
             var outPipes = new []
             { 
-                new TargetAdapterInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300) {UseTakeSemantics = true},
-                new TargetAdapterInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300) {UseTakeSemantics = true},
-                new TargetAdapterInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2, 300) {UseTakeSemantics = true},
-                new TargetAdapterInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3, 300) {UseTakeSemantics = true}
+                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300) {UseTakeSemantics = true},
+                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300) {UseTakeSemantics = true},
+                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2, 300) {UseTakeSemantics = true},
+                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3, 300) {UseTakeSemantics = true}
             };
             // ReSharper disable once RedundantArgumentDefaultValue
             pipeline.Pump(cmd, outPipes, 2400);
+        }
+
+        [TestMethod]
+        public void TestSqlToBulkSqlBasic()
+        {
+            using var cmd = new SqlCommand(@"SELECT TOP 10000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
+            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn.Open();
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
+            truncateCmd.ExecuteNonQuery();
+
+            var pipeline1 = new DataPipelineSql { AbortOnTargetAdapterException = true };
+            pipeline1.Pump(cmd, new TargetAdapterBulkInsert("TIME_BASE", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
+
+            using var cmd2 = new SqlCommand(@"SELECT TOP 10000 CEMPID, LCALCULATE CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
+            var pipeline2 = new DataPipelineSql { AbortOnTargetAdapterException = true };
+            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            UPDATE TIME_BASE
+            SET CPAYTYPE = SRC.CPAYTYPE
+            FROM TIME_BASE T
+                INNER JOIN (
+                SELECT CEMPID, CPAYTYPE
+            FROM (
+                /*<DATA>*/
+                SELECT 99993 CEMPID, '1' CPAYTYPE
+                UNION ALL
+                SELECT 99999, '2'
+                /*</DATA>*/) SRC
+                ) SRC ON
+            T.CEMPID = SRC.CEMPID", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
+
+            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            DELETE FROM T
+            FROM TIME_BASE T
+            INNER JOIN 
+            (/*<DATA>*/ 
+            SELECT '123' CEMPID
+            UNION ALL
+            SELECT '124'
+            /*</DATA>*/) SRC ON 
+            T.CEMPID = SRC.CEMPID", new[] { "CEMPID" }, targetConn, 500), 2000);
         }
     }
 }

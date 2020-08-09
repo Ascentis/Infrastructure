@@ -61,10 +61,12 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulk.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\TargetAdapter.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\ColumnMetadataToDbTypeMapper.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\TargetAdapterSqlCommand.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterInsert.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
     <Compile Include="Patterns\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterDelimited.cs" />
