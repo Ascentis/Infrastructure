@@ -4,19 +4,19 @@ using System.Threading;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 {
-    public class SourceAdapterManual<T> : SourceAdapter<T>
+    public class SourceAdapterBlockingQueue : SourceAdapter<PoolEntry<object[]>>
     {
-        private readonly ConcurrentQueue<T> _dataQueue;
+        private readonly ConcurrentQueue<PoolEntry<object[]>> _dataQueue;
         private readonly ManualResetEventSlim _dataAvailable;
         private volatile bool _finished;
 
-        public SourceAdapterManual()
+        public SourceAdapterBlockingQueue()
         {
             _dataAvailable = new ManualResetEventSlim(false);
-            _dataQueue = new ConcurrentQueue<T>();
+            _dataQueue = new ConcurrentQueue<PoolEntry<object[]>>();
         }
 
-        public override IEnumerable<T> RowsEnumerable
+        public override IEnumerable<PoolEntry<object[]>> RowsEnumerable
         {
             get
             {
@@ -36,7 +36,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
             }
         }
 
-        public void Insert(T obj)
+        public void Insert(PoolEntry<object[]> obj)
         {
             _dataQueue.Enqueue(obj);
             _dataAvailable.Set();
@@ -46,6 +46,11 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
         {
             _finished = true;
             _dataAvailable.Set();
+        }
+
+        public override void ReleaseRow(PoolEntry<object[]> row)
+        {
+            row.ReleaseOne();
         }
     }
 }

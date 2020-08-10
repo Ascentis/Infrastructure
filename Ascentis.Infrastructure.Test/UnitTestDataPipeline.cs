@@ -604,7 +604,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var buf = new byte[1000];
             var stream = new MemoryStream(buf);
-            var source = new SourceAdapterManual<PoolEntry<object[]>>
+            var source = new SourceAdapterBlockingQueue
             {
                 ColumnMetadatas = new[]
                 {
@@ -612,13 +612,41 @@ namespace Ascentis.Infrastructure.Test
                     new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
                 }
             };
-            var pipeline = new DataPipelineManual<object[]>();
+            var pipeline = new DataPipelineBlockingQueue();
             Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new TargetAdapterDelimited(stream))));
             var entry = new object[] {"WKHR", 0};
             pipeline.Insert(new List<object[]>{entry, entry});
             pipeline.Finish(true);
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
+        }
+
+        private static async void TestManualToCsvBasicAsyncInternal(DataPipelineBlockingQueue pipeline)
+        {
+            var buf = new byte[1000];
+            var stream = new MemoryStream(buf);
+            var source = new SourceAdapterBlockingQueue
+            {
+                ColumnMetadatas = new[]
+                {
+                    new ColumnMetadata {DataType = typeof(string), ColumnSize = 4},
+                    new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
+                }
+            };
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new TargetAdapterDelimited(stream))));
+            var entries = new List<object[]> {new object []{ "WKHR", 0 }, new object []{ "WKHR", 0 }};
+            await pipeline.InsertAsync(entries);
+            await pipeline.InsertAsync(new object[] {"WKHR", 0});
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\nWKHR,0\r\n", str);
+        }
+
+        [TestMethod]
+        public void TestManualToCsvBasicAsync()
+        {
+            var pipeline = new DataPipelineBlockingQueue();
+            TestManualToCsvBasicAsyncInternal(pipeline);
+            pipeline.Finish(true);
         }
     }
 }
