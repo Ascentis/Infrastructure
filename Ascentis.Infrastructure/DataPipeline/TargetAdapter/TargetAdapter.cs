@@ -5,6 +5,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter
     public abstract class TargetAdapter<TRow> : ITargetAdapter<TRow>
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
+        public event DataPipeline<TRow>.RowDelegate OnTargetAdapterProcessRow;
+        public string Id { get; set; }
         public bool? AbortOnProcessException { get; set; }
         protected ISourceAdapter<TRow> Source { get; private set; }
         public virtual int BufferSize => 1;
@@ -23,6 +25,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter
             OnTargetAdapterRowProcessError?.Invoke(this, row, e);
         }
 
-        public string Id { get; set; }
+        protected void InvokeTargetAdapterProcessRowEvent(TRow row)
+        {
+            OnTargetAdapterProcessRow?.Invoke(this, row);
+        }
     }
 }

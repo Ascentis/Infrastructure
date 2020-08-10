@@ -71,6 +71,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                 return;
             }
             Target.Write(bytes, 0, bytesWritten);
+            InvokeTargetAdapterProcessRowEvent(row);
         }
     }
 }

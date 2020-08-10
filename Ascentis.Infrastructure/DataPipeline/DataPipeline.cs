@@ -9,9 +9,13 @@ namespace Ascentis.Infrastructure.DataPipeline
     public class DataPipeline<TRow>
     {
         public delegate void RowErrorDelegate(IAdapter adapter, object data, Exception e);
+        public delegate void RowDelegate(IAdapter adapter, TRow row);
 
         public event RowErrorDelegate OnSourceAdapterRowReadError;
         public event RowErrorDelegate OnTargetAdapterRowProcessError;
+        public event RowDelegate OnReleaseRowToSourceAdapter;
+        public event RowDelegate OnTargetAdapterProcessRow;
+
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
         protected ManualResetEvent FinishedEvent { get; }
@@ -38,6 +42,8 @@ namespace Ascentis.Infrastructure.DataPipeline
                 dataPipelineTargetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
                 totalTargetBufferSize += dataPipelineTargetAdapter.BufferSize;
+                if (OnTargetAdapterProcessRow != null)
+                    dataPipelineTargetAdapter.OnTargetAdapterProcessRow += OnTargetAdapterProcessRow;
             }
 
             sourceAdapter.ParallelLevel = targetAdaptersCount;
@@ -71,6 +77,7 @@ namespace Ascentis.Infrastructure.DataPipeline
                 targetAdapterConveyors[targetAdapterIndex++] = new Conveyor<TRow>((row, context) =>
                 {
                     ((ITargetAdapter<TRow>) context).Process(row);
+                    OnReleaseRowToSourceAdapter?.Invoke((IAdapter) context, row);
                     sourceAdapter.ReleaseRow(row);
                 }, dataPipelineTargetAdapter);
             }

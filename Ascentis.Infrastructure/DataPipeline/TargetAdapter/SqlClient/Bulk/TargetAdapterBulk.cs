@@ -5,7 +5,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 {
-    public abstract class TargetAdapterBulk : TargetAdapter<PoolEntry<object[]>>
+    public abstract class TargetAdapterBulk : TargetAdapter<PoolEntry<object[]>>, ITargetAdapterBulk
     {
         public const int DefaultBatchSize = 100;
         // ReSharper disable once InconsistentNaming
@@ -17,6 +17,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
         protected List<PoolEntry<object[]>> Rows;
         protected SqlCommand SqlCommand;
         protected SqlConnection SqlConnection;
+        protected SqlTransaction SqlTransaction;
         protected static readonly ColumnMetadataToDbTypeMapper ParamMapper =
             new ColumnMetadataToDbTypeMapper
             {
@@ -32,9 +33,22 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             SqlConnection = sqlConnection;
         }
 
+        public virtual SqlConnection Connection => SqlCommand.Connection;
+
         public bool UseTakeSemantics { get; set; }
 
         public override int BufferSize => BatchSize;
+
+        public virtual SqlTransaction Transaction
+        {
+            get => SqlTransaction;
+            set
+            {
+                SqlTransaction = value;
+                if (SqlCommand != null)
+                    SqlCommand.Transaction = value;
+            }
+        }
 
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
@@ -79,12 +93,12 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
         {
             DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkSql(rowCount);
-            sqlCommand = new SqlCommand(sqlCommandText, SqlConnection);
+            sqlCommand = new SqlCommand(sqlCommandText, SqlConnection, SqlTransaction);
             ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, sqlCommand.Parameters, rowCount);
             sqlCommand.Prepare();
         }
 
-        protected abstract void Flush();
+        public abstract void Flush();
 
         public override void Process(PoolEntry<object[]> row)
         {
@@ -92,6 +106,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
                 return;
             row.Retain();
             Rows.Add(row);
+            InvokeTargetAdapterProcessRowEvent(row);
             if (Rows.Count >= BatchSize)
                 Flush();
         }

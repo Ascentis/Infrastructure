@@ -12,13 +12,22 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
         
         public bool FallbackRowByRow { get; set; }
 
+        public override SqlTransaction Transaction
+        {
+            set
+            {
+                base.Transaction = value;
+                if (_sqlCommandRowByRow != null)
+                    _sqlCommandRowByRow.Transaction = value;
+            }
+        }
+
         public TargetAdapterBulkInsert(string tableName, 
             IEnumerable<string> columnNames, 
             SqlConnection sqlConnection, 
             int batchSize = DefaultBatchSize) : base(columnNames, sqlConnection, batchSize)
         {
             _tableName = tableName;
-            FallbackRowByRow = true;
         }
 
         [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
@@ -67,7 +76,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
         }
 
-        protected override void Flush()
+        public override void Flush()
         {
             try
             {

@@ -5,6 +5,7 @@ namespace Ascentis.Infrastructure.DataPipeline
     public interface ITargetAdapter<TRow> : IAdapter
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
+        public event DataPipeline<TRow>.RowDelegate OnTargetAdapterProcessRow;
         public bool? AbortOnProcessException { get; set; }
         void Prepare(ISourceAdapter<TRow> source);
         void Process(TRow row);

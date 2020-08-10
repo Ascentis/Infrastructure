@@ -5,7 +5,7 @@ using Ascentis.Infrastructure.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
 {
-    public class TargetAdapterSqlCommand : TargetAdapter<PoolEntry<object[]>>
+    public class TargetAdapterSqlCommand : TargetAdapter<PoolEntry<object[]>>, ITargetAdapterSql
     {
         private static readonly ColumnMetadataToDbTypeMapper ParamMapper = new ColumnMetadataToDbTypeMapper();
         private readonly SqlCommand _cmd;
@@ -15,6 +15,14 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
         {
             _cmd = cmd;
         }
+
+        public virtual SqlTransaction Transaction
+        {
+            get => _cmd.Transaction; 
+            set => _cmd.Transaction = value;
+        }
+
+        public virtual SqlConnection Connection => _cmd.Connection;
 
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
@@ -42,6 +50,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
             try
             {
                 _cmd.ExecuteNonQuery();
+                InvokeTargetAdapterProcessRowEvent(row);
             }
             catch (Exception e)
             {

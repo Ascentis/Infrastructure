@@ -43,7 +43,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             return newSqlCommandText;
         }
 
-        protected override void Flush()
+        public override void Flush()
         {
             try
             {

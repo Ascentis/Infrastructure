@@ -429,6 +429,47 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestSqlToSqlCommitEvery10Rows()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 100 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            
+            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn.Open();
+            
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
+            truncateCmd.ExecuteNonQuery();
+
+            var transaction = targetConn.BeginTransaction();
+            
+            TargetAdapterSqlCommand targetAdapter = null;
+            using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn, transaction);
+            
+            try
+            {
+                targetAdapter = new TargetAdapterSqlCommand(targetCmd);
+                var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
+                var counter = 0;
+                pipeline.OnReleaseRowToSourceAdapter += (adapter, row) =>
+                {
+                    if (++counter % 10 != 0)
+                        return;
+                    counter = 0;
+                    var adapterSqlCommand = (ITargetAdapterSql) adapter;
+                    adapterSqlCommand.Transaction.Commit();
+                    adapterSqlCommand.Transaction = adapterSqlCommand.Connection.BeginTransaction();
+                };
+
+                pipeline.Pump(cmd, targetAdapter);
+                targetAdapter.Transaction?.Commit();
+            }
+            catch (Exception)
+            {
+                targetAdapter?.Transaction?.Rollback();
+                throw;
+            }
+        }
+
+        [TestMethod]
         public void TestSqlToSqlBulkInsert()
         {
             using var cmd = new SqlCommand("SELECT TOP 40015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
@@ -456,6 +497,65 @@ namespace Ascentis.Infrastructure.Test
             };
             // ReSharper disable once RedundantArgumentDefaultValue
             pipeline.Pump(cmd, outPipes, 2400);
+        }
+
+        private static readonly LocalDataStoreSlot CounterSlot = Thread.AllocateDataSlot();
+
+        [TestMethod]
+        public void TestSqlToSqlBulkInsertWithTransaction()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 40015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+
+            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn0.Open();
+            using var targetConn1 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn1.Open();
+
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
+            truncateCmd.ExecuteNonQuery();
+
+            var transaction0 = targetConn0.BeginTransaction();
+            var transaction1 = targetConn1.BeginTransaction();
+            var outPipes = new[]
+            {
+                new TargetAdapterBulkInsert("TIME_BASE",
+                        new[] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300)
+                    {UseTakeSemantics = true, Transaction = transaction0},
+                new TargetAdapterBulkInsert("TIME_BASE",
+                        new[] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300)
+                    {UseTakeSemantics = true, Transaction = transaction1}
+            };
+            try
+            {
+                var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
+                pipeline.OnTargetAdapterProcessRow += (adapter, row) =>
+                {
+                    var data = Thread.GetData(CounterSlot);
+                    if (data == null)
+                    {
+                        Thread.SetData(CounterSlot, 1);
+                        return;
+                    }
+                    var newData = (int) data + 1;
+                    Thread.SetData(CounterSlot, newData);
+                    if (newData % 100 != 0)
+                        return;
+                    var adapterBulk = (ITargetAdapterBulk) adapter;
+                    adapterBulk.Flush();
+                    adapterBulk.Transaction.Commit();
+                    adapterBulk.Transaction = adapterBulk.Connection.BeginTransaction();
+                };
+
+                pipeline.Pump(cmd, outPipes, 2400);
+                foreach (var adapter in outPipes)
+                    adapter.Transaction?.Commit();
+            }
+            catch (Exception)
+            {
+                foreach (var adapter in outPipes)
+                    adapter.Transaction?.Rollback();
+                throw;
+            }
         }
 
         [TestMethod]
