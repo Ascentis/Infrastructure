@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
 {
     public abstract class TargetAdapter
     {

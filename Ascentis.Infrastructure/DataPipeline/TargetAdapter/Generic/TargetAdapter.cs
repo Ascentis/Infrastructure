@@ -2,7 +2,7 @@
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic
 {
-    public abstract class TargetAdapter<TRow> : TargetAdapter, ITargetAdapter<TRow>
+    public abstract class TargetAdapter<TRow> : Base.TargetAdapter, ITargetAdapter<TRow>
     {
         public event DataPipeline<TRow>.RowErrorDelegate OnTargetAdapterRowProcessError;
         public event DataPipeline<TRow>.BeforeProcessRowDelegate BeforeTargetAdapterProcessRow;

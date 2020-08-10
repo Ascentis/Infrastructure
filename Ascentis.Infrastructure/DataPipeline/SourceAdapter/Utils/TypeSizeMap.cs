@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils
 {
     public class TypeSizeMap
     {

@@ -50,13 +50,13 @@
     <Compile Include="DataPipeline\Exceptions\TargetAdapterException.cs" />
     <Compile Include="DataPipeline\IAdapter.cs" />
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\ColumnMetadata.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadata.cs" />
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\DataPipelineBlockingQueue.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\SourceAdapterBlockingQueue.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\SourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\TypeSizeMap.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Base\SourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Utils\TypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SourceAdapterSql.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSql.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterFixedLength.cs" />
@@ -64,15 +64,16 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Base\TargetAdapterSql.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\ITargetAdapterBulk.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulk.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\ITargetAdapterSql.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapter.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\ColumnMetadataToDbTypeMapper.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\TargetAdapterSqlCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Utils\ColumnMetadataToDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Single\TargetAdapterSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\TargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapter.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
@@ -107,8 +108,6 @@
     <None Include="Ascentis.Infrastructure.snk" />
     <Compile Include="Threading\BoundedParallel\Ascentis.ParallelLoopResult.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DataPipeline\Async\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

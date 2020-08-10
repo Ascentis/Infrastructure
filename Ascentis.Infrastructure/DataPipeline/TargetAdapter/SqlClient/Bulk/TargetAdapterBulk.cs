@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Base;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 {
-    public abstract class TargetAdapterBulk : TargetAdapter<PoolEntry<object[]>>, ITargetAdapterBulk
+    public abstract class TargetAdapterBulk : TargetAdapterSql, ITargetAdapterBulk
     {
         public const int DefaultBatchSize = 100;
         // ReSharper disable once InconsistentNaming
@@ -33,10 +34,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             BatchSize = batchSize;
             SqlConnection = sqlConnection;
         }
-
+        
         public virtual SqlConnection Connection => SqlCommand.Connection;
-
-        public bool UseTakeSemantics { get; set; }
 
         public override int BufferSize => BatchSize;
 
@@ -95,7 +94,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkSql(rowCount);
             sqlCommand = new SqlCommand(sqlCommandText, SqlConnection, SqlTransaction);
-            ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, sqlCommand.Parameters, rowCount);
+            ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
             sqlCommand.Prepare();
         }
 

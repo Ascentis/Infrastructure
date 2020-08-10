@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Base;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Utils;
 using Ascentis.Infrastructure.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single
 {
-    public class TargetAdapterSqlCommand : TargetAdapter<PoolEntry<object[]>>, ITargetAdapterSql
+    public class TargetAdapterSqlCommand : TargetAdapterSql, ITargetAdapterSql
     {
         private static readonly ColumnMetadataToDbTypeMapper ParamMapper = new ColumnMetadataToDbTypeMapper();
         private readonly SqlCommand _cmd;
@@ -39,7 +40,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
                 paramToMetaIndex.Add(parameter, metaIndex);
                 _paramToMetaMap[i++] = metaIndex;
             }
-            ParamMapper.Map(paramToMetaIndex, source.ColumnMetadatas, _cmd.Parameters);
+            ParamMapper.Map(paramToMetaIndex, source.ColumnMetadatas, AnsiStringParameters, _cmd.Parameters);
 
             _cmd.Prepare();
         }
@@ -47,6 +48,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
         public override void Process(PoolEntry<object[]> row)
         {
             if (InvokeBeforeTargetAdapterProcessRowEvent(row) == BeforeProcessRowResult.Abort)
+                return;
+
+            if (UseTakeSemantics && !row.Take())
                 return;
 
             for (var i = 0; i < _cmd.Parameters.Count; i++)

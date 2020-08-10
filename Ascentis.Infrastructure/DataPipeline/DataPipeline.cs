@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
@@ -12,7 +10,7 @@ namespace Ascentis.Infrastructure.DataPipeline
     {
         public delegate void RowErrorDelegate(IAdapter adapter, object data, Exception e);
         public delegate void RowDelegate(IAdapter adapter, TRow row);
-        public delegate TargetAdapter<TRow>.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row); // Return false to abort processing
+        public delegate TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row); // Return false to abort processing
 
         public event RowErrorDelegate OnSourceAdapterRowReadError;
         public event RowErrorDelegate OnTargetAdapterRowProcessError;
@@ -30,7 +28,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         }
 
         private void SetupAndHealthCheckAdapters(ISourceAdapter<TRow> sourceAdapter,
-            IEnumerable<ITargetAdapter<TRow>> dataPipelineTargetAdapters,
+            IEnumerable<ITargetAdapter<TRow>> targetAdapters,
             out int targetAdaptersCount)
         {
             if (string.IsNullOrEmpty(sourceAdapter.Id))
@@ -40,14 +38,14 @@ namespace Ascentis.Infrastructure.DataPipeline
 
             targetAdaptersCount = 0;
             var totalTargetBufferSize = 0;
-            foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
+            foreach (var targetAdapter in targetAdapters)
             {
-                dataPipelineTargetAdapter.BeforeTargetAdapterProcessRow += BeforeTargetAdapterProcessRow;
-                dataPipelineTargetAdapter.AfterTargetAdapterProcessRow += AfterTargetAdapterProcessRow;
-                dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
-                dataPipelineTargetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
+                targetAdapter.BeforeTargetAdapterProcessRow += BeforeTargetAdapterProcessRow;
+                targetAdapter.AfterTargetAdapterProcessRow += AfterTargetAdapterProcessRow;
+                targetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
+                targetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
-                totalTargetBufferSize += dataPipelineTargetAdapter.BufferSize;
+                totalTargetBufferSize += targetAdapter.BufferSize;
             }
 
             sourceAdapter.ParallelLevel = targetAdaptersCount;
@@ -64,26 +62,26 @@ namespace Ascentis.Infrastructure.DataPipeline
 
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public virtual void Pump(ISourceAdapter<TRow> sourceAdapter,
-            IEnumerable<ITargetAdapter<TRow>> dataPipelineTargetAdapters)
+            IEnumerable<ITargetAdapter<TRow>> targetAdapters)
         {
             using var setEventFinished = new Resettable<ManualResetEvent>(FinishedEvent, evt => evt.Set());
-            SetupAndHealthCheckAdapters(sourceAdapter, dataPipelineTargetAdapters, out var targetAdaptersCount);
+            SetupAndHealthCheckAdapters(sourceAdapter, targetAdapters, out var targetAdaptersCount);
 
             sourceAdapter.Prepare();
             using var resettableSourceAdapter = new Resettable<ISourceAdapter<TRow>>(sourceAdapter, adapter => adapter.UnPrepare());
-            foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
-                dataPipelineTargetAdapter.Prepare(sourceAdapter);
+            foreach (var targetAdapter in targetAdapters)
+                targetAdapter.Prepare(sourceAdapter);
 
             var targetAdapterIndex = 0;
             var targetAdapterConveyors = new Conveyor<TRow>[targetAdaptersCount];
-            foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
+            foreach (var targetAdapter in targetAdapters)
             {
                 targetAdapterConveyors[targetAdapterIndex++] = new Conveyor<TRow>((row, context) =>
                 {
                     ((ITargetAdapter<TRow>) context).Process(row);
                     OnReleaseRowToSourceAdapter?.Invoke((IAdapter) context, row);
                     sourceAdapter.ReleaseRow(row);
-                }, dataPipelineTargetAdapter);
+                }, targetAdapter);
             }
 
             try
@@ -98,13 +96,13 @@ namespace Ascentis.Infrastructure.DataPipeline
 
                 foreach (var targetAdapterConveyor in targetAdapterConveyors)
                     targetAdapterConveyor.StopAndWait();
-                dataPipelineTargetAdapters.ForEach(adapter => adapter.UnPrepare());
+                targetAdapters.ForEach(adapter => adapter.UnPrepare());
             }
             catch (Exception e)
             {
                 targetAdapterConveyors.ForEach(conveyor => conveyor.Stop(), typeof(InvalidOperationException),
                     false);
-                dataPipelineTargetAdapters.ForEach(adapter => adapter.AbortedWithException(e));
+                targetAdapters.ForEach(adapter => adapter.AbortedWithException(e));
                 throw;
             }
         }

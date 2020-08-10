@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils
 {
     public class ColumnMetadata
     {

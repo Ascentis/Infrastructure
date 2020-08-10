@@ -74,12 +74,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
         }
 
         public override void Pump(ISourceAdapter<PoolEntry<object[]>> sourceAdapter,
-            IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters)
+            IEnumerable<ITargetAdapter<PoolEntry<object[]>>> targetAdapters)
         {
             _sourceAdapter = sourceAdapter as SourceAdapterBlockingQueue ?? 
                              throw new InvalidOperationException($"sourceAdapter must be of class {nameof(SourceAdapterBlockingQueue)}");
             _startedRunning.Set();
-            base.Pump(sourceAdapter, dataPipelineTargetAdapters);
+            base.Pump(sourceAdapter, targetAdapters);
         }
     }
 }

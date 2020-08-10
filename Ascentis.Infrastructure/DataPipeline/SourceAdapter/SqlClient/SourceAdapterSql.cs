@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
 {

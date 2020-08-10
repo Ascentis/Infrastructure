@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {

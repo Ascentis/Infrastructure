@@ -7,13 +7,14 @@ using System.Text;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -426,7 +427,8 @@ namespace Ascentis.Infrastructure.Test
             truncateCmd.ExecuteNonQuery();
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
             var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
-            pipeline.Pump(cmd, new TargetAdapterSqlCommand(targetCmd));
+            var targetAdapter = new TargetAdapterSqlCommand(targetCmd) {AnsiStringParameters = new[] {"CPCODE_EXP"}};
+            pipeline.Pump(cmd, targetAdapter);
         }
 
         [TestMethod]
@@ -664,8 +666,10 @@ namespace Ascentis.Infrastructure.Test
             {
                 if (row.Value != flushSignal) 
                     return TargetAdapter.BeforeProcessRowResult.Continue;
+                if (!(targetAdapter is ITargetAdapterBulk bulk)) 
+                    return TargetAdapter.BeforeProcessRowResult.Abort;
                 flushCalled = true;
-                ((TargetAdapterBulk)targetAdapter).Flush();
+                bulk.Flush();
                 return TargetAdapter.BeforeProcessRowResult.Abort;
             };
             var waitForDataTimeout = false;
@@ -678,11 +682,11 @@ namespace Ascentis.Infrastructure.Test
             var entries = new List<object[]>
             {
                 new object []{ "WKHR", 0 }, 
-                new object []{ "WKHR", 0 }
+                new object []{ "WKHT", 0 }
             };
             await pipeline.InsertAsync(entries);
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
-            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
+            Assert.AreEqual("WKHR,0\r\nWKHT,0\r\n", str);
             if (flushCalled && waitForDataTimeout)
                 _asyncMethodFinished.Set();
         }
@@ -691,7 +695,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestManualToCsvAndDbBasicAsync()
         {
             _asyncMethodFinished = new ManualResetEventSlim(false);
-            var pipeline = new DataPipelineBlockingQueue() {AbortOnTargetAdapterException = true};
+            var pipeline = new DataPipelineBlockingQueue {AbortOnTargetAdapterException = true};
             TestManualToCsvBasicAsyncInternal(pipeline);
             Assert.IsTrue(_asyncMethodFinished.Wait(2000));
             pipeline.Finish(true);

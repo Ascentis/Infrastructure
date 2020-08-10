@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
 {
     public abstract class SourceAdapter
     {

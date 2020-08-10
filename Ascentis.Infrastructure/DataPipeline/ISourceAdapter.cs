@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
