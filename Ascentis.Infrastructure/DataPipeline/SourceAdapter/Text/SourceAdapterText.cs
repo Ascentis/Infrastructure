@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {

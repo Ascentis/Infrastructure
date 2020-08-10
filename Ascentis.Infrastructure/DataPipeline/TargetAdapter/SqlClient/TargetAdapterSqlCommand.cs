@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 using Ascentis.Infrastructure.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
@@ -45,12 +46,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient
 
         public override void Process(PoolEntry<object[]> row)
         {
+            if (InvokeBeforeTargetAdapterProcessRowEvent(row) == BeforeProcessRowResult.Abort)
+                return;
+
             for (var i = 0; i < _cmd.Parameters.Count; i++)
                 _cmd.Parameters[i].Value = row.Value[_paramToMetaMap[i]];
             try
             {
                 _cmd.ExecuteNonQuery();
-                InvokeTargetAdapterProcessRowEvent(row);
+                InvokeAfterTargetAdapterProcessRowEvent(row);
             }
             catch (Exception e)
             {

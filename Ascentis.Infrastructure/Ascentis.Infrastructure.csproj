@@ -54,6 +54,7 @@
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\DataPipelineBlockingQueue.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\SourceAdapterBlockingQueue.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\TypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\SqlClient\SourceAdapterSql.cs" />
@@ -67,26 +68,28 @@
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulk.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\ITargetAdapterSql.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\TargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapter.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\ColumnMetadataToDbTypeMapper.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\TargetAdapterSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
-    <Compile Include="Patterns\PoolEntry.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\TargetAdapter.cs" />
+    <Compile Include="Patterns\Pool\IPool.cs" />
+    <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterDelimited.cs" />
     <Compile Include="DataPipeline\Exceptions\DataPipelineException.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterFixedLength.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterText.cs" />
-    <Compile Include="Threading\Conveyor.cs" />
+    <Compile Include="Threading\Conveyor\Conveyor.cs" />
     <Compile Include="DataPipeline\DataPipeline.cs" />
-    <Compile Include="Patterns\Pool.cs" />
-    <Compile Include="Threading\ConveyorException.cs" />
+    <Compile Include="Patterns\Pool\Pool.cs" />
+    <Compile Include="Threading\Conveyor\ConveyorException.cs" />
     <Compile Include="Utils\ArgNamePair.cs" />
     <Compile Include="Utils\ArgsChecker.cs" />
     <Compile Include="Patterns\AsyncDisposer.cs" />
     <Compile Include="Patterns\AutoInit.cs" />
-    <Compile Include="Threading\BoundedParallel.cs" />
-    <Compile Include="Threading\BoundedParallelStats.cs" />
+    <Compile Include="Threading\BoundedParallel\BoundedParallel.cs" />
+    <Compile Include="Threading\BoundedParallel\BoundedParallelStats.cs" />
     <Compile Include="Patterns\ConcurrentObjectAccessor.cs" />
     <Compile Include="Patterns\ConcurrentIncrementableResettableInt.cs" />
     <Compile Include="Utils\Except.cs" />
@@ -96,13 +99,13 @@
     <Compile Include="Patterns\Retrier.cs" />
     <Compile Include="Misc\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
-    <Compile Include="Utils\SqlCommandExtensions.cs" />
+    <Compile Include="Utils\SqlClient\SqlCommandExtensions.cs" />
     <Compile Include="Utils\TypeAndTypeArrayTupleEqualityComparer.cs" />
-    <Compile Include="Utils\TypeToSqlDbType.cs" />
+    <Compile Include="Utils\SqlClient\TypeToSqlDbType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ascentis.Infrastructure.snk" />
-    <Compile Include="Threading\Ascentis.ParallelLoopResult.cs" />
+    <Compile Include="Threading\BoundedParallel\Ascentis.ParallelLoopResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DataPipeline\Async\" />

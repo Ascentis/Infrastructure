@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,17 +16,22 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
             _startedRunning = new ManualResetEventSlim(false);
         }
 
-        private void Insert(PoolEntry<object[]> entry)
+        private void WaitForPumpStart()
         {
             _startedRunning.Wait();
             if (_sourceAdapter == null)
                 throw new InvalidOperationException("Can't call DataPipelineBlockingQueue.Insert(). Pump is not running");
-            _sourceAdapter.Insert(entry);
+        }
+
+        private void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        {
+            WaitForPumpStart();
+            _sourceAdapter.Insert(obj, onReleaseOne);
         }
 
         public void Insert(object[] obj)
         {
-            Insert(new PoolEntry<object[]>(obj));
+            Insert(obj, null);
         }
 
         public void Insert(IEnumerable<object[]> objs)
@@ -36,29 +42,23 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 
         public Task InsertAsync(object[] obj)
         {
-            var entry = new PoolEntry<object[]>(obj);
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.None);
-            entry.OnReleaseOne += poolEntry => tcs.SetResult(true);
-            Insert(entry);
-            return tcs.Task;
+            IEnumerable<object[]> objs = new [] { obj };
+            return InsertAsync(objs);
         }
 
         public Task InsertAsync(IEnumerable<object[]> objs)
         {
-            var objectsCount = 0;
+            WaitForPumpStart();
+
+            var objsList = objs.ToList();
+            var objectsCount = objsList.Count;
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.None);
-            foreach (var obj in objs)
-            {
-                objectsCount++;
-                var entry = new PoolEntry<object[]>(obj);
-                entry.OnReleaseOne += poolEntry =>
+            foreach (var obj in objsList)
+                Insert(obj, poolEntry =>
                 {
-                    // ReSharper disable once AccessToModifiedClosure
-                    if (Interlocked.Decrement(ref objectsCount) <= 0)
+                    if (Interlocked.Decrement(ref objectsCount) == 0)
                         tcs.SetResult(true);
-                };
-                Insert(entry);
-            }
+                });
 
             return tcs.Task;
         }

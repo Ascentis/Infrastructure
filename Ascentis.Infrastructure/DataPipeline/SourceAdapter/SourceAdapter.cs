@@ -3,14 +3,23 @@ using System.Collections.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
 {
-    public abstract class SourceAdapter<T> : ISourceAdapter<T>
+    public abstract class SourceAdapter
     {
-        private IEnumerable<T> _rowsEnumerable;
-        private Dictionary<string, int> _columnMetadatasMap;
-        private ColumnMetadata[] _dataPipelineColumnMetadata;
-
-        public event DataPipeline<T>.RowErrorDelegate OnSourceAdapterRowReadError;
+        protected Dictionary<string, int> ColumnMetadatasMap;
+        protected ColumnMetadata[] DataPipelineColumnMetadata;
         public bool AbortOnReadException { get; set; }
+
+        public virtual ColumnMetadata[] ColumnMetadatas
+        {
+            get => DataPipelineColumnMetadata;
+            set
+            {
+                if (DataPipelineColumnMetadata == value)
+                    return;
+                DataPipelineColumnMetadata = value;
+                ColumnMetadatasMap = null;
+            }
+        }
 
         public virtual int FieldCount
         {
@@ -27,39 +36,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter
             get => 0;
             set => throw new NotImplementedException();
         }
-
-        public virtual ColumnMetadata[] ColumnMetadatas
-        {
-            get => _dataPipelineColumnMetadata;
-            set
-            {
-                if (_dataPipelineColumnMetadata == value)
-                    return;
-                _dataPipelineColumnMetadata = value;
-                _columnMetadatasMap = null;
-            }
-        }
-
-        protected void InvokeRowReadErrorEvent(object sourceData, Exception e)
-        {
-            OnSourceAdapterRowReadError?.Invoke(this, sourceData, e);
-        }
-
+        
         public virtual void UnPrepare() { }
-        public virtual void ReleaseRow(T row) { }
-        public abstract IEnumerable<T> RowsEnumerable { get; }
+
         public virtual void Prepare() { }
 
         public Dictionary<string, int> MetadatasColumnToIndexMap
         {
             get
             {
-                if (_columnMetadatasMap != null)
-                    return _columnMetadatasMap;
-                _columnMetadatasMap = new Dictionary<string, int>();
+                if (ColumnMetadatasMap != null)
+                    return ColumnMetadatasMap;
+                ColumnMetadatasMap = new Dictionary<string, int>();
                 for (var i = 0; i < ColumnMetadatas.Length; i++)
-                    _columnMetadatasMap.Add(ColumnMetadatas[i].ColumnName, i);
-                return _columnMetadatasMap;
+                    ColumnMetadatasMap.Add(ColumnMetadatas[i].ColumnName, i);
+                return ColumnMetadatasMap;
             }
         }
 

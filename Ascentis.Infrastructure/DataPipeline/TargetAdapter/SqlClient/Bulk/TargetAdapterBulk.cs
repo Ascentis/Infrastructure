@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 {
@@ -102,11 +103,17 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 
         public override void Process(PoolEntry<object[]> row)
         {
+            if (InvokeBeforeTargetAdapterProcessRowEvent(row) == BeforeProcessRowResult.Abort)
+                return;
+
             if (UseTakeSemantics && !row.Take())
                 return;
+
             row.Retain();
             Rows.Add(row);
-            InvokeTargetAdapterProcessRowEvent(row);
+            
+            InvokeAfterTargetAdapterProcessRowEvent(row);
+            
             if (Rows.Count >= BatchSize)
                 Flush();
         }

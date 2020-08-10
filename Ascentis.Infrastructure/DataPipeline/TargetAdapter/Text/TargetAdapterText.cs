@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
@@ -56,6 +57,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         public override void Process(PoolEntry<object[]> row)
         {
 
+            if (InvokeBeforeTargetAdapterProcessRowEvent(row) == BeforeProcessRowResult.Abort)
+                return;
+
             byte[] bytes;
             int bytesWritten;
             try
@@ -71,7 +75,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
                 return;
             }
             Target.Write(bytes, 0, bytesWritten);
-            InvokeTargetAdapterProcessRowEvent(row);
+
+            InvokeAfterTargetAdapterProcessRowEvent(row);
         }
     }
 }

@@ -1,19 +1,31 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 {
     public class SourceAdapterBlockingQueue : SourceAdapter<PoolEntry<object[]>>
     {
+        public delegate void SourceAdapterDelegate(SourceAdapterBlockingQueue adapter);
+        public const int DefaultPoolCapacity = 1000;
+
         private readonly ConcurrentQueue<PoolEntry<object[]>> _dataQueue;
         private readonly ManualResetEventSlim _dataAvailable;
+        private Pool<object[]> _rowsPool;
         private volatile bool _finished;
+        private readonly ManualResetEventSlim _preparedEvent;
+
+        public event SourceAdapterDelegate OnWaitForDataTimeout;
+
+        public int WaitForDataTimeout;
 
         public SourceAdapterBlockingQueue()
         {
             _dataAvailable = new ManualResetEventSlim(false);
             _dataQueue = new ConcurrentQueue<PoolEntry<object[]>>();
+            _preparedEvent = new ManualResetEventSlim(false);
+            WaitForDataTimeout = -1;
         }
 
         public override IEnumerable<PoolEntry<object[]>> RowsEnumerable
@@ -26,7 +38,8 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
                     {
                         if (_finished)
                             yield break;
-                        _dataAvailable.Wait();
+                        if (!_dataAvailable.Wait(WaitForDataTimeout))
+                            OnWaitForDataTimeout?.Invoke(this);
                         _dataAvailable.Reset();
                         continue;
                     }
@@ -36,10 +49,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
             }
         }
 
-        public void Insert(PoolEntry<object[]> obj)
+        internal void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
-            _dataQueue.Enqueue(obj);
+            _preparedEvent.Wait();
+            var entry = _rowsPool.Acquire();
+            entry.OnReleaseOne += onReleaseOne;
+            entry.Value = obj;
+            _dataQueue.Enqueue(entry);
             _dataAvailable.Set();
+        }
+
+        public override void Prepare()
+        {
+            base.Prepare();
+            _rowsPool = new Pool<object[]>(DefaultPoolCapacity, pool => pool.NewPoolEntry(null, ParallelLevel));
+            _preparedEvent.Set();
         }
 
         public void Finish()
@@ -50,7 +74,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 
         public override void ReleaseRow(PoolEntry<object[]> row)
         {
-            row.ReleaseOne();
+            _rowsPool.Release(row);
         }
     }
 }

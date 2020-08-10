@@ -5,11 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
@@ -201,7 +203,6 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
-            //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var pipeline = new DataPipelineSql();
             pipeline.Pump(cmd, new TargetAdapterDelimited(fileStream));
         }
@@ -528,7 +529,7 @@ namespace Ascentis.Infrastructure.Test
             try
             {
                 var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
-                pipeline.OnTargetAdapterProcessRow += (adapter, row) =>
+                pipeline.AfterTargetAdapterProcessRow += (adapter, row) =>
                 {
                     var data = Thread.GetData(CounterSlot);
                     if (data == null)
@@ -621,31 +622,78 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
         }
 
-        private static async void TestManualToCsvBasicAsyncInternal(DataPipelineBlockingQueue pipeline)
+        private ManualResetEventSlim _asyncMethodFinished;
+
+        private async void TestManualToCsvBasicAsyncInternal(DataPipelineBlockingQueue pipeline)
         {
+            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn0.Open();
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
+            truncateCmd.ExecuteNonQuery();
+
             var buf = new byte[1000];
             var stream = new MemoryStream(buf);
             var source = new SourceAdapterBlockingQueue
             {
                 ColumnMetadatas = new[]
                 {
-                    new ColumnMetadata {DataType = typeof(string), ColumnSize = 4},
-                    new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
-                }
+                    new ColumnMetadata
+                    {
+                        ColumnName =  "CEMPID",
+                        DataType = typeof(string), 
+                        ColumnSize = 4
+                    },
+                    new ColumnMetadata
+                    {
+                        ColumnName = "NPAYCODE",
+                        DataType = typeof(int), 
+                        ColumnSize = 16
+                    }
+                }, 
+                WaitForDataTimeout = 1000
             };
-            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new TargetAdapterDelimited(stream))));
-            var entries = new List<object[]> {new object []{ "WKHR", 0 }, new object []{ "WKHR", 0 }};
+            var targetAdapters = new ITargetAdapter<PoolEntry<object[]>>[]
+            {
+                new TargetAdapterBulkInsert("TIME_BASE",
+                        new[] {"CEMPID", "NPAYCODE"}, targetConn0, 300),
+                new TargetAdapterDelimited(stream)
+            };
+            var flushCalled = false;
+            var flushSignal = new object [0];
+            pipeline.BeforeTargetAdapterProcessRow += (targetAdapter, row) =>
+            {
+                if (row.Value != flushSignal) 
+                    return TargetAdapter.BeforeProcessRowResult.Continue;
+                flushCalled = true;
+                ((TargetAdapterBulk)targetAdapter).Flush();
+                return TargetAdapter.BeforeProcessRowResult.Abort;
+            };
+            var waitForDataTimeout = false;
+            source.OnWaitForDataTimeout += adapter =>
+            {
+                waitForDataTimeout = true;
+                pipeline.Insert(flushSignal); // We need to Flush() in the target conveyor thread
+            };
+            ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, targetAdapters));
+            var entries = new List<object[]>
+            {
+                new object []{ "WKHR", 0 }, 
+                new object []{ "WKHR", 0 }
+            };
             await pipeline.InsertAsync(entries);
-            await pipeline.InsertAsync(new object[] {"WKHR", 0});
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
-            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\nWKHR,0\r\n", str);
+            Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
+            if (flushCalled && waitForDataTimeout)
+                _asyncMethodFinished.Set();
         }
 
         [TestMethod]
-        public void TestManualToCsvBasicAsync()
+        public void TestManualToCsvAndDbBasicAsync()
         {
-            var pipeline = new DataPipelineBlockingQueue();
+            _asyncMethodFinished = new ManualResetEventSlim(false);
+            var pipeline = new DataPipelineBlockingQueue() {AbortOnTargetAdapterException = true};
             TestManualToCsvBasicAsyncInternal(pipeline);
+            Assert.IsTrue(_asyncMethodFinished.Wait(2000));
             pipeline.Finish(true);
         }
     }

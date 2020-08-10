@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline
 {
@@ -10,11 +12,13 @@ namespace Ascentis.Infrastructure.DataPipeline
     {
         public delegate void RowErrorDelegate(IAdapter adapter, object data, Exception e);
         public delegate void RowDelegate(IAdapter adapter, TRow row);
+        public delegate TargetAdapter<TRow>.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row); // Return false to abort processing
 
         public event RowErrorDelegate OnSourceAdapterRowReadError;
         public event RowErrorDelegate OnTargetAdapterRowProcessError;
         public event RowDelegate OnReleaseRowToSourceAdapter;
-        public event RowDelegate OnTargetAdapterProcessRow;
+        public event BeforeProcessRowDelegate BeforeTargetAdapterProcessRow;
+        public event RowDelegate AfterTargetAdapterProcessRow;
 
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
@@ -38,12 +42,12 @@ namespace Ascentis.Infrastructure.DataPipeline
             var totalTargetBufferSize = 0;
             foreach (var dataPipelineTargetAdapter in dataPipelineTargetAdapters)
             {
+                dataPipelineTargetAdapter.BeforeTargetAdapterProcessRow += BeforeTargetAdapterProcessRow;
+                dataPipelineTargetAdapter.AfterTargetAdapterProcessRow += AfterTargetAdapterProcessRow;
                 dataPipelineTargetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
                 dataPipelineTargetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
                 totalTargetBufferSize += dataPipelineTargetAdapter.BufferSize;
-                if (OnTargetAdapterProcessRow != null)
-                    dataPipelineTargetAdapter.OnTargetAdapterProcessRow += OnTargetAdapterProcessRow;
             }
 
             sourceAdapter.ParallelLevel = targetAdaptersCount;
@@ -89,8 +93,8 @@ namespace Ascentis.Infrastructure.DataPipeline
 
                 var sourceRows = sourceAdapter.RowsEnumerable;
                 foreach (var row in sourceRows)
-                foreach (var targetAdapterConveyor in targetAdapterConveyors)
-                    targetAdapterConveyor.InsertPacket(row);
+                    foreach (var targetAdapterConveyor in targetAdapterConveyors)
+                        targetAdapterConveyor.InsertPacket(row);
 
                 foreach (var targetAdapterConveyor in targetAdapterConveyors)
                     targetAdapterConveyor.StopAndWait();

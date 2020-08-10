@@ -5,6 +5,16 @@ namespace Ascentis.Infrastructure
 {
     public class PoolEntry<T>
     {
+        private class DefaultPool<T> : IPool<T>
+        {
+            public void Release(PoolEntry<T> obj)
+            {
+                obj.ReleaseOne();
+            }
+        }
+
+        private static readonly IPool<T> FallbackPool = new DefaultPool<T>();
+
         public const int Taken = 1;
         public const int NotTaken = 0;
 
@@ -15,16 +25,16 @@ namespace Ascentis.Infrastructure
         public event PoolEntryDelegate OnRetain;
         public event PoolEntryDelegate OnTake;
 
-        public T Value { get; }
-        public Pool<T> Pool { get; }
+        public T Value { get; set; }
+        public IPool<T> Pool { get; }
         private readonly int _initialRefCount;
         private volatile int _refCount;
         private volatile int _taken;
 
-        public PoolEntry(Pool<T> pool, T value, int initialRefCount = -1)
+        public PoolEntry(IPool<T> pool, T value, int initialRefCount = -1)
         {
             Value = value;
-            Pool = pool;
+            Pool = pool ?? FallbackPool;
             _refCount = initialRefCount;
             _initialRefCount = initialRefCount;
         }
@@ -40,8 +50,10 @@ namespace Ascentis.Infrastructure
 
         public bool ReleaseOne()
         {
-            OnReleaseOne?.Invoke(this);
-            return _refCount <= -1 || Interlocked.Decrement(ref _refCount) <= 0;
+            var released = _refCount <= -1 || Interlocked.Decrement(ref _refCount) <= 0;
+            if (released)
+                OnReleaseOne?.Invoke(this);
+            return released;
         }
 
         public void Retain()
@@ -53,8 +65,10 @@ namespace Ascentis.Infrastructure
 
         public bool Take()
         {
-            OnTake?.Invoke(this);
-            return Interlocked.CompareExchange(ref _taken, Taken, NotTaken) == NotTaken;
+            var taken = Interlocked.CompareExchange(ref _taken, Taken, NotTaken) == NotTaken;
+            if (taken)
+                OnTake?.Invoke(this);
+            return taken;
         }
     }
 }

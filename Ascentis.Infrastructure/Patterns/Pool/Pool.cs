@@ -5,7 +5,7 @@ using System.Threading;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class Pool<T>
+    public class Pool<T> : IPool<T>
     {
         public delegate PoolEntry<T> Builder(Pool<T> pool);
 
