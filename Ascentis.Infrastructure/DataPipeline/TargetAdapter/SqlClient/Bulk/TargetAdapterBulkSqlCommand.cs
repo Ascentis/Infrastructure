@@ -28,7 +28,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
 
             for (var i = 1; i < rowCount; i++)
             {
-                sourceSql += $"\r\nUNION ALL\r\nSELECT ";
+                sourceSql += "\r\nUNION ALL\r\nSELECT ";
                 columnNumber = 0;
                 foreach (var dummy in ColumnNames)
                     sourceSql += $"@P{columnNumber++}_{i},";
@@ -36,8 +36,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
             }
 
             var newSqlCommandText = Regex.Replace(_sqlCommandText, 
-                @"(.*)(\/\*\<DATA\>\*\/.*\/\*\<\/DATA\>\*\/)(.*)", 
-                $"$1{sourceSql}$3",
+                @"(\/\*\<DATA\>\*\/.*?\/\*\<\/DATA\>\*\/)", 
+                sourceSql,
                 RegexOptions.Compiled | RegexOptions.Singleline);
 
             return newSqlCommandText;

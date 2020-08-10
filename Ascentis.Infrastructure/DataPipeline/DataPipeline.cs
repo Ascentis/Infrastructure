@@ -12,11 +12,10 @@ namespace Ascentis.Infrastructure.DataPipeline
         public delegate void RowDelegate(IAdapter adapter, TRow row);
         public delegate TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row); // Return false to abort processing
 
-        public event RowErrorDelegate OnSourceAdapterRowReadError;
-        public event RowErrorDelegate OnTargetAdapterRowProcessError;
-        public event RowDelegate OnReleaseRowToSourceAdapter;
-        public event BeforeProcessRowDelegate BeforeTargetAdapterProcessRow;
-        public event RowDelegate AfterTargetAdapterProcessRow;
+        public event RowErrorDelegate OnSourceAdapterRowReadError; // Runs in SourceAdapter thread
+        public event RowErrorDelegate OnTargetAdapterRowProcessError; // Runs in TargetAdapter thread
+        public event BeforeProcessRowDelegate BeforeTargetAdapterProcessRow; // Runs in TargetAdapter thread
+        public event RowDelegate AfterTargetAdapterProcessRow; // Runs in TargetAdapter thread
 
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
@@ -79,7 +78,6 @@ namespace Ascentis.Infrastructure.DataPipeline
                 targetAdapterConveyors[targetAdapterIndex++] = new Conveyor<TRow>((row, context) =>
                 {
                     ((ITargetAdapter<TRow>) context).Process(row);
-                    OnReleaseRowToSourceAdapter?.Invoke((IAdapter) context, row);
                     sourceAdapter.ReleaseRow(row);
                 }, targetAdapter);
             }
@@ -100,8 +98,7 @@ namespace Ascentis.Infrastructure.DataPipeline
             }
             catch (Exception e)
             {
-                targetAdapterConveyors.ForEach(conveyor => conveyor.Stop(), typeof(InvalidOperationException),
-                    false);
+                targetAdapterConveyors.ForEach(conveyor => conveyor.Stop(), typeof(InvalidOperationException), false);
                 targetAdapters.ForEach(adapter => adapter.AbortedWithException(e));
                 throw;
             }
