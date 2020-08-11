@@ -11,7 +11,7 @@
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
     <releaseNotes>Cleaned up code and added a few more small utilitarian classes</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
-    <tags>caching MemoryCache COM COM+ threading Parallel</tags>
+    <tags>caching MemoryCache COM COM+ threading Parallel SQLite MSSQL batch bulk</tags>
     <dependencies>
       <dependency id="System.Data.SQLite" version="1.0.113.1" />
     </dependencies>
