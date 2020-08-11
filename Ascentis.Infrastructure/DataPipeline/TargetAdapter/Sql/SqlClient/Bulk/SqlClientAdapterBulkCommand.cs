@@ -16,8 +16,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 
         public SqlClientAdapterBulkCommand(string sqlCommandText,
             IEnumerable<string> sourceColumnNames,
-            SqlConnection sqlConnection,
-            int batchSize = SqlClientUtils.DefaultBatchSize) : base(sourceColumnNames, sqlConnection, batchSize)
+            SqlConnection conn,
+            int batchSize = SqlClientUtils.DefaultBatchSize) : base(sourceColumnNames, conn, batchSize)
         {
             _sqlCommandText = sqlCommandText;
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();

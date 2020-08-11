@@ -5,11 +5,11 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterBulkInsertBase<TCmd, TTran, TCon, TException> : 
-        TargetAdapterSqlBulkBase<TCmd, TTran, TCon> 
+    public abstract class TargetAdapterBulkInsertBase<TCmd, TTran, TConn, TException> : 
+        TargetAdapterSqlBulkBase<TCmd, TTran, TConn> 
         where TCmd : DbCommand
         where TTran : DbTransaction
-        where TCon : DbConnection
+        where TConn : DbConnection
         where TException : Exception
     {
         private readonly string _tableName;
@@ -29,8 +29,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         protected TargetAdapterBulkInsertBase(string tableName, 
             IEnumerable<string> columnNames, 
-            TCon sqlConnection, 
-            int batchSize) : base(columnNames, sqlConnection, batchSize)
+            TConn conn, 
+            int batchSize) : base(columnNames, conn, batchSize)
         {
             _tableName = tableName;
         }

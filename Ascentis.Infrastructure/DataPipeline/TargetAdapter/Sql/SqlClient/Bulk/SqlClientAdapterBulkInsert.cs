@@ -13,8 +13,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
     {
         public SqlClientAdapterBulkInsert(string tableName,
             IEnumerable<string> columnNames,
-            SqlConnection sqlConnection,
-            int batchSize = SqlClientUtils.DefaultBatchSize) : base(tableName, columnNames, sqlConnection, batchSize)
+            SqlConnection conn,
+            int batchSize = SqlClientUtils.DefaultBatchSize) : base(tableName, columnNames, conn, batchSize)
         {
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();

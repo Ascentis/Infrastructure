@@ -13,12 +13,12 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
     {
         public SQLiteAdapterBulkInsert(string tableName,
             IEnumerable<string> columnNames,
-            SQLiteConnection sqlConnection,
-            int batchSize = SQLiteUtils.DefaultBatchSize) : base(tableName, columnNames, sqlConnection, batchSize)
+            SQLiteConnection conn,
+            int batchSize = SQLiteUtils.DefaultBatchSize) : base(tableName, columnNames, conn, batchSize)
         {
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
-            sqlConnection.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
+            conn.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
         }
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SQLiteCommand sqlCommand, int rowCount)

@@ -5,10 +5,10 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterSqlBase<TCmd, TTran, TCon> : TargetAdapterSql 
+    public abstract class TargetAdapterSqlBase<TCmd, TTran, TConn> : TargetAdapterSql 
         where TCmd : DbCommand 
         where TTran : DbTransaction 
-        where TCon : DbConnection
+        where TConn : DbConnection
     {
         protected readonly TCmd Cmd;
         private int[] _paramToMetaMap;
@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             set => Cmd.Transaction = value;
         }
 
-        public virtual TCon Connection => (TCon)Cmd.Connection;
+        public virtual TConn Connection => (TConn)Cmd.Connection;
 
         protected abstract IList<string> ParseParameters();
 

@@ -15,13 +15,13 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
 
         public SQLiteAdapterBulkCommand(string sqlCommandText,
             IEnumerable<string> sourceColumnNames,
-            SQLiteConnection sqlConnection,
-            int batchSize = SQLiteUtils.DefaultBatchSize) : base(sourceColumnNames, sqlConnection, batchSize)
+            SQLiteConnection conn,
+            int batchSize = SQLiteUtils.DefaultBatchSize) : base(sourceColumnNames, conn, batchSize)
         {
             _sqlCommandText = sqlCommandText;
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
-            sqlConnection.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
+            conn.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
         }
 
         protected override string BuildBulkSql(int rowCount)

@@ -5,42 +5,42 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterSqlBulkBase<TCmd, TTran, TCon> : TargetAdapterSql 
+    public abstract class TargetAdapterSqlBulkBase<TCmd, TTran, TConn> : TargetAdapterSql 
         where TCmd : DbCommand
         where TTran : DbTransaction
-        where TCon : DbConnection
+        where TConn : DbConnection
     {
-        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TCon), typeof(TTran));
+        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TConn), typeof(TTran));
 
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
         protected IEnumerable<string> ColumnNames;
         protected int BatchSize;
         protected List<PoolEntry<object[]>> Rows;
-        protected TCmd SqlCommand;
-        protected TCon SqlConnection;
-        protected TTran SqlTransaction;
+        protected TCmd Cmd;
+        protected TConn Conn;
+        protected TTran Tran;
 
-        protected TargetAdapterSqlBulkBase(IEnumerable<string> columnNames, TCon sqlConnection, int batchSize)
+        protected TargetAdapterSqlBulkBase(IEnumerable<string> columnNames, TConn conn, int batchSize)
         {
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
             ColumnNames = columnNames;
             BatchSize = batchSize;
-            SqlConnection = sqlConnection;
+            Conn = conn;
         }
         
-        public virtual TCon Connection => (TCon)SqlCommand.Connection;
+        public virtual TConn Connection => (TConn)Cmd.Connection;
 
         public override int BufferSize => BatchSize;
 
         public virtual TTran Transaction
         {
-            get => SqlTransaction;
+            get => Tran;
             set
             {
-                SqlTransaction = value;
-                if (SqlCommand != null)
-                    SqlCommand.Transaction = value;
+                Tran = value;
+                if (Cmd != null)
+                    Cmd.Transaction = value;
             }
         }
 
@@ -69,7 +69,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         protected virtual void DisposeSqlCommands()
         {
-            DisposeAndNullify(ref SqlCommand);
+            DisposeAndNullify(ref Cmd);
         }
 
         public override void AbortedWithException(Exception e)
@@ -85,7 +85,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         {
             DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkSql(rowCount);
-            sqlCommand = CmdBuilder(sqlCommandText, SqlConnection, SqlTransaction);
+            sqlCommand = CmdBuilder(sqlCommandText, Conn, Tran);
             MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
             sqlCommand.Prepare();
         }
@@ -125,16 +125,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         protected void InternalFlush()
         {
-            if (SqlCommand == null || Rows.Count != BatchSize)
-                BuildSqlCommand(Rows.Count, ref SqlCommand);
+            if (Cmd == null || Rows.Count != BatchSize)
+                BuildSqlCommand(Rows.Count, ref Cmd);
 
             var paramIndex = 0;
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var row in Rows)
                 foreach (var column in ColumnNameToMetadataIndexMap)
-                    SqlCommand.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
+                    Cmd.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
 
-            SqlCommand.ExecuteNonQuery();
+            Cmd.ExecuteNonQuery();
         }
 
         protected void InternalReleaseRows()
