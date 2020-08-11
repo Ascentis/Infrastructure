@@ -5,9 +5,9 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 {
-    public class SourceAdapterBlockingQueue : SourceAdapter<PoolEntry<object[]>>
+    public class BlockingQueueSourceAdapter : SourceAdapter<PoolEntry<object[]>>
     {
-        public delegate void SourceAdapterDelegate(SourceAdapterBlockingQueue adapter);
+        public delegate void SourceAdapterDelegate(BlockingQueueSourceAdapter adapter);
         public const int DefaultPoolCapacity = 1000;
 
         private readonly ConcurrentQueue<PoolEntry<object[]>> _dataQueue;
@@ -20,7 +20,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 
         public int WaitForDataTimeout;
 
-        public SourceAdapterBlockingQueue()
+        public BlockingQueueSourceAdapter()
         {
             _dataAvailable = new ManualResetEventSlim(false);
             _dataQueue = new ConcurrentQueue<PoolEntry<object[]>>();

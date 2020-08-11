@@ -5,11 +5,11 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single
 {
-    public class TargetAdapterSqlClientCommand : TargetAdapterSqlBase<SqlCommand, SqlTransaction, SqlConnection> , ITargetAdapterSqlClient
+    public class SqlClientTargetAdapterCommand : TargetAdapterSqlBase<SqlCommand, SqlTransaction, SqlConnection> , ITargetAdapterSqlClient
     {
         private static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper = new ColumnMetadataToSqlDbTypeMapper();
 
-        public TargetAdapterSqlClientCommand(SqlCommand cmd) : base(cmd) {}
+        public SqlClientTargetAdapterCommand(SqlCommand cmd) : base(cmd) {}
 
         public virtual SqlTransaction Transaction
         {

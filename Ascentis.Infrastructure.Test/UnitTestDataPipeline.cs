@@ -9,7 +9,7 @@ using System.Threading;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
@@ -18,6 +18,7 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,8 +52,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand( "SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterDelimited(stream));
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new DelimitedTextTargetAdapter(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
@@ -64,8 +65,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(stream) {FieldSizes = new []{6, 4}});
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream) {FieldSizes = new []{6, 4}});
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("  WKHR   0\r\n  WKHR   0\r\n", str);
@@ -77,8 +78,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(stream));
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR               0\r\nWKHR               0\r\n", str);
@@ -90,8 +91,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(stream)
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream)
             {
                 FieldSizes = new[] { 6, 6 },
                 ColumnFormatStrings = new[] { "", "N2" }
@@ -107,8 +108,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(stream) { FieldSizes = new[] { -6, -4 } });
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream) { FieldSizes = new[] { -6, -4 } });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR  0   \r\nWKHR  0   \r\n", str);
@@ -120,14 +121,14 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(stream)
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream)
             {
                 FieldSizes = new[] { 3, 4 },
                 OverflowStringFieldWidthBehaviors = new[]
                 {
-                    TargetAdapterFixedLength.OverflowStringFieldWidthBehavior.Truncate,
-                    TargetAdapterFixedLength.OverflowStringFieldWidthBehavior.Truncate
+                    FixedLengthTextTargetAdapter.OverflowStringFieldWidthBehavior.Truncate,
+                    FixedLengthTextTargetAdapter.OverflowStringFieldWidthBehavior.Truncate
                 }
             });
             stream.Flush();
@@ -142,10 +143,10 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
+            var pipeline = new SqlClientDataPipeline();
             pipeline.AbortOnTargetAdapterException = true;
             Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => 
-                pipeline.Pump(cmd, new TargetAdapterFixedLength(stream) {FieldSizes = new[] { 3, 4 }})).InnerException is DataPipelineException);
+                pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream) {FieldSizes = new[] { 3, 4 }})).InnerException is DataPipelineException);
         }
 
         [TestMethod]
@@ -155,10 +156,10 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
+            var pipeline = new SqlClientDataPipeline();
             pipeline.AbortOnTargetAdapterException = true;
             // ReSharper disable once AccessToDisposedClosure
-            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => pipeline.Pump(cmd, new TargetAdapterFixedLength(stream)
+            Assert.IsTrue(Assert.ThrowsException<ConveyorException>(() => pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream)
             {
                 FieldSizes = new[] { 4, 1 },
                 ColumnFormatStrings = new[] { "", "N2" }
@@ -173,8 +174,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(cmd, new TargetAdapterFixedLength(stream) { FieldSizes = new []{0}}));
+            var pipeline = new SqlClientDataPipeline();
+            Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(stream) { FieldSizes = new []{0}}));
         }
 
         [TestMethod]
@@ -184,11 +185,11 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TOP 10000 TRIM(CPCODE_EXP), NPAYCODE FROM TIME", _conn);
             using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
             targetConn0.Open();
-            var pipeline = new DataPipelineSql();
+            var pipeline = new SqlClientDataPipeline();
             Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(cmd,
-                new TargetAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1000), 10)).Message.Contains("Deadlock"));
+                new SqlClientAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1000), 10)).Message.Contains("Deadlock"));
             Assert.IsTrue(Assert.ThrowsException<TargetAdapterException>(() => pipeline.Pump(cmd,
-                new TargetAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1500), 10000)).Message.Contains("exceeds"));
+                new SqlClientAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, targetConn0, 1500), 10000)).Message.Contains("exceeds"));
         }
 
         [TestMethod]
@@ -197,8 +198,8 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterDelimited(stream) { OutputHeaders = true });
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new DelimitedTextTargetAdapter(stream) { OutputHeaders = true });
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("CPCODE_EXP,NPAYCODE\r\nWKHR,0\r\nWKHR,0\r\n", str);
@@ -209,8 +210,8 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand( "SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterDelimited(fileStream));
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new DelimitedTextTargetAdapter(fileStream));
         }
 
         [TestMethod]
@@ -219,7 +220,7 @@ namespace Ascentis.Infrastructure.Test
             var reader = new StringReader("WKHR               0\r\nWKHR               0\r\n");
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineFixedLength();
+            var pipeline = new FixedLengthTextDataPipeline();
             pipeline.Pump(reader, new []
             {
                 new ColumnMetadata
@@ -232,7 +233,7 @@ namespace Ascentis.Infrastructure.Test
                     DataType = typeof(int),
                     ColumnSize = 16
                 }
-            }, new TargetAdapterDelimited(stream));
+            }, new DelimitedTextTargetAdapter(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
@@ -245,7 +246,7 @@ namespace Ascentis.Infrastructure.Test
             var reader = new StringReader("WKHR-               A\r\nWKHR-               0\r\n");
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineFixedLength();
+            var pipeline = new FixedLengthTextDataPipeline();
             pipeline.OnSourceAdapterRowReadError += (adapter, sourceObject, e) =>
             {
                 exceptionCalled = (string)sourceObject == "WKHR-               A";
@@ -265,7 +266,7 @@ namespace Ascentis.Infrastructure.Test
                     ColumnSize = 16,
                     StartPosition = 5
                 }
-            }, new TargetAdapterDelimited(stream));
+            }, new DelimitedTextTargetAdapter(stream));
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("WKHR,0\r\n", str);
@@ -278,7 +279,7 @@ namespace Ascentis.Infrastructure.Test
             var reader = new StringReader("WKHR-               A\r\nWKHR-               0\r\n");
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineFixedLength();
+            var pipeline = new FixedLengthTextDataPipeline();
             // ReSharper disable once PossibleNullReferenceException
             Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(reader, new[]
                 {
@@ -295,7 +296,7 @@ namespace Ascentis.Infrastructure.Test
                         StartPosition = 3 // Not a valid position
                     }
                     // ReSharper disable once AccessToDisposedClosure
-                }, new TargetAdapterDelimited(stream))).Message.Contains("Field position can't"));
+                }, new DelimitedTextTargetAdapter(stream))).Message.Contains("Field position can't"));
             Assert.IsTrue(Assert.ThrowsException<NullReferenceException>(() => pipeline.Pump(reader, new[]
             {
                 new ColumnMetadata
@@ -311,7 +312,7 @@ namespace Ascentis.Infrastructure.Test
                     StartPosition = 3
                 }
                 // ReSharper disable once AccessToDisposedClosure
-            }, new TargetAdapterDelimited(stream))).Message.Contains("ColumnSize[0]"));
+            }, new DelimitedTextTargetAdapter(stream))).Message.Contains("ColumnSize[0]"));
         }
 
         [TestMethod]
@@ -322,14 +323,14 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
-            var pipeline = new DataPipelineSql();
-            pipeline.Pump(cmd, new TargetAdapterFixedLength(fileStream) {FieldSizes = new []{40, 40, 20, 20}});
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(fileStream) {FieldSizes = new []{40, 40, 20, 20}});
             fileStream.Close();
             using var fileStreamSource = new FileStream("T:\\dump.txt", FileMode.Open, FileAccess.Read);
             using var fileSourceReader = new StreamReader(fileStreamSource);
             using var targetFileStream = new FileStream("T:\\dump2.txt", FileMode.Create, FileAccess.ReadWrite);
-            var textPipeline = new DataPipelineFixedLength();
-            textPipeline.Pump(new SourceAdapterFixedLength(fileSourceReader)
+            var textPipeline = new FixedLengthTextDataPipeline();
+            textPipeline.Pump(new FixedLengthTextSourceAdapter(fileSourceReader)
             {
                 ColumnMetadatas = new []
                 {
@@ -354,7 +355,7 @@ namespace Ascentis.Infrastructure.Test
                         ColumnSize = 20
                     }
                 }
-            }, new TargetAdapterDelimited(targetFileStream));
+            }, new DelimitedTextTargetAdapter(targetFileStream));
         }
 
         [TestMethod]
@@ -363,7 +364,7 @@ namespace Ascentis.Infrastructure.Test
             var reader = new StringReader("WKHR;;0\r\nWKHR;;0\r\n");
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
-            var pipeline = new DataPipelineDelimited();
+            var pipeline = new DelimitedTextDataPipeline();
             pipeline.Pump(reader, new[]
             {
                 new ColumnMetadata
@@ -374,7 +375,7 @@ namespace Ascentis.Infrastructure.Test
                 {
                     DataType = typeof(int)
                 }
-            }, new TargetAdapterFixedLength(stream), ";;");
+            }, new FixedLengthTextTargetAdapter(stream), ";;");
             stream.Flush();
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("            WKHR             0\r\n            WKHR             0\r\n", str);
@@ -390,12 +391,12 @@ namespace Ascentis.Infrastructure.Test
             var buf2 = new byte[1000];
             using var stream2 = new MemoryStream(buf2);
 
-            var targets = new TargetAdapterText[]
+            var targets = new TextTargetAdapter[]
                 {
-                    new TargetAdapterDelimited(stream), 
-                    new TargetAdapterFixedLength(stream2) {FieldSizes = new []{6, 4}}
+                    new DelimitedTextTargetAdapter(stream), 
+                    new FixedLengthTextTargetAdapter(stream2) {FieldSizes = new []{6, 4}}
                 };
-            var pipeline = new DataPipelineSql();
+            var pipeline = new SqlClientDataPipeline();
 
             pipeline.Pump(cmd, targets);
             stream.Flush();
@@ -413,11 +414,11 @@ namespace Ascentis.Infrastructure.Test
             using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, TPDATE, TRIM(CGROUP6), TRIM(CGROUP7), NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             using var fileStream2 = new FileStream("T:\\dump2.txt", FileMode.Create, FileAccess.ReadWrite);
-            var pipeline = new DataPipelineSql();
-            var targets = new TargetAdapterText[]
+            var pipeline = new SqlClientDataPipeline();
+            var targets = new TextTargetAdapter[]
             {
-                new TargetAdapterDelimited(fileStream),
-                new TargetAdapterFixedLength(fileStream2) {FieldSizes = new []{40, 40, 20, 20, 30, 30, 30}}
+                new DelimitedTextTargetAdapter(fileStream),
+                new FixedLengthTextTargetAdapter(fileStream2) {FieldSizes = new []{40, 40, 20, 20, 30, 30, 30}}
             };
             pipeline.Pump(cmd, targets);
         }
@@ -431,8 +432,8 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
-            var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
-            var targetAdapter = new TargetAdapterSqlClientCommand(targetCmd) {AnsiStringParameters = new[] {"CPCODE_EXP"}};
+            var pipeline = new SqlClientDataPipeline {AbortOnTargetAdapterException = true};
+            var targetAdapter = new SqlClientTargetAdapterCommand(targetCmd) {AnsiStringParameters = new[] {"CPCODE_EXP"}};
             pipeline.Pump(cmd, targetAdapter);
         }
 
@@ -449,13 +450,13 @@ namespace Ascentis.Infrastructure.Test
 
             var transaction = targetConn.BeginTransaction();
             
-            TargetAdapterSqlClientCommand targetAdapter = null;
+            SqlClientTargetAdapterCommand sqlClientTargetAdapter = null;
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn, transaction);
             
             try
             {
-                targetAdapter = new TargetAdapterSqlClientCommand(targetCmd);
-                var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
+                sqlClientTargetAdapter = new SqlClientTargetAdapterCommand(targetCmd);
+                var pipeline = new SqlClientDataPipeline {AbortOnTargetAdapterException = true};
                 var counter = 0;
                 pipeline.AfterTargetAdapterProcessRow += (adapter, row) =>
                 {
@@ -467,12 +468,12 @@ namespace Ascentis.Infrastructure.Test
                     adapterSqlCommand.Transaction = adapterSqlCommand.Connection.BeginTransaction();
                 };
 
-                pipeline.Pump(cmd, targetAdapter);
-                targetAdapter.Transaction?.Commit();
+                pipeline.Pump(cmd, sqlClientTargetAdapter);
+                sqlClientTargetAdapter.Transaction?.Commit();
             }
             catch (Exception)
             {
-                targetAdapter?.Transaction?.Rollback();
+                sqlClientTargetAdapter?.Transaction?.Rollback();
                 throw;
             }
         }
@@ -494,14 +495,14 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
             truncateCmd.ExecuteNonQuery();
 
-            var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
+            var pipeline = new SqlClientDataPipeline {AbortOnTargetAdapterException = true};
 
             var outPipes = new []
             { 
-                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300) {UseTakeSemantics = true},
-                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300) {UseTakeSemantics = true},
-                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2, 300) {UseTakeSemantics = true},
-                new TargetAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3, 300) {UseTakeSemantics = true}
+                new SqlClientAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300) {UseTakeSemantics = true},
+                new SqlClientAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300) {UseTakeSemantics = true},
+                new SqlClientAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn2, 300) {UseTakeSemantics = true},
+                new SqlClientAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn3, 300) {UseTakeSemantics = true}
             };
             // ReSharper disable once RedundantArgumentDefaultValue
             pipeline.Pump(cmd, outPipes, 2400);
@@ -526,16 +527,16 @@ namespace Ascentis.Infrastructure.Test
             var transaction1 = targetConn1.BeginTransaction();
             var outPipes = new[]
             {
-                new TargetAdapterBulkInsert("TIME_BASE",
+                new SqlClientAdapterBulkInsert("TIME_BASE",
                         new[] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 300)
                     {UseTakeSemantics = true, Transaction = transaction0},
-                new TargetAdapterBulkInsert("TIME_BASE",
+                new SqlClientAdapterBulkInsert("TIME_BASE",
                         new[] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn1, 300)
                     {UseTakeSemantics = true, Transaction = transaction1}
             };
             try
             {
-                var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
+                var pipeline = new SqlClientDataPipeline {AbortOnTargetAdapterException = true};
                 pipeline.AfterTargetAdapterProcessRow += (adapter, row) =>
                 {
                     var data = Thread.GetData(CounterSlot);
@@ -576,12 +577,12 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
 
-            var pipeline1 = new DataPipelineSql { AbortOnTargetAdapterException = true };
-            pipeline1.Pump(cmd, new TargetAdapterBulkInsert("TIME_BASE", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
+            var pipeline1 = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            pipeline1.Pump(cmd, new SqlClientAdapterBulkInsert("TIME_BASE", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
 
             using var cmd2 = new SqlCommand(@"SELECT TOP 10000 CEMPID, LCALCULATE CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
-            var pipeline2 = new DataPipelineSql { AbortOnTargetAdapterException = true };
-            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            var pipeline2 = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            pipeline2.Pump(cmd2, new SqlClientAdapterBulkCommand(@"
                 UPDATE TIME_BASE
                 SET CPAYTYPE = SRC.CPAYTYPE
                 FROM TIME_BASE T
@@ -596,7 +597,7 @@ namespace Ascentis.Infrastructure.Test
                     ) SRC ON
                 T.CEMPID = SRC.CEMPID", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
 
-            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            pipeline2.Pump(cmd2, new SqlClientAdapterBulkCommand(@"
                 DELETE FROM T
                 FROM TIME_BASE T
                 INNER JOIN 
@@ -621,11 +622,11 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
 
-            var pipeline1 = new DataPipelineSql { AbortOnTargetAdapterException = true };
-            pipeline1.Pump(cmd, new TargetAdapterBulkInsert("TIME_BASE", new[] { "CEMPID", "CPAYTYPE" }, targetConn, 1000), 2000);
+            var pipeline1 = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            pipeline1.Pump(cmd, new SqlClientAdapterBulkInsert("TIME_BASE", new[] { "CEMPID", "CPAYTYPE" }, targetConn, 1000), 2000);
 
             using var cmd2 = new SqlCommand(@"SELECT TOP 20000 CEMPID, LCALCULATE CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
-            var pipeline2 = new DataPipelineSql { AbortOnTargetAdapterException = true };
+            var pipeline2 = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
             var compositeSql = @"
                 UPDATE TIME_BASE
                 SET CPAYTYPE = SRC.CPAYTYPE
@@ -640,8 +641,8 @@ namespace Ascentis.Infrastructure.Test
                     /*</DATA>*/) SRC
                     ) SRC ON
                 T.CEMPID = SRC.CEMPID";
-            var adapter1 = new TargetAdapterBulkSqlCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
-            var adapter2 = new TargetAdapterBulkSqlCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn2, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
+            var adapter1 = new SqlClientAdapterBulkCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
+            var adapter2 = new SqlClientAdapterBulkCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn2, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
             pipeline2.Pump(cmd2, new [] {adapter1, adapter2}, 2000);
         }
 
@@ -650,7 +651,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var buf = new byte[1000];
             var stream = new MemoryStream(buf);
-            var source = new SourceAdapterBlockingQueue
+            var source = new BlockingQueueSourceAdapter
             {
                 ColumnMetadatas = new[]
                 {
@@ -658,8 +659,8 @@ namespace Ascentis.Infrastructure.Test
                     new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
                 }
             };
-            var pipeline = new DataPipelineBlockingQueue();
-            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new TargetAdapterDelimited(stream))));
+            var pipeline = new BlockingQueueDataPipeline();
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new DelimitedTextTargetAdapter(stream))));
             var entry = new object[] {"WKHR", 0};
             pipeline.Insert(new List<object[]>{entry, entry});
             pipeline.Finish(true);
@@ -669,7 +670,7 @@ namespace Ascentis.Infrastructure.Test
 
         private ManualResetEventSlim _asyncMethodFinished;
 
-        private async void TestManualToCsvBasicAsyncInternal(DataPipelineBlockingQueue pipeline)
+        private async void TestManualToCsvBasicAsyncInternal(BlockingQueueDataPipeline pipeline)
         {
             using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
             targetConn0.Open();
@@ -678,7 +679,7 @@ namespace Ascentis.Infrastructure.Test
 
             var buf = new byte[1000];
             var stream = new MemoryStream(buf);
-            var source = new SourceAdapterBlockingQueue
+            var source = new BlockingQueueSourceAdapter
             {
                 ColumnMetadatas = new[]
                 {
@@ -699,9 +700,9 @@ namespace Ascentis.Infrastructure.Test
             };
             var targetAdapters = new ITargetAdapter<PoolEntry<object[]>>[]
             {
-                new TargetAdapterBulkInsert("TIME_BASE",
+                new SqlClientAdapterBulkInsert("TIME_BASE",
                         new[] {"CEMPID", "NPAYCODE"}, targetConn0, 300),
-                new TargetAdapterDelimited(stream)
+                new DelimitedTextTargetAdapter(stream)
             };
             var flushCalled = false;
             var flushSignal = new object [0];
@@ -738,7 +739,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestManualToCsvAndDbBasicAsync()
         {
             _asyncMethodFinished = new ManualResetEventSlim(false);
-            var pipeline = new DataPipelineBlockingQueue {AbortOnTargetAdapterException = true};
+            var pipeline = new BlockingQueueDataPipeline {AbortOnTargetAdapterException = true};
             TestManualToCsvBasicAsyncInternal(pipeline);
             Assert.IsTrue(_asyncMethodFinished.Wait(2000));
             pipeline.Finish(true);
@@ -746,7 +747,7 @@ namespace Ascentis.Infrastructure.Test
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void TestSQLiteToCvsStreamBasic()
+        public void TestMSSQLToSQLiteUsingSingleInsert()
         {
             using var conn = new SQLiteConnection("Data Source=:memory:");
             conn.Open();
@@ -755,9 +756,25 @@ namespace Ascentis.Infrastructure.Test
             cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
             cmd.ExecuteNonQuery();
             cmd.CommandText = "INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)";
+            using var sourceCmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            var targetAdapter = new SQLiteTargetAdapterCommand(cmd);
+            var pipeline = new SqlClientDataPipeline();
+            pipeline.Pump(sourceCmd, targetAdapter);
+        }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestMSSQLToSQLiteBulk()
+        {
+            using var conn = new SQLiteConnection("Data Source=:memory:");
+            conn.Open();
+            using var cmd = new SQLiteCommand("DROP TABLE IF EXISTS TIME_BASE", conn);
+            cmd.ExecuteNonQuery();
+            cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
+            cmd.ExecuteNonQuery();
             using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
-            var targetAdapter = new TargetAdapterSQLite(cmd);
-            var pipeline = new DataPipelineSql();
+            var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000);
+            var pipeline = new SqlClientDataPipeline();
             pipeline.Pump(sourceCmd, targetAdapter);
         }
     }

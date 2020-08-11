@@ -3,13 +3,12 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class TargetAdapterText : TargetAdapter<PoolEntry<object[]>>
+    public class TextTargetAdapter : TargetAdapter<PoolEntry<object[]>>
     {
         protected Stream Target { get; }
         protected string FormatString { get; set; }
@@ -19,7 +18,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         public Encoding OutputEncoding { get; set; } = Encoding.UTF8;
         public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
-        public TargetAdapterText(Stream target)
+        public TextTargetAdapter(Stream target)
         {
             Target = target;
         }

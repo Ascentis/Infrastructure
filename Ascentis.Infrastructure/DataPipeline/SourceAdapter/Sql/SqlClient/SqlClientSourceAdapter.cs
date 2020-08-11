@@ -7,9 +7,9 @@ using System.Reflection;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient
 {
-    public class SourceAdapterSql : SourceAdapter<PoolEntry<object[]>>
+    public class SqlClientSourceAdapter : SourceAdapter<PoolEntry<object[]>>
     {
         public const int DefaultRowsCapacity = 1000;
 
@@ -24,13 +24,13 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient
             set => _rowsPool.MaxCapacity = value;
         }
 
-        public SourceAdapterSql(SqlDataReader sqlDataReader, int rowsPoolCapacity)
+        public SqlClientSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity)
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
         }
 
-        public SourceAdapterSql(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
+        public SqlClientSourceAdapter(SqlDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
         
         public override void ReleaseRow(PoolEntry<object[]> row)
         {

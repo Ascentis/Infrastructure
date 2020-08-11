@@ -3,15 +3,15 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public class DataPipelineFixedLength : DataPipeline<PoolEntry<object[]>>
+    public class FixedLengthTextDataPipeline : DataPipeline<PoolEntry<object[]>>
     {
         public void Pump(
             TextReader source,
             ColumnMetadata[] sourceMetadatas,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
-            int rowsPoolCapacity = SourceAdapterText.DefaultRowsPoolCapacity)
+            int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
         {
-            var sourceAdapter = new SourceAdapterFixedLength(source)
+            var sourceAdapter = new FixedLengthTextSourceAdapter(source)
             {
                 ColumnMetadatas = sourceMetadatas, 
                 RowsPoolSize = rowsPoolCapacity

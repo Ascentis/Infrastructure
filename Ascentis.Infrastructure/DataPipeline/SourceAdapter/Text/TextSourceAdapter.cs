@@ -7,7 +7,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 {
-    public abstract class SourceAdapterText : SourceAdapter<PoolEntry<object[]>>
+    public abstract class TextSourceAdapter : SourceAdapter<PoolEntry<object[]>>
     {
         protected Regex RegexParser { get; set; }
         private TextToObject[] _textToObjects;
@@ -25,7 +25,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         protected Pool<object[]> RowsPool { get; }
 
-        protected SourceAdapterText(TextReader textReader)
+        protected TextSourceAdapter(TextReader textReader)
         {
             Reader = textReader;
             RowsPool = new Pool<object[]>(DefaultRowsPoolCapacity, pool => pool.NewPoolEntry(new object[FieldCount], ParallelLevel));

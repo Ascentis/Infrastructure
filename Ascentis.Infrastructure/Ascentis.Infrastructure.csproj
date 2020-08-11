@@ -62,42 +62,46 @@
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadata.cs" />
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Manual\DataPipelineBlockingQueue.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Manual\SourceAdapterBlockingQueue.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapterGeneric.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Base\SourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\TypeSizeMap.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\SqlClient\SourceAdapterSql.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\SqlClient\DataPipelineSql.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterFixedLength.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterText.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterDelimited.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimited.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthTextSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\TextSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedTextSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedTextDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthTextDataPipeline.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapterSql.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\SQLiteAdapterBulkInsert.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\SQLiteAdapterBulkCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\ITargetAdapterSQLite.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\SQLiteUtils.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\ColumnMetadataToDbTypeMapper.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterBulkInsertBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBulkBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ITargetAdapterBulk.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\SqlClientAdapterBulkCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\ITargetAdapterSqlClient.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapterGeneric.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Utils\ColumnMetadataToSqlDbTypeMapper.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Single\TargetAdapterSqlClientCommand.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Single\SqlClientTargetAdapterCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\SqlClientAdapterBulkInsert.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapter.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Utils\SqlClientUtils.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\ColumnMetadataToSQLiteDbTypeMapper.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Single\TargetAdapterSQLite.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Single\SQLiteTargetAdapterCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\BulkSqlCommandTextBuilder.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterDelimited.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\DelimitedTextTargetAdapter.cs" />
     <Compile Include="DataPipeline\Exceptions\DataPipelineException.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterFixedLength.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Text\TargetAdapterText.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\FixedLengthTextTargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Text\TextTargetAdapter.cs" />
     <Compile Include="Threading\Conveyor\Conveyor.cs" />
     <Compile Include="DataPipeline\DataPipeline.cs" />
     <Compile Include="Patterns\Pool\Pool.cs" />
@@ -129,9 +133,7 @@
     <Compile Include="Threading\BoundedParallel\Ascentis.ParallelLoopResult.cs" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

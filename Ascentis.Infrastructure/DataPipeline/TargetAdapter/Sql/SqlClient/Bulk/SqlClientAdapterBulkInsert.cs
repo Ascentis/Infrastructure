@@ -6,9 +6,9 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
-    public class TargetAdapterBulkInsert : TargetAdapterBulkInsertBase<SqlCommand, SqlTransaction, SqlConnection, SqlException>, ITargetAdapterBulk, ITargetAdapterSqlClient
+    public class SqlClientAdapterBulkInsert : TargetAdapterBulkInsertBase<SqlCommand, SqlTransaction, SqlConnection, SqlException>, ITargetAdapterBulk, ITargetAdapterSqlClient
     {
-        public TargetAdapterBulkInsert(string tableName,
+        public SqlClientAdapterBulkInsert(string tableName,
             IEnumerable<string> columnNames,
             SqlConnection sqlConnection,
             int batchSize = SqlClientUtils.DefaultBatchSize) : base(tableName, columnNames, sqlConnection, batchSize)

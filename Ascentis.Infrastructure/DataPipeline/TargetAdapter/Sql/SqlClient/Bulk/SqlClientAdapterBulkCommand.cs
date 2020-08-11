@@ -7,11 +7,11 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
-    public class TargetAdapterBulkSqlCommand : TargetAdapterSqlBulkBase<SqlCommand, SqlTransaction, SqlConnection>, ITargetAdapterBulk, ITargetAdapterSqlClient
+    public class SqlClientAdapterBulkCommand : TargetAdapterSqlBulkBase<SqlCommand, SqlTransaction, SqlConnection>, ITargetAdapterBulk, ITargetAdapterSqlClient
     {
         private readonly string _sqlCommandText;
 
-        public TargetAdapterBulkSqlCommand(string sqlCommandText,
+        public SqlClientAdapterBulkCommand(string sqlCommandText,
             IEnumerable<string> sourceColumnNames,
             SqlConnection sqlConnection,
             int batchSize = SqlClientUtils.DefaultBatchSize) : base(sourceColumnNames, sqlConnection, batchSize)

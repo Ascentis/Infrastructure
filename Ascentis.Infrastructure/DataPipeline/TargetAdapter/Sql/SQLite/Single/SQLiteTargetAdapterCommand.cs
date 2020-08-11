@@ -6,11 +6,11 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single
 {
     // ReSharper disable once InconsistentNaming
-    public class TargetAdapterSQLite : TargetAdapterSqlBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection> 
+    public class SQLiteTargetAdapterCommand : TargetAdapterSqlBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection> 
     {
         private static readonly ColumnMetadataToSQLiteDbTypeMapper ParamMapper = new ColumnMetadataToSQLiteDbTypeMapper();
 
-        public TargetAdapterSQLite(SQLiteCommand cmd) : base(cmd) { }
+        public SQLiteTargetAdapterCommand(SQLiteCommand cmd) : base(cmd) { }
 
         protected override IList<string> ParseParameters()
         {

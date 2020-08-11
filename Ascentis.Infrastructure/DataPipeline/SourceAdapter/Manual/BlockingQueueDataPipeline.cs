@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 {
-    public class DataPipelineBlockingQueue : DataPipeline<PoolEntry<object[]>>
+    public class BlockingQueueDataPipeline : DataPipeline<PoolEntry<object[]>>
     {
-        private SourceAdapterBlockingQueue _sourceAdapter;
+        private BlockingQueueSourceAdapter _blockingQueueSourceAdapter;
         private readonly ManualResetEventSlim _startedRunning;
 
-        public DataPipelineBlockingQueue() 
+        public BlockingQueueDataPipeline() 
         {
             _startedRunning = new ManualResetEventSlim(false);
         }
@@ -19,14 +19,14 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
         private void WaitForPumpStart()
         {
             _startedRunning.Wait();
-            if (_sourceAdapter == null)
-                throw new InvalidOperationException("Can't call DataPipelineBlockingQueue.Insert(). Pump is not running");
+            if (_blockingQueueSourceAdapter == null)
+                throw new InvalidOperationException("Can't call BlockingQueueDataPipeline.Insert(). Pump is not running");
         }
 
         private void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
             WaitForPumpStart();
-            _sourceAdapter.Insert(obj, onReleaseOne);
+            _blockingQueueSourceAdapter.Insert(obj, onReleaseOne);
         }
 
         public void Insert(object[] obj)
@@ -66,9 +66,9 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
         public void Finish(bool wait, int timeout = -1)
         {
             _startedRunning.Wait(timeout);
-            if (_sourceAdapter == null)
-                throw new InvalidOperationException("Can't call DataPipelineBlockingQueue.Finish(). Pump is not running");
-            _sourceAdapter.Finish();
+            if (_blockingQueueSourceAdapter == null)
+                throw new InvalidOperationException("Can't call BlockingQueueDataPipeline.Finish(). Pump is not running");
+            _blockingQueueSourceAdapter.Finish();
             if (wait)
                 FinishedEvent.WaitOne(timeout);
         }
@@ -76,8 +76,8 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
         public override void Pump(ISourceAdapter<PoolEntry<object[]>> sourceAdapter,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> targetAdapters)
         {
-            _sourceAdapter = sourceAdapter as SourceAdapterBlockingQueue ?? 
-                             throw new InvalidOperationException($"sourceAdapter must be of class {nameof(SourceAdapterBlockingQueue)}");
+            _blockingQueueSourceAdapter = sourceAdapter as BlockingQueueSourceAdapter ?? 
+                             throw new InvalidOperationException($"sourceAdapter must be of class {nameof(BlockingQueueSourceAdapter)}");
             _startedRunning.Set();
             base.Pump(sourceAdapter, targetAdapters);
         }

@@ -2,12 +2,12 @@
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class TargetAdapterDelimited : TargetAdapterText
+    public class DelimitedTextTargetAdapter : TextTargetAdapter
     {
         public bool OutputHeaders { get; set; }
         public string Delimiter { get; set; } = ",";
 
-        public TargetAdapterDelimited(Stream stream) : base(stream) {}
+        public DelimitedTextTargetAdapter(Stream stream) : base(stream) {}
 
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {

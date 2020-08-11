@@ -4,7 +4,7 @@ using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
-    public class TargetAdapterFixedLength : TargetAdapterText
+    public class FixedLengthTextTargetAdapter : TextTargetAdapter
     {
         public enum OverflowStringFieldWidthBehavior { Error, Truncate }
         public int[] FieldSizes { get; set; }
@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         private int _rowSize;
 
-        public  TargetAdapterFixedLength(Stream stream) : base(stream) {}
+        public  FixedLengthTextTargetAdapter(Stream stream) : base(stream) {}
 
         private void InitializeFieldSizesWithDefaults()
         {
