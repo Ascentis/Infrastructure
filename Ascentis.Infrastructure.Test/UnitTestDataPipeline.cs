@@ -548,8 +548,9 @@ namespace Ascentis.Infrastructure.Test
                         return;
                     var adapterBulk = (ITargetAdapterBulk) adapter;
                     adapterBulk.Flush();
-                    adapterBulk.Transaction.Commit();
-                    adapterBulk.Transaction = adapterBulk.Connection.BeginTransaction();
+                    var adapterBulkSqlClient = (ITargetAdapterSqlClient) adapterBulk;
+                    adapterBulkSqlClient.Transaction.Commit();
+                    adapterBulkSqlClient.Transaction = adapterBulkSqlClient.Connection.BeginTransaction();
                 };
 
                 pipeline.Pump(cmd, outPipes, 2400);

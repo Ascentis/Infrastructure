@@ -76,6 +76,7 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapterSql.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ColumnMetadataToDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBulkBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\ITargetAdapterBulk.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulk.cs" />

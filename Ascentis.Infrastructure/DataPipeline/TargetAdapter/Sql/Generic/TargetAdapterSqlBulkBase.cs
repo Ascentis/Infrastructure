@@ -1,32 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterBulk : TargetAdapterSql, ITargetAdapterBulk, ITargetAdapterSqlClient
+    public abstract class TargetAdapterSqlBulkBase<TCmd, TTran, TCon> : TargetAdapterSql 
+        where TCmd : DbCommand
+        where TTran : DbTransaction
+        where TCon : DbConnection
     {
         public const int DefaultBatchSize = 100;
         // ReSharper disable once InconsistentNaming
         public const int MaxMSSQLParams = 2100;
-        
+
+        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(new [] {typeof(string), typeof(TCon), typeof(TTran)});
+
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
         protected IEnumerable<string> ColumnNames;
         protected int BatchSize;
         protected List<PoolEntry<object[]>> Rows;
-        protected SqlCommand SqlCommand;
-        protected SqlConnection SqlConnection;
-        protected SqlTransaction SqlTransaction;
-        protected static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper =
-            new ColumnMetadataToSqlDbTypeMapper
-            {
-                UseShortParam = true
-            };
+        protected TCmd SqlCommand;
+        protected TCon SqlConnection;
+        protected TTran SqlTransaction;
 
-        protected TargetAdapterBulk(IEnumerable<string> columnNames, SqlConnection sqlConnection, int batchSize)
+        protected TargetAdapterSqlBulkBase(IEnumerable<string> columnNames, TCon sqlConnection, int batchSize)
         {
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
@@ -35,11 +34,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
             SqlConnection = sqlConnection;
         }
         
-        public virtual SqlConnection Connection => SqlCommand.Connection;
+        public virtual TCon Connection => (TCon)SqlCommand.Connection;
 
         public override int BufferSize => BatchSize;
 
-        public virtual SqlTransaction Transaction
+        public virtual TTran Transaction
         {
             get => SqlTransaction;
             set
@@ -70,7 +69,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
             return value ?? DBNull.Value;
         }
 
-        protected static void DisposeAndNullify(ref SqlCommand sqlCommand)
+        protected static void DisposeAndNullify(ref TCmd sqlCommand)
         {
             sqlCommand?.Dispose();
             sqlCommand = null;
@@ -88,13 +87,14 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
         }
 
         protected abstract string BuildBulkSql(int rowCount);
+        protected abstract void MapParams(IDictionary<string, int> paramToMetaIndex, ref TCmd sqlCommand, int rowCount);
 
-        protected void BuildSqlCommand(int rowCount, ref SqlCommand sqlCommand)
+        protected void BuildSqlCommand(int rowCount, ref TCmd sqlCommand)
         {
             DisposeAndNullify(ref sqlCommand);
             var sqlCommandText = BuildBulkSql(rowCount);
-            sqlCommand = new SqlCommand(sqlCommandText, SqlConnection, SqlTransaction);
-            ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
+            sqlCommand = CmdBuilder(sqlCommandText, SqlConnection, SqlTransaction);
+            MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
             sqlCommand.Prepare();
         }
 
