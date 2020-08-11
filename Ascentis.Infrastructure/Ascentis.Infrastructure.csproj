@@ -80,7 +80,6 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBulkBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ITargetAdapterBulk.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulk.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\ITargetAdapterSqlClient.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapter.cs" />
