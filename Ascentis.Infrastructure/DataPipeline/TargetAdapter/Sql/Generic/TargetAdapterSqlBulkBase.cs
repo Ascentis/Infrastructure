@@ -10,7 +10,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         where TTran : DbTransaction
         where TCon : DbConnection
     {
-        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(new [] {typeof(string), typeof(TCon), typeof(TTran)});
+        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TCon), typeof(TTran));
 
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
         protected IEnumerable<string> ColumnNames;
