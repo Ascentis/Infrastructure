@@ -5,7 +5,8 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterBulkInsertBase<TCmd, TTran, TCon, TException> : TargetAdapterSqlBulkBase<TCmd, TTran, TCon> 
+    public abstract class TargetAdapterBulkInsertBase<TCmd, TTran, TCon, TException> : 
+        TargetAdapterSqlBulkBase<TCmd, TTran, TCon> 
         where TCmd : DbCommand
         where TTran : DbTransaction
         where TCon : DbConnection

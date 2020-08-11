@@ -7,7 +7,10 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
-    public class SqlClientAdapterBulkCommand : TargetAdapterSqlBulkBase<SqlCommand, SqlTransaction, SqlConnection>, ITargetAdapterBulk, ITargetAdapterSqlClient
+    public class SqlClientAdapterBulkCommand : 
+        TargetAdapterSqlBulkBase<SqlCommand, SqlTransaction, SqlConnection>, 
+        ITargetAdapterBulk, 
+        ITargetAdapterSqlClient
     {
         private readonly string _sqlCommandText;
 

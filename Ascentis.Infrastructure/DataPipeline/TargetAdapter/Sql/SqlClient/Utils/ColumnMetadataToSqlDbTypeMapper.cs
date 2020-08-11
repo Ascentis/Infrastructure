@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils

@@ -15,10 +15,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 
         protected abstract int SqlTypeFromType(Type type);
 
-        public void Map(IDictionary<string, int> columns, ColumnMetadata[] metadatas, IEnumerable<string> ansiStringParameters, DbParameterCollection target, string paramSuffix = "")
+        public void Map(IDictionary<string, int> columns, 
+            ColumnMetadata[] metadatas, 
+            IEnumerable<string> ansiStringParameters, 
+            DbParameterCollection target, 
+            string paramSuffix = "")
         {
             var index = 0;
-            var ansiParameters = ansiStringParameters?.ToDictionary(ansiParam => ansiParam, ansiParam => 0) ?? new Dictionary<string, int>();
+            var ansiParameters = ansiStringParameters?.ToDictionary(
+                ansiParam => ansiParam, 
+                ansiParam => 0) ?? new Dictionary<string, int>();
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach(var column in columns)
             {
@@ -47,7 +53,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             }
         }
 
-        public void Map(IDictionary<string, int> columns, ColumnMetadata[] metadatas, IEnumerable<string> ansiStringParameters, DbParameterCollection target, int batchCount)
+        public void Map(IDictionary<string, int> columns, 
+            ColumnMetadata[] metadatas, 
+            IEnumerable<string> ansiStringParameters, 
+            DbParameterCollection target, 
+            int batchCount)
         {
             for (var i = 0; i < batchCount; i++)
                 // ReSharper disable once PossibleMultipleEnumeration

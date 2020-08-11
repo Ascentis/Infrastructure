@@ -7,7 +7,9 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteAdapterBulkCommand : TargetAdapterSqlBulkBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection>, ITargetAdapterBulk, ITargetAdapterSQLite
+    public class SQLiteAdapterBulkCommand : TargetAdapterSqlBulkBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection>, 
+        ITargetAdapterBulk, 
+        ITargetAdapterSQLite
     {
         private readonly string _sqlCommandText;
 
