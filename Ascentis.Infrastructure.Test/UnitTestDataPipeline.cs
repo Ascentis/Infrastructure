@@ -13,6 +13,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;

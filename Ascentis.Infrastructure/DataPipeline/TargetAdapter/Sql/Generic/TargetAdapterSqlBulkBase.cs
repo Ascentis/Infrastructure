@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
@@ -11,10 +10,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         where TTran : DbTransaction
         where TCon : DbConnection
     {
-        public const int DefaultBatchSize = 100;
-        // ReSharper disable once InconsistentNaming
-        public const int MaxMSSQLParams = 2100;
-
         private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(new [] {typeof(string), typeof(TCon), typeof(TTran)});
 
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
@@ -58,9 +53,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 var metaIndex = Source.MetadatasColumnToIndexMap.TryGetValue(columnName, out var index) ? index : -1;
                 ColumnNameToMetadataIndexMap.Add(columnName, metaIndex);
             }
-
-            if (ColumnNameToMetadataIndexMap.Count * BatchSize > MaxMSSQLParams)
-                throw new TargetAdapterException($"Number of columns * target adapter buffer size exceeds MSSQL limit of {MaxMSSQLParams} parameters in a query");
         }
 
         protected static object SourceValueToParamValue(int columnIndex, IReadOnlyList<object> row)
