@@ -60,6 +60,10 @@
     <Compile Include="DataPipeline\Exceptions\TargetAdapterException.cs" />
     <Compile Include="DataPipeline\IAdapter.cs" />
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SourceAdapterSqlBase.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SqlDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadata.cs" />
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueDataPipeline.cs" />

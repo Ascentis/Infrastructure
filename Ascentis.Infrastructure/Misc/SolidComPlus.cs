@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public class SolidComPlus<T, TClass> : IDisposable where TClass : T

@@ -10,6 +10,7 @@ using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
@@ -17,7 +18,6 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
@@ -764,7 +764,7 @@ namespace Ascentis.Infrastructure.Test
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void TestMSSQLToSQLiteBulk()
+        public void TestMSSQLToSQLiteBulkAndBack()
         {
             using var conn = new SQLiteConnection("Data Source=:memory:");
             conn.Open();
@@ -772,10 +772,18 @@ namespace Ascentis.Infrastructure.Test
             cmd.ExecuteNonQuery();
             cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
             cmd.ExecuteNonQuery();
+
             using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
             var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000);
             var pipeline = new SqlClientDataPipeline();
-            pipeline.Pump(sourceCmd, targetAdapter);
+            pipeline.Pump(sourceCmd, targetAdapter, 5000);
+            
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", _conn);
+            truncateCmd.ExecuteNonQuery();
+            
+            using var sqlLiteSrc = new SQLiteCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME_BASE", conn);
+            var backPipeline = new SQLiteDataPipeline();
+            backPipeline.Pump(sqlLiteSrc, new SqlClientAdapterBulkInsert("TIME_BASE", new []{"CPCODE_EXP", "NPAYCODE"}, _conn, 300));
         }
     }
 }
