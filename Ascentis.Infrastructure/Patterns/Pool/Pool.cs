@@ -21,6 +21,8 @@ namespace Ascentis.Infrastructure
             get => _maxCapacity;
             set
             {
+                /* _maxCapacity will not change frequently so we will use a hard
+                   lock to protect the variable from multiple writers */
                 lock (_maxCapacityLock)
                 {
                     if (_maxCapacity == value)
@@ -85,11 +87,15 @@ namespace Ascentis.Infrastructure
             if (_allowance < 0 && _bag.Count >= _maxCapacity)
             {
                 int allowance;
+                /* We will loop as long as allowance is negative. If another thread returns objects back to the pool so that
+                   allowance is at or over zero we will cut the loop and add the object back to the pool */
                 do
                 {
                     allowance = _allowance;
                 } while(allowance < 0 && Interlocked.CompareExchange(ref _allowance, allowance + 1, allowance) != allowance);
 
+                /* We will check now if even after getting out of the loop decrementing _allowance we still are negative.
+                   If this is the case we won't return the object back to the pool and let it be GCed */ 
                 if (allowance < 0)
                     return;
             }
