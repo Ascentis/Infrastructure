@@ -86,9 +86,7 @@ Generalized Pool class. Will build instances lazily and wait for new objects ret
 
 Abstraction on top of a Thread that allows for continous processing of objects passed by calling InsertPacket method. 
 
-## SqlStreamer
+## DataPipeline
 
-Generalized streamer from SqlDataReader to any stream. The spirit of this class was to solve the problem of high performance exporting of results to text formats (fixed length, delimited).
-The class takes as a parameter a reference to a SqlCommand, a Stream object and a ISqlStreamerFormatter interface object.
-It will split the work in two parallel work streams. Reading is done in the caller's thread and writing is done in a separate thread using a Conveyor object (abstraction on top of a background
-worker thread picking up objects from a concurrent queue and writing to stream thorough the ISqlStreamerFormatter reference)
+Generalized data pipeline from multiple source types (fixed length text, delimited, MSSQL, SQLite) to the same type of targets. The DataPipeline suite of classes provides
+a high performance way to move data between source and targets(s) and it sets the foundation for further extension
