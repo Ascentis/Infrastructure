@@ -774,7 +774,7 @@ namespace Ascentis.Infrastructure.Test
             cmd.ExecuteNonQuery();
 
             using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
-            var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000);
+            var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000) {AbortOnProcessException = true};
             var pipeline = new SqlClientDataPipeline();
             pipeline.Pump(sourceCmd, targetAdapter, 5000);
             
@@ -783,7 +783,7 @@ namespace Ascentis.Infrastructure.Test
             
             using var sqlLiteSrc = new SQLiteCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME_BASE", conn);
             var backPipeline = new SQLiteDataPipeline();
-            backPipeline.Pump(sqlLiteSrc, new SqlClientAdapterBulkInsert("TIME_BASE", new []{"CPCODE_EXP", "NPAYCODE"}, _conn, 300));
+            backPipeline.Pump(sqlLiteSrc, new SqlClientAdapterBulkInsert("TIME_BASE", new []{"CPCODE_EXP", "NPAYCODE"}, _conn, 300) {AbortOnProcessException = true});
         }
     }
 }
