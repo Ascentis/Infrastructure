@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public static class SqlCommandExtensions
+    // ReSharper disable once InconsistentNaming
+    public static class SQLiteCommandExtensions
     {
-        public static IList<string> ParseParameters(this SqlCommand cmd)
+        public static IList<string> ParseParameters(this SQLiteCommand cmd)
         {
             const string rxPattern = @"@(?:[\w#_$]{1,128}|(?:(\[)|"").{1,128}?(?(1)]|""))";
 

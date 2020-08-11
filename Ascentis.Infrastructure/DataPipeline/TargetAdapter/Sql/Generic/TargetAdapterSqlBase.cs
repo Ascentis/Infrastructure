@@ -1,36 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Base;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Utils;
-using Ascentis.Infrastructure.Utils;
+using System.Data.Common;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public class TargetAdapterSqlCommand : TargetAdapterSql, ITargetAdapterSql
+    public abstract class TargetAdapterSqlBase<TCmd, TTran, TCon> : TargetAdapterSql 
+        where TCmd : DbCommand 
+        where TTran : DbTransaction 
+        where TCon : DbConnection
     {
-        private static readonly ColumnMetadataToDbTypeMapper ParamMapper = new ColumnMetadataToDbTypeMapper();
-        private readonly SqlCommand _cmd;
+        protected readonly TCmd Cmd;
         private int[] _paramToMetaMap;
 
-        public TargetAdapterSqlCommand(SqlCommand cmd)
+        protected TargetAdapterSqlBase(TCmd cmd)
         {
-            _cmd = cmd;
+            Cmd = cmd;
         }
 
-        public virtual SqlTransaction Transaction
+        public virtual TTran Transaction
         {
-            get => _cmd.Transaction; 
-            set => _cmd.Transaction = value;
+            get => (TTran)Cmd.Transaction;
+            set => Cmd.Transaction = value;
         }
 
-        public virtual SqlConnection Connection => _cmd.Connection;
+        public virtual TCon Connection => (TCon)Cmd.Connection;
+
+        protected abstract IList<string> ParseParameters();
+
+        protected abstract void MapParams(Dictionary<string, int> paramToMetaIndex);
 
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 
-            var parameters = _cmd.ParseParameters();
+            var parameters = ParseParameters();
             var paramToMetaIndex = new Dictionary<string, int>();
             _paramToMetaMap = new int[parameters.Count];
             var i = 0;
@@ -40,9 +44,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single
                 paramToMetaIndex.Add(parameter, metaIndex);
                 _paramToMetaMap[i++] = metaIndex;
             }
-            ParamMapper.Map(paramToMetaIndex, source.ColumnMetadatas, AnsiStringParameters, _cmd.Parameters);
 
-            _cmd.Prepare();
+            MapParams(paramToMetaIndex);
+            Cmd.Prepare();
         }
 
         public override void Process(PoolEntry<object[]> row)
@@ -53,16 +57,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single
             if (UseTakeSemantics && !row.Take())
                 return;
 
-            for (var i = 0; i < _cmd.Parameters.Count; i++)
-                _cmd.Parameters[i].Value = row.Value[_paramToMetaMap[i]];
+            for (var i = 0; i < Cmd.Parameters.Count; i++)
+                Cmd.Parameters[i].Value = row.Value[_paramToMetaMap[i]];
             try
             {
-                _cmd.ExecuteNonQuery();
+                Cmd.ExecuteNonQuery();
                 InvokeAfterTargetAdapterProcessRowEvent(row);
             }
             catch (Exception e)
             {
-                if (AbortOnProcessException??false)
+                if (AbortOnProcessException ?? false)
                     throw;
                 InvokeProcessErrorEvent(row, e);
             }

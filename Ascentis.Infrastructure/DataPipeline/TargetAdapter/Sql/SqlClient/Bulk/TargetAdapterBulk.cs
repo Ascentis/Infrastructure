@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Base;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Utils;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
     public abstract class TargetAdapterBulk : TargetAdapterSql, ITargetAdapterBulk
     {
@@ -20,8 +20,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
         protected SqlCommand SqlCommand;
         protected SqlConnection SqlConnection;
         protected SqlTransaction SqlTransaction;
-        protected static readonly ColumnMetadataToDbTypeMapper ParamMapper =
-            new ColumnMetadataToDbTypeMapper
+        protected static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper =
+            new ColumnMetadataToSqlDbTypeMapper
             {
                 UseShortParam = true
             };

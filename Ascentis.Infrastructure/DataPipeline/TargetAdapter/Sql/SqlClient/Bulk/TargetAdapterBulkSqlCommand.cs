@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
     public class TargetAdapterBulkSqlCommand : TargetAdapterBulk
     {

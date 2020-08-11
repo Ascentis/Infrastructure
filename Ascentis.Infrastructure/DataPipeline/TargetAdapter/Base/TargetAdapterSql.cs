@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Base
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
 {
     public abstract class TargetAdapterSql : TargetAdapter<PoolEntry<object[]>>
     {

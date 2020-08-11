@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
     public class TargetAdapterBulkInsert : TargetAdapterBulk
     {

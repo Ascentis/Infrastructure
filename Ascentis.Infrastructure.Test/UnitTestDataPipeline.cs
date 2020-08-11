@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -12,11 +13,13 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Bulk;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.SqlClient.Single;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SQLiteCommand = System.Data.SQLite.SQLiteCommand;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
@@ -427,7 +430,7 @@ namespace Ascentis.Infrastructure.Test
             truncateCmd.ExecuteNonQuery();
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn);
             var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
-            var targetAdapter = new TargetAdapterSqlCommand(targetCmd) {AnsiStringParameters = new[] {"CPCODE_EXP"}};
+            var targetAdapter = new TargetAdapterSqlClientCommand(targetCmd) {AnsiStringParameters = new[] {"CPCODE_EXP"}};
             pipeline.Pump(cmd, targetAdapter);
         }
 
@@ -444,12 +447,12 @@ namespace Ascentis.Infrastructure.Test
 
             var transaction = targetConn.BeginTransaction();
             
-            TargetAdapterSqlCommand targetAdapter = null;
+            TargetAdapterSqlClientCommand targetAdapter = null;
             using var targetCmd = new SqlCommand("INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)", targetConn, transaction);
             
             try
             {
-                targetAdapter = new TargetAdapterSqlCommand(targetCmd);
+                targetAdapter = new TargetAdapterSqlClientCommand(targetCmd);
                 var pipeline = new DataPipelineSql {AbortOnTargetAdapterException = true};
                 var counter = 0;
                 pipeline.AfterTargetAdapterProcessRow += (adapter, row) =>
@@ -457,7 +460,7 @@ namespace Ascentis.Infrastructure.Test
                     if (++counter % 10 != 0)
                         return;
                     counter = 0;
-                    var adapterSqlCommand = (ITargetAdapterSql) adapter;
+                    var adapterSqlCommand = (ITargetAdapterSqlClient) adapter;
                     adapterSqlCommand.Transaction.Commit();
                     adapterSqlCommand.Transaction = adapterSqlCommand.Connection.BeginTransaction();
                 };
@@ -590,7 +593,7 @@ namespace Ascentis.Infrastructure.Test
                     ) SRC ON
                 T.CEMPID = SRC.CEMPID", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
 
-                pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
                 DELETE FROM T
                 FROM TIME_BASE T
                 INNER JOIN 
@@ -603,20 +606,24 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestSqlToBulkSqlCompositeInsertAndDelete()
+        public void TestSqlToBulkSqlCompositeInsertAndUpdate()
         {
-            using var cmd = new SqlCommand(@"SELECT TOP 10000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
+            using var cmd = new SqlCommand(@"SELECT TOP 20000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
             using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
             targetConn.Open();
+
+            using var targetConn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn2.Open();
+
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
 
             var pipeline1 = new DataPipelineSql { AbortOnTargetAdapterException = true };
-            pipeline1.Pump(cmd, new TargetAdapterBulkInsert("TIME_BASE", new[] { "CEMPID", "CPAYTYPE" }, targetConn, 500), 2000);
+            pipeline1.Pump(cmd, new TargetAdapterBulkInsert("TIME_BASE", new[] { "CEMPID", "CPAYTYPE" }, targetConn, 1000), 2000);
 
-            using var cmd2 = new SqlCommand(@"SELECT TOP 10000 CEMPID, LCALCULATE CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
+            using var cmd2 = new SqlCommand(@"SELECT TOP 20000 CEMPID, LCALCULATE CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
             var pipeline2 = new DataPipelineSql { AbortOnTargetAdapterException = true };
-            pipeline2.Pump(cmd2, new TargetAdapterBulkSqlCommand(@"
+            var compositeSql = @"
                 UPDATE TIME_BASE
                 SET CPAYTYPE = SRC.CPAYTYPE
                 FROM TIME_BASE T
@@ -629,17 +636,10 @@ namespace Ascentis.Infrastructure.Test
                     SELECT 99999, '2'
                     /*</DATA>*/) SRC
                     ) SRC ON
-                T.CEMPID = SRC.CEMPID;
-
-                DELETE FROM T
-                FROM TIME_BASE T
-                INNER JOIN 
-                    (/*<DATA>*/ 
-                    SELECT 99993 CEMPID, '1' CPAYTYPE
-                    UNION ALL
-                    SELECT 99999, '2'
-                    /*</DATA>*/) SRC ON 
-                T.CEMPID = SRC.CEMPID", new[] { "CEMPID", "CPAYTYPE" }, targetConn, 300), 2000);
+                T.CEMPID = SRC.CEMPID";
+            var adapter1 = new TargetAdapterBulkSqlCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
+            var adapter2 = new TargetAdapterBulkSqlCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn2, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
+            pipeline2.Pump(cmd2, new [] {adapter1, adapter2}, 2000);
         }
 
         [TestMethod]
@@ -739,6 +739,23 @@ namespace Ascentis.Infrastructure.Test
             TestManualToCsvBasicAsyncInternal(pipeline);
             Assert.IsTrue(_asyncMethodFinished.Wait(2000));
             pipeline.Finish(true);
+        }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestSQLiteToCvsStreamBasic()
+        {
+            using var conn = new SQLiteConnection("Data Source=:memory:");
+            conn.Open();
+            using var cmd = new SQLiteCommand("DROP TABLE IF EXISTS TIME_BASE", conn);
+            cmd.ExecuteNonQuery();
+            cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
+            cmd.ExecuteNonQuery();
+            cmd.CommandText = "INSERT INTO TIME_BASE (CPCODE_EXP, NPAYCODE) VALUES (@CPCODE_EXP, @NPAYCODE)";
+            using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            var targetAdapter = new TargetAdapterSQLite(cmd);
+            var pipeline = new DataPipelineSql();
+            pipeline.Pump(sourceCmd, targetAdapter);
         }
     }
 }

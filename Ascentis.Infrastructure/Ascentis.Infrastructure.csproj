@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,6 +14,8 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,8 +44,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.Core.1.0.113.1\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.Linq.1.0.113.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -64,16 +74,20 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\SourceAdapterDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineDelimited.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Base\TargetAdapterSql.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\ITargetAdapterBulk.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulk.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\ITargetAdapterSql.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapterSql.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ColumnMetadataToDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\ITargetAdapterBulk.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulk.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkSqlCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\ITargetAdapterSqlClient.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapter.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Utils\ColumnMetadataToDbTypeMapper.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Single\TargetAdapterSqlCommand.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Utils\ColumnMetadataToSqlDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Single\TargetAdapterSqlClientCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\ColumnMetadataToSQLiteDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\TargetAdapterSQLite.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
@@ -101,13 +115,27 @@
     <Compile Include="Misc\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
     <Compile Include="Utils\SqlClient\SqlCommandExtensions.cs" />
+    <Compile Include="Utils\SQLite\SQLiteCommandExtensions.cs" />
+    <Compile Include="Utils\SQLite\TypeToSQLiteDbType.cs" />
     <Compile Include="Utils\TypeAndTypeArrayTupleEqualityComparer.cs" />
     <Compile Include="Utils\SqlClient\TypeToSqlDbType.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="Ascentis.Infrastructure.snk" />
     <Compile Include="Threading\BoundedParallel\Ascentis.ParallelLoopResult.cs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" />
+  <Import Project="..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.113.1\build\net46\System.Data.SQLite.Core.targets')" />
 </Project>
