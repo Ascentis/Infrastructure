@@ -3,7 +3,7 @@ using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single
 {
     // ReSharper disable once InconsistentNaming
     public class TargetAdapterSQLite : TargetAdapterSqlBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection> 

@@ -76,6 +76,7 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\DataPipelineFixedLength.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapterSql.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ColumnMetadataToDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterBulkInsertBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBulkBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ITargetAdapterBulk.cs" />
@@ -87,8 +88,10 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Single\TargetAdapterSqlClientCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\TargetAdapterBulkInsert.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Utils\SqlClientUtils.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\ColumnMetadataToSQLiteDbTypeMapper.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\TargetAdapterSQLite.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Single\TargetAdapterSQLite.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\BulkSqlCommandTextBuilder.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
@@ -127,7 +130,9 @@
     <Compile Include="Threading\BoundedParallel\Ascentis.ParallelLoopResult.cs" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -18,6 +18,7 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SQLiteCommand = System.Data.SQLite.SQLiteCommand;

@@ -1,103 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
+using Ascentis.Infrastructure.DataPipeline.Exceptions;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
-    public class TargetAdapterBulkInsert : TargetAdapterBulk
+    public class TargetAdapterBulkInsert : TargetAdapterBulkInsertBase<SqlCommand, SqlTransaction, SqlConnection, SqlException>, ITargetAdapterBulk, ITargetAdapterSqlClient
     {
-        private readonly string _tableName;
-        private SqlCommand _sqlCommandRowByRow;
-        
-        public bool FallbackRowByRow { get; set; }
-
-        public override SqlTransaction Transaction
+        public TargetAdapterBulkInsert(string tableName,
+            IEnumerable<string> columnNames,
+            SqlConnection sqlConnection,
+            int batchSize = SqlClientUtils.DefaultBatchSize) : base(tableName, columnNames, sqlConnection, batchSize)
         {
-            set
-            {
-                base.Transaction = value;
-                if (_sqlCommandRowByRow != null)
-                    _sqlCommandRowByRow.Transaction = value;
-            }
+            ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
+            Rows = new List<PoolEntry<object[]>>();
         }
 
-        public TargetAdapterBulkInsert(string tableName, 
-            IEnumerable<string> columnNames, 
-            SqlConnection sqlConnection, 
-            int batchSize = DefaultBatchSize) : base(columnNames, sqlConnection, batchSize)
+        protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SqlCommand sqlCommand, int rowCount)
         {
-            _tableName = tableName;
+            SqlClientUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
         }
 
-        [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-        protected override string BuildBulkSql(int rowCount)
+        public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
-            const string rowSeparator = ",\r\n";
+            base.Prepare(source);
 
-            var sqlText = $"INSERT INTO {_tableName}\r\n(";
-            foreach (var columnName in ColumnNames)
-                sqlText += $"\"{columnName}\",";
-            sqlText = sqlText.Remove(sqlText.Length - 1, 1);
-            sqlText += ") VALUES\r\n";
-            for (var i = 0; i < rowCount; i++)
-            {
-                sqlText += "(";
-                var columnIndex = 0;
-                foreach (var dummy in ColumnNames)
-                    sqlText += $"@P{columnIndex++}_{i},";
-
-                sqlText = sqlText.Remove(sqlText.Length - 1, 1);
-                sqlText += $"){rowSeparator}";
-            }
-            sqlText = sqlText.Remove(sqlText.Length - rowSeparator.Length, rowSeparator.Length);
-
-            return sqlText;
-        }
-
-        private void ExecuteFallbackRowByRow()
-        {
-            if(_sqlCommandRowByRow == null)
-                BuildSqlCommand(1, ref _sqlCommandRowByRow);
-            foreach (var row in Rows)
-            {
-                var paramIndex = 0;
-                foreach (var column in ColumnNameToMetadataIndexMap)
-                    _sqlCommandRowByRow.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
-
-                try
-                {
-                    _sqlCommandRowByRow.ExecuteNonQuery();
-                }
-                catch (Exception e)
-                {
-                    InvokeProcessErrorEvent(row, e);
-                }
-            }
-        }
-
-        public override void Flush()
-        {
-            try
-            {
-                InternalFlush();
-            }
-            catch (SqlException)
-            {
-                if ((AbortOnProcessException ?? false) || !FallbackRowByRow)
-                    throw;
-                ExecuteFallbackRowByRow();
-            }
-            finally
-            {
-                InternalReleaseRows();
-            }
-        }
-
-        protected override void DisposeSqlCommands()
-        {
-            base.DisposeSqlCommands();
-            DisposeAndNullify(ref _sqlCommandRowByRow);
+            if (ColumnNameToMetadataIndexMap.Count * BatchSize > SqlClientUtils.MaxMSSQLParams)
+                throw new TargetAdapterException($"Number of columns * target adapter buffer size exceeds MSSQL limit of {SqlClientUtils.MaxMSSQLParams} parameters in a query");
         }
     }
 }
