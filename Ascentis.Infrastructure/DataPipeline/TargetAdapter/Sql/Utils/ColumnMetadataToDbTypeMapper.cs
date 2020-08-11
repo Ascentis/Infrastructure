@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
+namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
     public abstract class ColumnMetadataToDbTypeMapper
     {
