@@ -4,9 +4,10 @@ using System.Text.RegularExpressions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
     public static class BulkSqlCommandTextBuilder
     {
-        [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
         public static string BuildBulkInsertSql(string tableName, IEnumerable<string> columnNames, int rowCount)
         {
             const string rowSeparator = ",\r\n";
@@ -31,7 +32,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             return sqlText;
         }
 
-        [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
         public static string BuildBulkSql(IEnumerable<string> columnNames, string sqlCommandText, int rowCount)
         {
             var sourceSql = "SELECT ";

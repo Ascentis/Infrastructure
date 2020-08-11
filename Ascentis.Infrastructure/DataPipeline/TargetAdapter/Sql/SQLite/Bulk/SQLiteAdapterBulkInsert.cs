@@ -18,7 +18,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
         {
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
-            sqlConnection.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_FUNCTION_ARG, SQLiteUtils.DefaultMaxSQLiteParams);
+            sqlConnection.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
         }
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SQLiteCommand sqlCommand, int rowCount)
