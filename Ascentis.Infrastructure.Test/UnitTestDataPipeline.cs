@@ -781,9 +781,18 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", _conn);
             truncateCmd.ExecuteNonQuery();
             
+            using var conn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            conn2.Open();
             using var sqlLiteSrc = new SQLiteCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME_BASE", conn);
             var backPipeline = new SQLiteDataPipeline();
-            backPipeline.Pump(sqlLiteSrc, new SqlClientAdapterBulkInsert("TIME_BASE", new []{"CPCODE_EXP", "NPAYCODE"}, _conn, 300) {AbortOnProcessException = true});
+            var targets = new []
+            {
+                new SqlClientAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, _conn, 300)
+                    {AbortOnProcessException = true, UseTakeSemantics = true},
+                new SqlClientAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn2, 300)
+                    {AbortOnProcessException = true, UseTakeSemantics = true}
+            };
+            backPipeline.Pump(sqlLiteSrc, targets, 2000);
         }
     }
 }
