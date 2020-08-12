@@ -104,6 +104,7 @@
     <Compile Include="DataReplicator\SQLite\SQLiteDataReplicator.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
+    <Compile Include="Utils\Disposer.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DelimitedTextTargetAdapter.cs" />
     <Compile Include="DataPipeline\Exceptions\DataPipelineException.cs" />

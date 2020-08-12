@@ -70,8 +70,13 @@ namespace UnitTestAsyncDisposer
             replicator.AddSourceTable("AUDITLOG", "SELECT TOP 1000 * FROM AUDITLOG");
             replicator.AddSourceTable("APPROVPR", "SELECT TOP 1000 * FROM APPROVPR");
             replicator.Prepare<SqlCommand, SqlConnection>();
-            for (var i = 0; i < 40; i++)
+            Assert.AreEqual(8, replicator.SourceCommandCount);
+            for (var i = 0; i < 5; i++)
+            {
+                replicator.GetSourceCommand(1).CommandText = "SELECT TOP 10 * FROM TIME";
                 replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
+            }
+
             replicator.UnPrepare();
         }
 

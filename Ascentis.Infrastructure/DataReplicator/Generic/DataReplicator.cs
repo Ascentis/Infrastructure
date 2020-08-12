@@ -32,6 +32,13 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public bool ForceDropTable { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
 
+        public DbCommand GetSourceCommand(int index)
+        {
+            return _sourceCmds[index];
+        }
+
+        public int SourceCommandCount => _sourceCmds?.Count ?? 0;
+
         protected DataReplicator(string sourceConnStr, string targetConnStr, int parallelismLevel = DefaultParallelismLevel)
         {
             _sourceConnStr = sourceConnStr;
@@ -81,8 +88,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             }
             catch (Exception)
             {
-                Dispose();
-                ColumnMetadataLists = null;
+                UnPrepare(true);
                 throw;
             }
         }
@@ -117,7 +123,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
 
                 foreach (var customCommandStatement in customCommands)
                 {
-                    var customCommand = GenericObjectBuilder.Build<TTargetCmd>(customCommandStatement, _targetConnections[tableNumber]);
+                    using var customCommand = GenericObjectBuilder.Build<TTargetCmd>(customCommandStatement, _targetConnections[tableNumber]);
                     customCommand.ExecuteNonQuery();
                 }
             }
@@ -137,58 +143,62 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         {
             if (!_prepared)
                 throw new InvalidOperationException("DataReplicator not prepared. Can't run.");
-            _parallelRunner.For(0, _readers.Count, i =>
+            try
             {
-                EnsureTableCreated(i);
-                
-                var sourceAdapter = GenericObjectBuilder.Build<TSourceAdapter>(_readers[i], readBufferSize);
-                sourceAdapter.AbortOnReadException = true;
-
-                var columnNames = new List<string>();
-                foreach (var meta in ColumnMetadataLists[i])
-                    columnNames.Add(meta.ColumnName);
-
-                var targetAdapter = BuildTargetAdapter(_sourceTables[i].Item1, columnNames, _targetConnections[i], insertBatchSize);
-                targetAdapter.AbortOnProcessException = true;
-                
-                var pipeline = BuildDataPipeline();
-                
-                ConfigureTargetConnection(_targetConnections[i], columnNames.Count, insertBatchSize);
-                
-                var tran = UseTransaction ? _targetConnections[i].BeginTransaction() : null;
-                try
+                _parallelRunner.For(0, _readers.Count, i =>
                 {
-                    pipeline.Pump(sourceAdapter, targetAdapter);
-                    tran?.Commit();
-                }
-                catch (Exception)
-                {
-                    tran?.Rollback();
-                    throw;
-                }
-            });
+                    EnsureTableCreated(i);
+
+                    _readers[i] ??= _sourceCmds[i].ExecuteReader();
+                    var sourceAdapter = GenericObjectBuilder.Build<TSourceAdapter>(_readers[i], readBufferSize);
+                    sourceAdapter.AbortOnReadException = true;
+
+                    var columnNames = new List<string>();
+                    foreach (var meta in ColumnMetadataLists[i])
+                        columnNames.Add(meta.ColumnName);
+
+                    var targetAdapter = BuildTargetAdapter(_sourceTables[i].Item1, columnNames, _targetConnections[i], insertBatchSize);
+                    targetAdapter.AbortOnProcessException = true;
+
+                    var pipeline = BuildDataPipeline();
+
+                    ConfigureTargetConnection(_targetConnections[i], columnNames.Count, insertBatchSize);
+
+                    var tran = UseTransaction ? _targetConnections[i].BeginTransaction() : null;
+                    try
+                    {
+                        pipeline.Pump(sourceAdapter, targetAdapter);
+                        tran?.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        tran?.Rollback();
+                        throw;
+                    }
+                });
+            }
+            finally
+            {
+                Disposer.Dispose(_readers);
+            }
         }
 
-        public virtual void UnPrepare()
+        public virtual void UnPrepare(bool skipPreparedCheck = false)
         {
-            if (!_prepared)
+            if (!_prepared && !skipPreparedCheck)
                 throw new InvalidOperationException("DataReplicator not prepared. Can't UnPrepare.");
             Dispose();
             _parallelRunner = null;
             ColumnMetadataLists = null;
             _prepared = false;
         }
-
+        
         public virtual void Dispose()
         {
-            if (_sourceCmds != null)
-                foreach(var cmd in _sourceCmds)
-                    cmd.Dispose();
-            _sourceCmds = null;
-            if (_sourceConnections != null)
-                foreach(var conn in _sourceConnections)
-                    conn.Dispose();
-            _sourceConnections = null;
+            Disposer.Dispose(ref _readers);
+            Disposer.Dispose(ref _sourceCmds);
+            Disposer.Dispose(ref _sourceConnections);
+            Disposer.Dispose(ref _targetConnections);
         }
     }
 }
