@@ -23,7 +23,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             get => (TTran)Cmd.Transaction;
             set => Cmd.Transaction = value;
         }
-
+        
         public virtual TConn Connection => (TConn)Cmd.Connection;
 
         protected abstract IList<string> ParseParameters();
@@ -58,7 +58,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 return;
 
             for (var i = 0; i < Cmd.Parameters.Count; i++)
-                Cmd.Parameters[i].Value = row.Value[_paramToMetaMap[i]];
+                Cmd.Parameters[i].Value = SourceValueToParamValue(_paramToMetaMap[i], row.Value);
             try
             {
                 Cmd.ExecuteNonQuery();

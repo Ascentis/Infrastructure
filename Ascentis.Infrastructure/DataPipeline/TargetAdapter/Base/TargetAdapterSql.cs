@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
@@ -7,5 +8,17 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
     {
         public IEnumerable<string> AnsiStringParameters {get; set;}
         public bool UseTakeSemantics { get; set; }
+        public bool UseNativeTypeConvertor { get; set; }
+
+        public virtual object GetNativeValue(object value)
+        {
+            return value;
+        }
+
+        protected object SourceValueToParamValue(int columnIndex, IReadOnlyList<object> row)
+        {
+            var value = columnIndex >= 0 ? UseNativeTypeConvertor ? GetNativeValue(row[columnIndex]) : row[columnIndex] : null;
+            return value ?? DBNull.Value;
+        }
     }
 }

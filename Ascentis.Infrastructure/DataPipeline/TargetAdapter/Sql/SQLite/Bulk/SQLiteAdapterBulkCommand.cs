@@ -45,5 +45,10 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
         {
             SQLiteUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
         }
+
+        public override object GetNativeValue(object value)
+        {
+            return SQLiteUtils.GetNativeValue(value);
+        }
     }
 }

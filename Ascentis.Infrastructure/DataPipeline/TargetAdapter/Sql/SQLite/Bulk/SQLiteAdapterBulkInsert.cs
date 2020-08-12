@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
@@ -24,6 +25,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SQLiteCommand sqlCommand, int rowCount)
         {
             SQLiteUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
+        }
+
+        public override object GetNativeValue(object value)
+        {
+            return SQLiteUtils.GetNativeValue(value);
         }
     }
 }

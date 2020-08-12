@@ -21,5 +21,10 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single
         {
             ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters);
         }
+
+        public override object GetNativeValue(object value)
+        {
+            return SQLiteUtils.GetNativeValue(value);
+        }
     }
 }

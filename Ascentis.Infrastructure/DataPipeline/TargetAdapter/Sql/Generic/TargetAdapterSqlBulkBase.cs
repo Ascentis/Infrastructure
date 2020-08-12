@@ -54,13 +54,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 ColumnNameToMetadataIndexMap.Add(columnName, metaIndex);
             }
         }
-
-        protected static object SourceValueToParamValue(int columnIndex, IReadOnlyList<object> row)
-        {
-            var value = columnIndex >= 0 ? row[columnIndex] : null;
-            return value ?? DBNull.Value;
-        }
-
+        
         protected static void DisposeAndNullify(ref TCmd sqlCommand)
         {
             sqlCommand?.Dispose();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
@@ -65,9 +66,25 @@ namespace Ascentis.Infrastructure.DataReplicator.SQLite
             return statement;
         }
 
+        protected override bool TableExists(string tableName, DbConnection connection)
+        {
+            using var tableExistsCmd = new SQLiteCommand($"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{tableName}'", (SQLiteConnection)connection);
+            var cnt = (long)tableExistsCmd.ExecuteScalar();
+            return cnt > 0;
+        }
+
+        protected override string BuildTruncateTableStatement(string tableName)
+        {
+            return $"DELETE FROM {tableName}";
+        }
+
         protected override TargetAdapterSql BuildTargetAdapter(string tableName, IEnumerable<string> columnNames, SQLiteConnection conn, int batchSize)
         {
-            return new SQLiteAdapterBulkInsert(tableName, columnNames, conn, batchSize);
+            var adapter = new SQLiteAdapterBulkInsert(tableName, columnNames, conn, batchSize)
+            {
+                UseNativeTypeConvertor = UseNativeTypeConvertor
+            };
+            return adapter;
         }
 
         protected override DataPipeline<PoolEntry<object[]>> BuildDataPipeline()
