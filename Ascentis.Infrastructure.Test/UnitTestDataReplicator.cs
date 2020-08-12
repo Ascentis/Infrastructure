@@ -73,7 +73,7 @@ namespace UnitTestAsyncDisposer
             Assert.AreEqual(8, replicator.SourceCommandCount);
             for (var i = 0; i < 5; i++)
             {
-                replicator.GetSourceCommand(1).CommandText = "SELECT TOP 10 * FROM TIME";
+                replicator.SourceCommand[1].CommandText = "SELECT TOP 10 * FROM TIME";
                 replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
             }
 

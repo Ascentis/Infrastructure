@@ -32,12 +32,11 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public bool ForceDropTable { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
 
-        public DbCommand GetSourceCommand(int index)
-        {
-            return _sourceCmds[index];
-        }
-
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
+
+        private ReadOnlyIndexedProperty<int, DbCommand> _sourceCommandsIndexer;
+        public ReadOnlyIndexedProperty<int, DbCommand> SourceCommand => 
+            _sourceCommandsIndexer ?? new ReadOnlyIndexedProperty<int, DbCommand>(i => _sourceCmds[i]);
 
         protected DataReplicator(string sourceConnStr, string targetConnStr, int parallelismLevel = DefaultParallelismLevel)
         {

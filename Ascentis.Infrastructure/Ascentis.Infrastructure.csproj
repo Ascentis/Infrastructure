@@ -102,6 +102,9 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\BulkSqlCommandTextBuilder.cs" />
     <Compile Include="DataReplicator\Generic\DataReplicator.cs" />
     <Compile Include="DataReplicator\SQLite\SQLiteDataReplicator.cs" />
+    <Compile Include="Patterns\IndexedProperty\IndexedProperty.cs" />
+    <Compile Include="Patterns\IndexedProperty\ReadOnlyIndexedProperty.cs" />
+    <Compile Include="Patterns\IndexedProperty\WriteOnlyIndexedProperty.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\Disposer.cs" />
