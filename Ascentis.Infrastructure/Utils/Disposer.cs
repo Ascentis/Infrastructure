@@ -11,7 +11,9 @@ namespace Ascentis.Infrastructure
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (obj == null)
                 return;
-            if (obj is IList enumerable)
+            if (obj is IList list)
+                Dispose(list);
+            else if (obj is IEnumerable enumerable)
                 Dispose(enumerable);
             if (obj is IDisposable disposable)
                 disposable.Dispose();
@@ -26,6 +28,16 @@ namespace Ascentis.Infrastructure
                     continue;
                 disposable.Dispose();
                 objs[i] = null;
+            }
+        }
+
+        public static void Dispose(IEnumerable objs)
+        {
+            foreach(var obj in objs)
+            {
+                if (!(obj is IDisposable disposable))
+                    continue;
+                disposable.Dispose();
             }
         }
     }
