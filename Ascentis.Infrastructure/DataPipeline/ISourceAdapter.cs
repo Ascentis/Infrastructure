@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         void ReleaseRow(TRow row);
         IEnumerable<TRow> RowsEnumerable { get; }
         int FieldCount { get; }
-        ColumnMetadata[] ColumnMetadatas { get; }
+        ColumnMetadataList ColumnMetadatas { get; }
         int ParallelLevel { get; set; }
         Dictionary<string, int> MetadatasColumnToIndexMap { get; }
         int RowsPoolSize { get; }

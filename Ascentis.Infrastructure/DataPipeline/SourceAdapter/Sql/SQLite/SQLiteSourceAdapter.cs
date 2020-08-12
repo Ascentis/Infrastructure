@@ -4,7 +4,7 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteSourceAdapter : SourceAdapterSqlBase<SQLiteDataReader>
+    public class SQLiteSourceAdapter : SourceAdapterSqlBase
     {
         public SQLiteSourceAdapter(SQLiteDataReader sqlDataReader, int rowsPoolCapacity) : base(sqlDataReader, rowsPoolCapacity) { }
 

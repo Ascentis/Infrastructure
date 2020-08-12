@@ -7,27 +7,15 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
     public abstract class SourceAdapter
     {
         protected Dictionary<string, int> ColumnMetadatasMap;
-        protected ColumnMetadata[] DataPipelineColumnMetadata;
         public bool AbortOnReadException { get; set; }
-
-        public virtual ColumnMetadata[] ColumnMetadatas
-        {
-            get => DataPipelineColumnMetadata;
-            set
-            {
-                if (DataPipelineColumnMetadata == value)
-                    return;
-                DataPipelineColumnMetadata = value;
-                ColumnMetadatasMap = null;
-            }
-        }
+        public virtual ColumnMetadataList ColumnMetadatas { get; set; }
 
         public virtual int FieldCount
         {
             get
             {
                 ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
-                return ColumnMetadatas.Length;
+                return ColumnMetadatas.Count;
             }
         }
 
@@ -49,7 +37,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
                 if (ColumnMetadatasMap != null)
                     return ColumnMetadatasMap;
                 ColumnMetadatasMap = new Dictionary<string, int>();
-                for (var i = 0; i < ColumnMetadatas.Length; i++)
+                for (var i = 0; i < ColumnMetadatas.Count; i++)
                     ColumnMetadatasMap.Add(ColumnMetadatas[i].ColumnName, i);
                 return ColumnMetadatasMap;
             }

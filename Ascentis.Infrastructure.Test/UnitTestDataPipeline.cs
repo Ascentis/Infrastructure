@@ -221,7 +221,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var pipeline = new FixedLengthTextDataPipeline();
-            pipeline.Pump(reader, new []
+            pipeline.Pump(reader, new ColumnMetadataList 
             {
                 new ColumnMetadata
                 {
@@ -252,7 +252,7 @@ namespace Ascentis.Infrastructure.Test
                 exceptionCalled = (string)sourceObject == "WKHR-               A";
                 Assert.AreEqual("src", adapter.Id);
             };
-            pipeline.Pump(reader, new[]
+            pipeline.Pump(reader, new ColumnMetadataList
             {
                 new ColumnMetadata
                 {
@@ -281,7 +281,7 @@ namespace Ascentis.Infrastructure.Test
             using var stream = new MemoryStream(buf);
             var pipeline = new FixedLengthTextDataPipeline();
             // ReSharper disable once PossibleNullReferenceException
-            Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(reader, new[]
+            Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(reader, new ColumnMetadataList
                 {
                     new ColumnMetadata
                     {
@@ -297,7 +297,7 @@ namespace Ascentis.Infrastructure.Test
                     }
                     // ReSharper disable once AccessToDisposedClosure
                 }, new DelimitedTextTargetAdapter(stream))).Message.Contains("Field position can't"));
-            Assert.IsTrue(Assert.ThrowsException<NullReferenceException>(() => pipeline.Pump(reader, new[]
+            Assert.IsTrue(Assert.ThrowsException<NullReferenceException>(() => pipeline.Pump(reader, new ColumnMetadataList 
             {
                 new ColumnMetadata
                 {
@@ -332,7 +332,7 @@ namespace Ascentis.Infrastructure.Test
             var textPipeline = new FixedLengthTextDataPipeline();
             textPipeline.Pump(new FixedLengthTextSourceAdapter(fileSourceReader)
             {
-                ColumnMetadatas = new []
+                ColumnMetadatas = new ColumnMetadataList
                 {
                     new ColumnMetadata
                     {
@@ -365,7 +365,7 @@ namespace Ascentis.Infrastructure.Test
             var buf = new byte[1000];
             using var stream = new MemoryStream(buf);
             var pipeline = new DelimitedTextDataPipeline();
-            pipeline.Pump(reader, new[]
+            pipeline.Pump(reader, new ColumnMetadataList 
             {
                 new ColumnMetadata
                 {
@@ -506,6 +506,27 @@ namespace Ascentis.Infrastructure.Test
             };
             // ReSharper disable once RedundantArgumentDefaultValue
             pipeline.Pump(cmd, outPipes, 2400);
+        }
+
+        [TestMethod]
+        public void TestSqlToSqlBulkInsertWithBulkSizeOneAndPoolSizeOne()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 10 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+
+            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            targetConn0.Open();
+            
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
+            truncateCmd.ExecuteNonQuery();
+
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+
+            var outPipes = new[]
+            {
+                new SqlClientAdapterBulkInsert("TIME_BASE", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 1) {UseTakeSemantics = true}
+            };
+            // ReSharper disable once RedundantArgumentDefaultValue
+            pipeline.Pump(cmd, outPipes, 1);
         }
 
         private static readonly LocalDataStoreSlot CounterSlot = Thread.AllocateDataSlot();
@@ -653,7 +674,7 @@ namespace Ascentis.Infrastructure.Test
             var stream = new MemoryStream(buf);
             var source = new BlockingQueueSourceAdapter
             {
-                ColumnMetadatas = new[]
+                ColumnMetadatas = new ColumnMetadataList
                 {
                     new ColumnMetadata {DataType = typeof(string), ColumnSize = 4},
                     new ColumnMetadata {DataType = typeof(int), ColumnSize = 16}
@@ -681,7 +702,7 @@ namespace Ascentis.Infrastructure.Test
             var stream = new MemoryStream(buf);
             var source = new BlockingQueueSourceAdapter
             {
-                ColumnMetadatas = new[]
+                ColumnMetadatas = new ColumnMetadataList()
                 {
                     new ColumnMetadata
                     {
@@ -766,7 +787,7 @@ namespace Ascentis.Infrastructure.Test
         // ReSharper disable once InconsistentNaming
         public void TestMSSQLToSQLiteBulkAndBack()
         {
-            using var conn = new SQLiteConnection("Data Source=:memory:");
+            using var conn = new SQLiteConnection("Data Source=inmemorydb;mode=memory;cache=shared");
             conn.Open();
             using var cmd = new SQLiteCommand("DROP TABLE IF EXISTS TIME_BASE", conn);
             cmd.ExecuteNonQuery();

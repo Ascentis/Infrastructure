@@ -10,15 +10,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Singl
         private static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper = new ColumnMetadataToSqlDbTypeMapper();
 
         public SqlClientTargetAdapterCommand(SqlCommand cmd) : base(cmd) {}
-
-        public virtual SqlTransaction Transaction
-        {
-            get => Cmd.Transaction;
-            set => Cmd.Transaction = value;
-        }
-
-        public virtual SqlConnection Connection => Cmd.Connection;
-
+        
         protected override IList<string> ParseParameters()
         {
             return Cmd.ParseParameters();

@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.6.1.4</version>
+    <version>2.7.1.5</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer and BoundedParallel</description>
-    <releaseNotes>Cleaned up code and added a few more small utilitarian classes</releaseNotes>
+    <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer, BoundedParallel, DataPipeline and DataReplicator</description>
+    <releaseNotes>Added DataReplicator class</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+ threading Parallel SQLite MSSQL batch bulk</tags>
     <dependencies>

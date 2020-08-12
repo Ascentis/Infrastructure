@@ -5,7 +5,7 @@ namespace Ascentis.Infrastructure
 {
     public class PoolEntry<T>
     {
-        private class DefaultPool<T> : IPool<T>
+        private class DefaultPool : IPool<T>
         {
             public void Release(PoolEntry<T> obj)
             {
@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure
             }
         }
 
-        private static readonly IPool<T> FallbackPool = new DefaultPool<T>();
+        private static readonly IPool<T> FallbackPool = new DefaultPool();
 
         public const int Taken = 1;
         public const int NotTaken = 0;

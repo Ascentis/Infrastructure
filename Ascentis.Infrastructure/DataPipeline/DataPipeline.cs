@@ -10,7 +10,9 @@ namespace Ascentis.Infrastructure.DataPipeline
     {
         public delegate void RowErrorDelegate(IAdapter adapter, object data, Exception e);
         public delegate void RowDelegate(IAdapter adapter, TRow row);
-        public delegate TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row); // Return false to abort processing
+
+        // Return BeforeProcessRowResult.Abort to abort processing
+        public delegate TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult BeforeProcessRowDelegate(IAdapter adapter, TRow row);
 
         public event RowErrorDelegate OnSourceAdapterRowReadError; // Runs in SourceAdapter thread
         public event RowErrorDelegate OnTargetAdapterRowProcessError; // Runs in TargetAdapter thread

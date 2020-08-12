@@ -16,7 +16,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
         protected abstract int SqlTypeFromType(Type type);
 
         public void Map(IDictionary<string, int> columns, 
-            ColumnMetadata[] metadatas, 
+            ColumnMetadataList metadatas, 
             IEnumerable<string> ansiStringParameters, 
             DbParameterCollection target, 
             string paramSuffix = "")
@@ -54,7 +54,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
         }
 
         public void Map(IDictionary<string, int> columns, 
-            ColumnMetadata[] metadatas, 
+            ColumnMetadataList metadatas, 
             IEnumerable<string> ansiStringParameters, 
             DbParameterCollection target, 
             int batchCount)

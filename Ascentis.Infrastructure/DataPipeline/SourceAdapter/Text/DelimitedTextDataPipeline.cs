@@ -8,7 +8,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
     {
         public void Pump(
             TextReader source,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public void Pump(
             Stream source,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
@@ -35,7 +35,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public void Pump(
             string sourceFileName,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
@@ -47,7 +47,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public void Pump(
             TextReader source,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
@@ -63,7 +63,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public void Pump(
             Stream source,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
@@ -74,7 +74,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public void Pump(
             string sourceFileName,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
             string delimiter = DelimitedTextSourceAdapter.DefaultDelimiter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)

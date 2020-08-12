@@ -24,7 +24,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
             var regExPattern = "^";
             var currentColumnId = 0;
-            while (currentColumnId++ < ColumnMetadatas.Length)
+            while (currentColumnId++ < ColumnMetadatas.Count)
                 regExPattern += $"(.*){Delimiter}";
             regExPattern = regExPattern.Remove(regExPattern.Length - Delimiter.Length, Delimiter.Length);
             regExPattern += "$";

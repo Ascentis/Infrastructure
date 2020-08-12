@@ -36,14 +36,14 @@ namespace Ascentis.Infrastructure.Test
         #endregion
 
         [TestMethod]
-        public void TestMethodCreateRetrier()
+        public void TestCreateRetrier()
         {
             var retrier = new Retrier<TheClass>(new TheClass());
             Assert.IsNotNull(retrier);
         }
 
         [TestMethod]
-        public void TestMethodRetryProcedureOnException()
+        public void TestRetryProcedureOnException()
         {
             var retrier = new Retrier<TheClass>(new TheClass());
             var counter = 0;
@@ -56,7 +56,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodRetryFunctionOnException()
+        public void TestRetryFunctionOnException()
         {
             var retrier = new Retrier<TheClass>(new TheClass());
             var counter = 0;
@@ -71,7 +71,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodRetryProcedureWithCustomCanRetryOnException()
+        public void TestRetryProcedureWithCustomCanRetryOnException()
         {
             // ReSharper disable once InconsistentNaming
             var retrier = new Retrier<TheClass>(new TheClass(), (e, _counter) => e != null && _counter <= 2);

@@ -5,8 +5,6 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic
 {
     public abstract class SourceAdapter<T> : Base.SourceAdapter, ISourceAdapter<T>
     {
-        private IEnumerable<T> _rowsEnumerable;
-        
         public event DataPipeline<T>.RowErrorDelegate OnSourceAdapterRowReadError;
 
         protected void InvokeRowReadErrorEvent(object sourceData, Exception e)

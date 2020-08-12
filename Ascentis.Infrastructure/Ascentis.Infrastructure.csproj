@@ -70,6 +70,7 @@
     <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapterGeneric.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Base\SourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataList.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\TypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientDataPipeline.cs" />
@@ -99,6 +100,8 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\ColumnMetadataToSQLiteDbTypeMapper.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Single\SQLiteTargetAdapterCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\BulkSqlCommandTextBuilder.cs" />
+    <Compile Include="DataReplicator\Generic\DataReplicator.cs" />
+    <Compile Include="DataReplicator\SQLite\SQLiteDataReplicator.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
@@ -123,7 +126,7 @@
     <Compile Include="Patterns\Resettable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patterns\Retrier.cs" />
-    <Compile Include="Misc\SolidComPlus.cs" />
+    <Compile Include="Utils\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
     <Compile Include="Utils\SqlClient\SqlCommandExtensions.cs" />
     <Compile Include="Utils\SQLite\SQLiteCommandExtensions.cs" />

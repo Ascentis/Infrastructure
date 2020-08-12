@@ -33,8 +33,8 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         protected TextToObject[] BuildConversionArray()
         {
-            var result = new TextToObject[ColumnMetadatas.Length];
-            for (var i = 0; i < ColumnMetadatas.Length; i++)
+            var result = new TextToObject[ColumnMetadatas.Count];
+            for (var i = 0; i < ColumnMetadatas.Count; i++)
             {
                 if (ColumnMetadatas[i].DataType == typeof(string))
                     result[i] = text => text.Trim();

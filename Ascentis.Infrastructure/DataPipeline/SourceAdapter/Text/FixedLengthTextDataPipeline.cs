@@ -7,7 +7,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
     {
         public void Pump(
             TextReader source,
-            ColumnMetadata[] sourceMetadatas,
+            ColumnMetadataList sourceMetadatas,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
             int rowsPoolCapacity = TextSourceAdapter.DefaultRowsPoolCapacity)
         {

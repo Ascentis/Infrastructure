@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     internal class Tester
@@ -23,7 +24,7 @@ namespace Ascentis.Infrastructure.Test
     public class UnitTestAutoInit
     {
         [TestMethod]
-        public void TestMethodAutoInit()
+        public void TestAutoInit()
         {
             Tester ref1 = null;
             Tester ref2 = null;

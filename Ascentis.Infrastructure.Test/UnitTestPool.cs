@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure.Test
     public class UnitTestPool
     {
         [TestMethod]
-        public void TestMethodPoolBasic()
+        public void TestPoolBasic()
         {
             var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
@@ -23,7 +23,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolRetrieveTimeout()
+        public void TestPoolRetrieveTimeout()
         {
             var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
@@ -34,7 +34,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolSimpleReleaseSemantics()
+        public void TestPoolSimpleReleaseSemantics()
         {
             var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
@@ -48,7 +48,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolReleaseInSeparateThread()
+        public void TestPoolReleaseInSeparateThread()
         {
             var pool = new Pool<object>(2, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire();
@@ -67,7 +67,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolWithRefCount()
+        public void TestPoolWithRefCount()
         {
             var pool = new Pool<object>(10, pool => pool.NewPoolEntry(new object(), 2));
             var obj1 = pool.Acquire();
@@ -83,7 +83,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolParallelAcquireAndRelease()
+        public void TestPoolParallelAcquireAndRelease()
         {
             var pool = new Pool<object>(100000, pool => pool.NewPoolEntry(new object()));
             var items = new ConcurrentBag<PoolEntry<object>>();
@@ -176,7 +176,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolWithRefCountAndRetainSemantics()
+        public void TestPoolWithRefCountAndRetainSemantics()
         {
             var pool = new Pool<object>(10, pool => pool.NewPoolEntry(new object(), 2));
             var obj1 = pool.Acquire();
@@ -196,7 +196,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestMethodPoolChangeMaxCapacity()
+        public void TestPoolChangeMaxCapacity()
         {
             var pool = new Pool<object>(3, pool => pool.NewPoolEntry(new object()));
             var obj1 = pool.Acquire(1);

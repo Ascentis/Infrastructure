@@ -90,3 +90,7 @@ Abstraction on top of a Thread that allows for continous processing of objects p
 
 Generalized data pipeline from multiple source types (fixed length text, delimited, MSSQL, SQLite) to the same type of targets. The DataPipeline suite of classes provides
 a high performance way to move data between source and targets(s) and it sets the foundation for further extension
+
+## DataReplicator
+
+This class replicates tables into a SQLite database. Tables will be created automatically based on the metadata of a list of source queries
