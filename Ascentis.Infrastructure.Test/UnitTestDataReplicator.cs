@@ -3,7 +3,8 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataReplicator.SQLite;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestAsyncDisposer
+// ReSharper disable once CheckNamespace
+namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     public class UnitTestDataReplicator
@@ -54,8 +55,10 @@ namespace UnitTestAsyncDisposer
         [TestMethod]
         public void TestReplicateMultipleRounds()
         {
+            const string srcConnStr = "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;";
+
             using var replicator = new SQLiteDataReplicator(
-                    "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;",
+                    srcConnStr,
                     "Data Source=inmemorydb;mode=memory;cache=shared;synchronous=Off;Pooling=True;")
             { ParallelismLevel = 2 };
             replicator.AddSourceTable("SITES", "SELECT * FROM SITES");
@@ -66,14 +69,20 @@ namespace UnitTestAsyncDisposer
             {
                 "CREATE INDEX PM_DIST_CEMPID ON PM_DIST(CEMPID)"
             });
-            replicator.AddSourceTable("PM_LOG", "SELECT TOP 1000 * FROM PM_LOG");
+            var connection = new SqlConnection(srcConnStr);
+            var pmLogCmd = new SqlCommand("SELECT TOP 1000 * FROM PM_LOG", connection);
+            replicator.AddSourceTable("PM_LOG", pmLogCmd); // Here we Add a command to the list of tables. command could be created with extension method CreateBulkQueryCommand
             replicator.AddSourceTable("AUDITLOG", "SELECT TOP 1000 * FROM AUDITLOG");
             replicator.AddSourceTable("APPROVPR", "SELECT TOP 1000 * FROM APPROVPR");
             replicator.Prepare<SqlCommand, SqlConnection>();
             Assert.AreEqual(8, replicator.SourceCommandCount);
             for (var i = 0; i < 5; i++)
             {
-                replicator.SourceCommand[1].CommandText = "SELECT TOP 10 * FROM TIME";
+                // Can't use the Source Connection if a reader still open. Need to check readers before creating new commands
+                // In this example we replace only the dataset index 1
+                replicator.CloseReader(1);
+                var cmd = ((SqlConnection) replicator.SourceConnections[1]).CreateBulkQueryCommand("SELECT TOP 10 * FROM TIME WHERE IID IN (@@@Params)", new object[] {1});
+                replicator.SourceCommand[1] = cmd; // Every loop we can replace the source command with a new one linked to the new dataset we intend to replicate
                 replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
             }
 

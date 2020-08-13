@@ -19,7 +19,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         private bool _prepared;
         private readonly string _sourceConnStr;
         private readonly string _targetConnStr;
-        private readonly List<Tuple<string, string, IEnumerable<string>>> _sourceTables;
+        private readonly List<WritableTuple<string, string, IEnumerable<string>, DbCommand>> _sourceTables;
         private List<DbCommand> _sourceCmds;
         private List<DbDataReader> _readers;
         private DbConnection[] _sourceConnections;
@@ -31,28 +31,47 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public bool UseTransaction { get; set; }
         public bool ForceDropTable { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
-
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
 
-        private ReadOnlyIndexedProperty<int, DbCommand> _sourceCommandsIndexer;
-
-        public ReadOnlyIndexedProperty<int, DbCommand> SourceCommand
-        {
+        private IndexedProperty<int, DbCommand> _sourceCommandsIndexer;
+        public IndexedProperty<int, DbCommand> SourceCommand =>
             // ReSharper disable once ArrangeAccessorOwnerBody
-            get => _sourceCommandsIndexer ??= new ReadOnlyIndexedProperty<int, DbCommand>(i => _sourceCmds[i]);
-        }
+            _sourceCommandsIndexer ??= new IndexedProperty<int, DbCommand>(i => _sourceCmds[i],
+                (i, cmd) =>
+                {
+                    var oldCmd = _sourceCmds[i];
+                    _sourceCmds[i] = cmd;
+                    _readers[i]?.Dispose();
+                    _readers[i] = null;
+                    oldCmd?.Dispose();
+                });
+
+        private ReadOnlyIndexedProperty<int, DbConnection> _sourceConnectionsIndexer;
+        public ReadOnlyIndexedProperty<int, DbConnection> SourceConnections =>
+            _sourceConnectionsIndexer ??= new ReadOnlyIndexedProperty<int, DbConnection>(i => _sourceConnections[i]);
 
         protected DataReplicator(string sourceConnStr, string targetConnStr, int parallelismLevel = DefaultParallelismLevel)
         {
             _sourceConnStr = sourceConnStr;
             _targetConnStr = targetConnStr;
-            _sourceTables = new List<Tuple<string, string, IEnumerable<string>>>();
+            _sourceTables = new List<WritableTuple<string, string, IEnumerable<string>, DbCommand>>();
             ParallelismLevel = parallelismLevel;
         }
 
         public void AddSourceTable(string tableName, string sqlStatement, IEnumerable<string> customCommands = null)
         {
-            _sourceTables.Add(new Tuple<string, string, IEnumerable<string>>(tableName, sqlStatement, customCommands));
+            _sourceTables.Add(new WritableTuple<string, string, IEnumerable<string>, DbCommand>(tableName, sqlStatement, customCommands, null));
+        }
+
+        public void AddSourceTable(string tableName, DbCommand sqlCommand, IEnumerable<string> customCommands = null)
+        {
+            _sourceTables.Add(new WritableTuple<string, string, IEnumerable<string>, DbCommand>(tableName, sqlCommand.CommandText, customCommands, sqlCommand));
+        }
+
+        public void CloseReader(int index)
+        {
+            if (!(_readers[index]?.IsClosed ?? true))
+                _readers[index].Close();
         }
 
         public virtual void Prepare<TSrcCmd, TSrcConn>() 
@@ -65,22 +84,30 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             {
                 _sourceCmds = new List<DbCommand>();
                 foreach (var sqlStatement in _sourceTables)
-                    _sourceCmds.Add(GenericObjectBuilder.Build<TSrcCmd>(sqlStatement.Item2));
+                {
+                    _sourceCmds.Add(sqlStatement.Item4 ?? GenericObjectBuilder.Build<TSrcCmd>(sqlStatement.Item2));
+                    sqlStatement.Item4 = null;
+                }
 
                 _sourceConnections = new DbConnection[_sourceCmds.Count];
                 _targetConnections = new TTargetConn[_sourceCmds.Count];
                 ColumnMetadataLists = new ColumnMetadataList[_sourceCmds.Count];
-                _readers = new List<DbDataReader>();
+                _readers = new List<DbDataReader> {Capacity = _sourceCmds.Count};
+                for (var i = 0; i < _sourceCmds.Count; i++)
+                    _readers.Add(null);
 
                 _parallelRunner = new BoundedParallel(1, ParallelismLevel);
                 _parallelRunner.For(0, _sourceCmds.Count, i =>
                 {
-                    _sourceConnections[i] = GenericObjectBuilder.Build<TSrcConn>(_sourceConnStr);
+                    if (_sourceTables[i].Item4 != null)
+                        _sourceConnections[i] = _sourceTables[i].Item4.Connection;
+                    else
+                        _sourceConnections[i] = GenericObjectBuilder.Build<TSrcConn>(_sourceConnStr);
                     _sourceConnections[i].Open();
 
                     _sourceCmds[i].Connection = _sourceConnections[i];
                     var reader = _sourceCmds[i].ExecuteReader();
-                    _readers.Add(reader);
+                    _readers[i] = reader;
 
                     ColumnMetadataLists[i] = new ColumnMetadataList(reader);
 
@@ -113,8 +140,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             if (ForceDropTable || !TableExists(tableName, _targetConnections[tableNumber]))
             {
                 var dropTableStatement = BuildDropTableStatement(tableName);
-                using var dropTableCmd =
-                    GenericObjectBuilder.Build<TTargetCmd>(dropTableStatement, _targetConnections[tableNumber]);
+                using var dropTableCmd = GenericObjectBuilder.Build<TTargetCmd>(dropTableStatement, _targetConnections[tableNumber]);
                 dropTableCmd.ExecuteNonQuery();
 
                 var createTableStatement = BuildCreateTableStatement(tableName, tableDef);

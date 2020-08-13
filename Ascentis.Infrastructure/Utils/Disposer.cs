@@ -40,5 +40,12 @@ namespace Ascentis.Infrastructure
                 disposable.Dispose();
             }
         }
+
+        public static void Replace<T>(ref T target, T source)
+        {
+            if (target is IDisposable disposableTarget)
+                disposableTarget.Dispose();
+            target = source;
+        }
     }
 }

@@ -58,6 +58,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
             base.ColumnMetadatas = new ColumnMetadataList(_sqlDataReader);
         }
 
+        public override void UnPrepare()
+        {
+            _sqlDataReader?.Close();
+            base.UnPrepare();
+        }
+
         public override ColumnMetadataList ColumnMetadatas {
             get => base.ColumnMetadatas;
             set => throw new InvalidOperationException($"Can't set ColumnMetadatas for {GetType().Name}");

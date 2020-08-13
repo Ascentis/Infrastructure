@@ -1,9 +1,8 @@
-﻿using System.Runtime.Remoting.Channels;
-using Ascentis.Infrastructure;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
+﻿using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestAsyncDisposer
+// ReSharper disable once CheckNamespace
+namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     public class UnitTestBlockingQueueSourceAdapter

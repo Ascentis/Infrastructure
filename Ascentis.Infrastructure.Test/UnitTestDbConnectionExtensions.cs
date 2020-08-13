@@ -1,9 +1,9 @@
 ﻿using System.Data.SqlClient;
-using Ascentis.Infrastructure;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestAsyncDisposer
+// ReSharper disable once CheckNamespace
+namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     public class UnitTestDbConnectionExtensions
