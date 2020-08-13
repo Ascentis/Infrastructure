@@ -26,7 +26,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 
         protected override string BuildBulkSql(int rowCount)
         {
-            return BulkSqlCommandTextBuilder.BuildBulkSql(ColumnNames, _sqlCommandText, rowCount);
+            return BulkSqlCommandTextBuilder.BuildBulkSql(ColumnNames, _sqlCommandText, rowCount, ParamsAsList);
         }
 
         public override void Flush()

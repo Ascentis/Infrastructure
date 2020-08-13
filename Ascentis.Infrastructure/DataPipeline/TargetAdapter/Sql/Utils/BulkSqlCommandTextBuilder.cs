@@ -32,25 +32,29 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             return sqlText;
         }
 
-        public static string BuildBulkSql(IEnumerable<string> columnNames, string sqlCommandText, int rowCount)
+        public static string BuildBulkSql(IEnumerable<string> columnNames, string sqlCommandText, int rowCount, bool paramsAsList)
         {
-            var sourceSql = "SELECT ";
+            var sourceSql = !paramsAsList ? "SELECT " : "";
             var columnNumber = 0;
-            foreach (var columnName in columnNames)
-                sourceSql += $"@P{columnNumber++}_0 \"{columnName}\",";
-            sourceSql = sourceSql.Remove(sourceSql.Length - 1, 1);
-
-            for (var i = 1; i < rowCount; i++)
+            if (!paramsAsList)
             {
-                sourceSql += "\r\nUNION ALL\r\nSELECT ";
-                columnNumber = 0;
-                foreach (var dummy in columnNames)
-                    sourceSql += $"@P{columnNumber++}_{i},";
+                foreach (var columnName in columnNames)
+                    sourceSql += $"@P{columnNumber++}_0 \"{columnName}\",";
                 sourceSql = sourceSql.Remove(sourceSql.Length - 1, 1);
             }
 
+            for (var i = paramsAsList ? 0 : 1; i < rowCount; i++)
+            {
+                sourceSql += !paramsAsList ? "\r\nUNION ALL\r\nSELECT " : "";
+                columnNumber = 0;
+                foreach (var dummy in columnNames)
+                    sourceSql += $"@P{columnNumber++}_{i},";
+                if (!paramsAsList || i == rowCount - 1)
+                    sourceSql = sourceSql.Remove(sourceSql.Length - 1, 1);
+            }
+
             var newSqlCommandText = Regex.Replace(sqlCommandText,
-                @"(\/\*\<DATA\>\*\/.*?\/\*\<\/DATA\>\*\/)",
+                @"(\/\*\<DATA\>\*\/.*?\/\*\<\/DATA\>\*\/)|@@@Parameters|@@@Params",
                 sourceSql,
                 RegexOptions.Compiled | RegexOptions.Singleline);
 

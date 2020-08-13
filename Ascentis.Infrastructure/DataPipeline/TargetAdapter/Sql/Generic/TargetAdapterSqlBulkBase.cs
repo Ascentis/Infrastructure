@@ -33,6 +33,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         public override int BufferSize => BatchSize;
 
+        public bool ParamsAsList { get; set; }
+        
+        public override DbCommand TakeCommand()
+        {
+            var cmd = Cmd;
+            Cmd = null;
+            return cmd;
+        }
+
         public virtual TTran Transaction
         {
             get => Tran;
@@ -117,17 +126,26 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             base.UnPrepare();
         }
 
-        protected void InternalFlush()
+        private void EnsureCommandBuilt()
         {
             if (Cmd == null || Rows.Count != BatchSize)
                 BuildSqlCommand(Rows.Count, ref Cmd);
+        }
+
+        public override void BindParameters()
+        {
+            EnsureCommandBuilt();
 
             var paramIndex = 0;
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var row in Rows)
                 foreach (var column in ColumnNameToMetadataIndexMap)
                     Cmd.Parameters[paramIndex++].Value = SourceValueToParamValue(column.Value, row.Value);
+        }
 
+        protected void InternalFlush()
+        {
+            BindParameters();
             Cmd.ExecuteNonQuery();
         }
 

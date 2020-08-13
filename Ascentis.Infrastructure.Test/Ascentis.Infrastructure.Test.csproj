@@ -62,7 +62,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
     <Compile Include="UnitTestDataReplicator.cs" />
+    <Compile Include="UnitTestDbConnectionExtensions.cs" />
     <Compile Include="UnitTestPool.cs" />
     <Compile Include="UnitTestConveyor.cs" />
     <Compile Include="UnitTestDataPipeline.cs" />

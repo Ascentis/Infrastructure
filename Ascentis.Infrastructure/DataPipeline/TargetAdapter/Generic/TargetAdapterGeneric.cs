@@ -15,6 +15,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic
         }
 
         public abstract void Process(TRow row);
+        public virtual void BindParameters() {}
        
         protected void InvokeProcessErrorEvent(TRow row, Exception e)
         {

@@ -35,8 +35,12 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
 
         private ReadOnlyIndexedProperty<int, DbCommand> _sourceCommandsIndexer;
-        public ReadOnlyIndexedProperty<int, DbCommand> SourceCommand => 
-            _sourceCommandsIndexer ?? new ReadOnlyIndexedProperty<int, DbCommand>(i => _sourceCmds[i]);
+
+        public ReadOnlyIndexedProperty<int, DbCommand> SourceCommand
+        {
+            // ReSharper disable once ArrangeAccessorOwnerBody
+            get => _sourceCommandsIndexer ??= new ReadOnlyIndexedProperty<int, DbCommand>(i => _sourceCmds[i]);
+        }
 
         protected DataReplicator(string sourceConnStr, string targetConnStr, int parallelismLevel = DefaultParallelismLevel)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
@@ -18,7 +19,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
 
         public event SourceAdapterDelegate OnWaitForDataTimeout;
 
-        public int WaitForDataTimeout;
+        public int WaitForDataTimeout { get; set; }
 
         public BlockingQueueSourceAdapter()
         {
@@ -26,6 +27,32 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
             _dataQueue = new ConcurrentQueue<PoolEntry<object[]>>();
             _preparedEvent = new ManualResetEventSlim(false);
             WaitForDataTimeout = -1;
+        }
+
+        public BlockingQueueSourceAdapter(IEnumerable sourceCollection) : this()
+        {
+            foreach (var obj in sourceCollection)
+            {
+                switch (obj)
+                {
+                    case PoolEntry<object[]> entry:
+                        _dataQueue.Enqueue(entry);
+                        break;
+                    case object[] objects:
+                    {
+                        var poolEntry = new PoolEntry<object[]>(objects);
+                        _dataQueue.Enqueue(poolEntry);
+                        break;
+                    }
+                    default:
+                    {
+                        var objsArray = new [] {obj};
+                        _dataQueue.Enqueue(new PoolEntry<object[]>(objsArray));
+                        break;
+                    }
+                }
+            }
+            Finish();
         }
 
         public override IEnumerable<PoolEntry<object[]>> RowsEnumerable

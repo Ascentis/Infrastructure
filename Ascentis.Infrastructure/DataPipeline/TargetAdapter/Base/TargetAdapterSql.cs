@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
@@ -9,6 +10,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
         public IEnumerable<string> AnsiStringParameters {get; set;}
         public bool UseTakeSemantics { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
+
+        public abstract DbCommand TakeCommand();
 
         public virtual object GetNativeValue(object value)
         {

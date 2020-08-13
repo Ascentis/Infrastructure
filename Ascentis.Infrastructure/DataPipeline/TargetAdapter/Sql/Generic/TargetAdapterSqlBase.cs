@@ -10,7 +10,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         where TTran : DbTransaction 
         where TConn : DbConnection
     {
-        protected readonly TCmd Cmd;
+        protected TCmd Cmd;
         private int[] _paramToMetaMap;
 
         protected TargetAdapterSqlBase(TCmd cmd)
@@ -22,6 +22,13 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         {
             get => (TTran)Cmd.Transaction;
             set => Cmd.Transaction = value;
+        }
+
+        public override DbCommand TakeCommand()
+        {
+            var cmd = Cmd;
+            Cmd = null;
+            return cmd;
         }
         
         public virtual TConn Connection => (TConn)Cmd.Connection;

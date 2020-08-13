@@ -609,12 +609,12 @@ namespace Ascentis.Infrastructure.Test
                 FROM TIME_BASE T
                     INNER JOIN (
                     SELECT CEMPID, CPAYTYPE
-                FROM (
-                    /*<DATA>*/
-                    SELECT 99993 CEMPID, '1' CPAYTYPE
-                    UNION ALL
-                    SELECT 99999, '2'
-                    /*</DATA>*/) SRC
+                    FROM (
+                        /*<DATA>*/
+                        SELECT 99993 CEMPID, '1' CPAYTYPE
+                        UNION ALL
+                        SELECT 99999, '2'
+                        /*</DATA>*/) SRC
                     ) SRC ON
                 T.CEMPID = SRC.CEMPID", new []{"CEMPID", "CPAYTYPE"}, targetConn, 500), 2000);
 
