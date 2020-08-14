@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Data.Common;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
 {
     public abstract class TargetAdapter
     {
+        public delegate void AdapterDelegate(IAdapter adapter);
+        public delegate void CommandDelegate(IAdapter adapter, DbCommand cmd);
         public enum BeforeProcessRowResult
         {
             Continue,

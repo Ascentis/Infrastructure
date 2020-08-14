@@ -1,5 +1,6 @@
 ﻿using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.DataReplicator.SqlClient;
 using Ascentis.Infrastructure.DataReplicator.SQLite;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -38,7 +39,7 @@ namespace Ascentis.Infrastructure.Test
                 "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;",
                 "Data Source=inmemorydb;mode=memory;cache=shared;synchronous=Off;")
             { ParallelismLevel = 2 };
-            replicator.AddSourceTable("SITES", "SELECT * FROM SITES");
+            replicator.AddSourceTable("SELECT * FROM SITES");
             replicator.AddSourceTable("TIME", "SELECT TOP 10000 * FROM TIME");
             replicator.AddSourceTable("A_TIMESHEET", "SELECT TOP 10000 * FROM A_TIMESHEET");
             replicator.AddSourceTable("A_SCHEDULE", "SELECT TOP 10000 * FROM A_SCHEDULE");
@@ -100,6 +101,21 @@ namespace Ascentis.Infrastructure.Test
             replicator.UseTransaction = false;
             replicator.Prepare<SqlCommand, SqlConnection>();
             replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
+            replicator.UnPrepare();
+        }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestBasicReplicateMSSQLToMSSQL()
+        {
+            using var replicator = new SqlClientDataReplicator(
+                    "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;",
+                    "Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True;")
+            { ParallelismLevel = 2 };
+            replicator.AddSourceTable("SELECT TOP 1000 * FROM TIME");
+            replicator.UseTransaction = false;
+            replicator.Prepare<SqlCommand, SqlConnection>();
+            replicator.Replicate<SqlClientSourceAdapter>(1000, 13);
             replicator.UnPrepare();
         }
     }

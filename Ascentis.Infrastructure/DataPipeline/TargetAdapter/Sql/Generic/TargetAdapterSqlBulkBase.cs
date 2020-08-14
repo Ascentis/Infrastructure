@@ -5,7 +5,7 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public abstract class TargetAdapterSqlBulkBase<TCmd, TTran, TConn> : TargetAdapterSql 
+    public abstract class TargetAdapterSqlBulkBase<TCmd, TTran, TConn> : TargetAdapterSql
         where TCmd : DbCommand
         where TTran : DbTransaction
         where TConn : DbConnection
@@ -90,6 +90,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             var sqlCommandText = BuildBulkSql(rowCount);
             sqlCommand = CmdBuilder(sqlCommandText, Conn, Tran);
             MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
+            InvokeBeforeCommandPrepare(sqlCommand);
             sqlCommand.Prepare();
         }
 

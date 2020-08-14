@@ -53,6 +53,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             }
 
             MapParams(paramToMetaIndex);
+            InvokeBeforeCommandPrepare(Cmd);
             Cmd.Prepare();
         }
 

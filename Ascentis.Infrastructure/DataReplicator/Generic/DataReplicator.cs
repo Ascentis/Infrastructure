@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
@@ -58,14 +59,32 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             ParallelismLevel = parallelismLevel;
         }
 
+        private void CheckPreparedThrowException()
+        {
+            if (_prepared)
+                throw new InvalidOperationException("DataReplicator in prepared state. Can't add more source tables");
+        }
+
         public void AddSourceTable(string tableName, string sqlStatement, IEnumerable<string> customCommands = null)
         {
+            CheckPreparedThrowException();
             _sourceTables.Add(new WritableTuple<string, string, IEnumerable<string>, DbCommand>(tableName, sqlStatement, customCommands, null));
         }
 
         public void AddSourceTable(string tableName, DbCommand sqlCommand, IEnumerable<string> customCommands = null)
         {
+            CheckPreparedThrowException();
             _sourceTables.Add(new WritableTuple<string, string, IEnumerable<string>, DbCommand>(tableName, sqlCommand.CommandText, customCommands, sqlCommand));
+        }
+
+        public void AddSourceTable(string sqlStatement, IEnumerable<string> customCommands = null)
+        {
+            CheckPreparedThrowException();
+            var tableNameMatch = Regex.Match(sqlStatement, @"(from|join)\s+(?<table>\S+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            if (!tableNameMatch.Success)
+                throw new InvalidOperationException("Could not identify table name in provided sql statement");
+            var tableName = tableNameMatch.Groups["table"].Value;
+            AddSourceTable(tableName, sqlStatement, customCommands);
         }
 
         public void CloseReader(int index)
@@ -190,12 +209,13 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     targetAdapter.AbortOnProcessException = true;
 
                     var pipeline = BuildDataPipeline();
-
                     ConfigureTargetConnection(_targetConnections[i], columnNames.Count, insertBatchSize);
 
                     var tran = UseTransaction ? _targetConnections[i].BeginTransaction() : null;
                     try
                     {
+                        if (tran != null)
+                            targetAdapter.BeforeCommandPrepare += (adapter, cmd) => cmd.Transaction = tran;
                         pipeline.Pump(sourceAdapter, targetAdapter);
                         tran?.Commit();
                     }

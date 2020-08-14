@@ -7,6 +7,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
 {
     public abstract class TargetAdapterSql : TargetAdapter<PoolEntry<object[]>>
     {
+        public event CommandDelegate BeforeCommandPrepare;
         public IEnumerable<string> AnsiStringParameters {get; set;}
         public bool UseTakeSemantics { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
@@ -22,6 +23,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
         {
             var value = columnIndex >= 0 ? UseNativeTypeConvertor ? GetNativeValue(row[columnIndex]) : row[columnIndex] : null;
             return value ?? DBNull.Value;
+        }
+
+        protected void InvokeBeforeCommandPrepare(DbCommand cmd)
+        {
+            BeforeCommandPrepare?.Invoke(this, cmd);
         }
     }
 }
