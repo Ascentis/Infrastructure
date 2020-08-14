@@ -71,6 +71,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             {
                 Cmd.ExecuteNonQuery();
                 InvokeAfterTargetAdapterProcessRowEvent(row);
+                if (LiteralParamBinding)
+                    Disposer.Dispose(ref Cmd);
             }
             catch (Exception e)
             {
