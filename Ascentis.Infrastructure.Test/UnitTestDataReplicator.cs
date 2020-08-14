@@ -113,9 +113,9 @@ namespace Ascentis.Infrastructure.Test
                     "Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True;")
             { ParallelismLevel = 2 };
             replicator.AddSourceTable("SELECT TOP 1000 * FROM TIME");
-            replicator.UseTransaction = false;
+            replicator.UseTransaction = true;
             replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.Replicate<SqlClientSourceAdapter>(1000, 13);
+            replicator.Replicate<SqlClientSourceAdapter>(3000, 13);
             replicator.UnPrepare();
         }
     }
