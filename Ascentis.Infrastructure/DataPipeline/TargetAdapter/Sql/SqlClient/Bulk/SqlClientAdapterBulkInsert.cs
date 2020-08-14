@@ -25,13 +25,20 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
             SqlClientUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount);
         }
 
+        public override string ValueToSqlLiteralText(object obj)
+        {
+            return SqlClientUtils.ValueToSqlLiteralText(obj);
+        }
+
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 
-            if (ColumnNameToMetadataIndexMap.Count * BatchSize > SqlClientUtils.MaxMSSQLParams)
+            if (!LiteralParamBinding && ColumnNameToMetadataIndexMap.Count * BatchSize > SqlClientUtils.MaxMSSQLParams)
                 throw new TargetAdapterException(
                     $"Number of columns in target adapter buffer size ({ColumnNameToMetadataIndexMap.Count * BatchSize}) exceeds MSSQL limit of {SqlClientUtils.MaxMSSQLParams} parameters in a query");
+            if (LiteralParamBinding && BatchSize > SqlClientUtils.MaxMSSQLInsertRows)
+                throw new TargetAdapterException("BatchSize can't be greater than 1000, not supported by MSSQL");
         }
     }
 }

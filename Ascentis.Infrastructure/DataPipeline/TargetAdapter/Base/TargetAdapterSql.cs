@@ -11,12 +11,18 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
         public IEnumerable<string> AnsiStringParameters {get; set;}
         public bool UseTakeSemantics { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
+        public bool LiteralParamBinding { get; set; }
 
         public abstract DbCommand TakeCommand();
 
         public virtual object GetNativeValue(object value)
         {
             return value;
+        }
+
+        public virtual string ValueToSqlLiteralText(object obj)
+        {
+            return obj.ToString();
         }
 
         protected object SourceValueToParamValue(int columnIndex, IReadOnlyList<object> row)

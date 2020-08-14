@@ -118,5 +118,21 @@ namespace Ascentis.Infrastructure.Test
             replicator.Replicate<SqlClientSourceAdapter>(3000, 13);
             replicator.UnPrepare();
         }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestBasicReplicateMSSQLToMSSQLUsingLiteralParameterBinding()
+        {
+            using var replicator = new SqlClientDataReplicator(
+                    "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;",
+                    "Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True;")
+            { ParallelismLevel = 2 };
+            replicator.AddSourceTable("SELECT TOP 10000 * FROM TIME");
+            replicator.UseTransaction = true;
+            replicator.LiteralParamBinding = true;
+            replicator.Prepare<SqlCommand, SqlConnection>();
+            replicator.Replicate<SqlClientSourceAdapter>(3000, 50);
+            replicator.UnPrepare();
+        }
     }
 }

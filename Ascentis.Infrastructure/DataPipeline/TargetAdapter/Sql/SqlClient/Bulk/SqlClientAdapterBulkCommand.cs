@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
@@ -24,9 +25,20 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
             Rows = new List<PoolEntry<object[]>>();
         }
 
-        protected override string BuildBulkSql(int rowCount)
+        public override string ValueToSqlLiteralText(object obj)
         {
-            return BulkSqlCommandTextBuilder.BuildBulkSql(ColumnNames, _sqlCommandText, rowCount, ParamsAsList);
+            return SqlClientUtils.ValueToSqlLiteralText(obj);
+        }
+
+        protected override string BuildBulkSql(List<PoolEntry<object[]>> rows)
+        {
+            var builder = new BulkSqlCommandTextBuilder(ValueToSqlLiteralText)
+            {
+                ColumnNames = ColumnNames, 
+                LiteralParamBinding = LiteralParamBinding,
+                ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap
+            };
+            return builder.BuildBulkSql(_sqlCommandText, rows, ParamsAsList);
         }
 
         public override void Flush()

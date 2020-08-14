@@ -30,11 +30,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         }
         
         public virtual TConn Connection => (TConn)Cmd.Connection;
-
         public override int BufferSize => BatchSize;
-
         public bool ParamsAsList { get; set; }
-        
+
         public override DbCommand TakeCommand()
         {
             var cmd = Cmd;
@@ -81,15 +79,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             base.AbortedWithException(e);
         }
 
-        protected abstract string BuildBulkSql(int rowCount);
+        protected abstract string BuildBulkSql(List<PoolEntry<object[]>> rows);
         protected abstract void MapParams(IDictionary<string, int> paramToMetaIndex, ref TCmd sqlCommand, int rowCount);
 
         protected void BuildSqlCommand(int rowCount, ref TCmd sqlCommand)
         {
             DisposeAndNullify(ref sqlCommand);
-            var sqlCommandText = BuildBulkSql(rowCount);
+            var sqlCommandText = BuildBulkSql(Rows);
             sqlCommand = CmdBuilder(sqlCommandText, Conn, Tran);
-            MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
+            if (!LiteralParamBinding)
+                MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
             InvokeBeforeCommandPrepare(sqlCommand);
             sqlCommand.Prepare();
         }
@@ -136,6 +135,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         public override void BindParameters()
         {
             EnsureCommandBuilt();
+            if (LiteralParamBinding)
+                return;
 
             var paramIndex = 0;
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
@@ -148,6 +149,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         {
             BindParameters();
             Cmd.ExecuteNonQuery();
+            if (LiteralParamBinding)
+                Disposer.Dispose(ref Cmd);
         }
 
         protected void InternalReleaseRows()

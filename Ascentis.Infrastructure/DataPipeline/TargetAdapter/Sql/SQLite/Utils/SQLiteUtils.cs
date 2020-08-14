@@ -28,5 +28,19 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils
                 _ => value
             };
         }
+
+        public static string ValueToSqlLiteralText(object obj)
+        {
+            return obj switch
+            {
+                string s => $"'{s.Replace("'", "''")}'",
+                DateTime dateTime => $"'{dateTime:yyyy-MM-dd HH:mm:ss.FFFFFFF}'",
+                DateTimeOffset dateTimeOffset => $"'{dateTimeOffset:yyyy-MM-dd HH:mm:ss.FFFFFFFzzz}'",
+                TimeSpan timeSpan => $"'{timeSpan:d.hh:mm:ss.fffffff}'",
+                bool b => b ? "1" : "0",
+                Guid guid => $"'{guid:00000000-0000-0000-0000-000000000000}'",
+                _ => (obj is DBNull ? "NULL" : obj.ToString())
+            };
+        }
     }
 }

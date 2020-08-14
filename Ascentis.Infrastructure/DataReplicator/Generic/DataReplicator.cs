@@ -34,6 +34,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public bool UseTransaction { get; set; }
         public bool ForceDropTable { get; set; }
         public bool UseNativeTypeConvertor { get; set; }
+        public bool LiteralParamBinding { get; set; }
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
 
         private IndexedProperty<int, DbCommand> _sourceCommandsIndexer;
@@ -208,6 +209,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     var targetAdapter = GenericObjectBuilder.Build<TTargetAdapter>(_sourceTables[i].Item1, columnNames, _targetConnections[i], insertBatchSize);
                     targetAdapter.UseNativeTypeConvertor = UseNativeTypeConvertor;
                     targetAdapter.AbortOnProcessException = true;
+                    targetAdapter.LiteralParamBinding = LiteralParamBinding;
 
                     var pipeline = new TDataPipeline();
                     ConfigureTargetConnection(_targetConnections[i], columnNames.Count, insertBatchSize);

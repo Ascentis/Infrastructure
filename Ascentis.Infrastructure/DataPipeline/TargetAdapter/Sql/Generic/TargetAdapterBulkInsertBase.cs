@@ -35,9 +35,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             _tableName = tableName;
         }
 
-        protected override string BuildBulkSql(int rowCount)
+        protected override string BuildBulkSql(List<PoolEntry<object[]>> rows)
         {
-            return BulkSqlCommandTextBuilder.BuildBulkInsertSql(_tableName, ColumnNames, rowCount);
+            var builder = new BulkSqlCommandTextBuilder(ValueToSqlLiteralText)
+            {
+                TableName = _tableName,
+                LiteralParamBinding = LiteralParamBinding,
+                ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap,
+                ColumnNames = ColumnNames
+            };
+            return builder.BuildBulkInsertSql(rows);
         }
 
         private void ExecuteFallbackRowByRow()

@@ -1,61 +1,120 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-    public static class BulkSqlCommandTextBuilder
+    public class BulkSqlCommandTextBuilder
     {
-        public static string BuildBulkInsertSql(string tableName, IEnumerable<string> columnNames, int rowCount)
+        public delegate string GetValueAsSqlStringDelegate(object value);
+
+        private readonly GetValueAsSqlStringDelegate _getNativeValueAsSqlString = value => value.ToString();
+        public bool LiteralParamBinding { get; set; }
+        public string TableName { get; set; }
+        public IEnumerable<string> ColumnNames { get; set; }
+        public IDictionary<string, int> ColumnNameToMetadataIndexMap { get; set; }
+
+        public BulkSqlCommandTextBuilder(GetValueAsSqlStringDelegate getValueAsSqlString = null)
+        {
+            if (getValueAsSqlString != null)
+                _getNativeValueAsSqlString = getValueAsSqlString;
+        }
+        
+        public string BuildBulkInsertSql(List<PoolEntry<object[]>> rows)
         {
             const string rowSeparator = ",\r\n";
 
-            var sqlText = $"INSERT INTO {tableName}\r\n(";
-            foreach (var columnName in columnNames)
-                sqlText += $"\"{columnName}\",";
-            sqlText = sqlText.Remove(sqlText.Length - 1, 1);
-            sqlText += ") VALUES\r\n";
-            for (var i = 0; i < rowCount; i++)
+            ArgsChecker.CheckForNull<ArgumentNullException>(rows, nameof(rows));
+            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, "ColumnNames can't be null");
+            if (TableName == string.Empty)
+                throw new InvalidOperationException("TableName can't be blank");
+            if (LiteralParamBinding)
+                ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNameToMetadataIndexMap, "ColumnNameToMetadataIndexMap can't be null");
+
+            var stringBuilder = new StringBuilder($"INSERT INTO {TableName}\r\n(");
+
+            foreach (var columnName in ColumnNames)
+                stringBuilder.Append($"\"{columnName}\",");
+            stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            stringBuilder.Append(") VALUES\r\n");
+            for (var i = 0; i < rows.Count; i++)
             {
-                sqlText += "(";
-                var columnIndex = 0;
-                foreach (var dummy in columnNames)
-                    sqlText += $"@P{columnIndex++}_{i},";
+                stringBuilder.Append("(");
+                if (!LiteralParamBinding)
+                {
+                    var columnIndex = 0;
+                    foreach (var dummy in ColumnNames)
+                        stringBuilder.Append($"@P{columnIndex++}_{i},");
+                }
+                else
+                {
+                    foreach (var column in ColumnNameToMetadataIndexMap)
+                        stringBuilder.Append(_getNativeValueAsSqlString(column.Value >= 0 ? rows[i].Value[column.Value] : DBNull.Value) + ",");
+                }
 
-                sqlText = sqlText.Remove(sqlText.Length - 1, 1);
-                sqlText += $"){rowSeparator}";
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                stringBuilder.Append($"){rowSeparator}");
             }
-            sqlText = sqlText.Remove(sqlText.Length - rowSeparator.Length, rowSeparator.Length);
+            stringBuilder.Remove(stringBuilder.Length - rowSeparator.Length, rowSeparator.Length);
 
-            return sqlText;
+            return stringBuilder.ToString();
         }
 
-        public static string BuildBulkSql(IEnumerable<string> columnNames, string sqlCommandText, int rowCount, bool paramsAsList)
+        public string BuildBulkSql(
+            string sqlCommandText, 
+            List<PoolEntry<object[]>> rows, 
+            bool paramsAsList)
         {
-            var sourceSql = !paramsAsList ? "SELECT " : "";
+            ArgsChecker.CheckForNull<ArgumentNullException>(rows, nameof(rows));
+            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, "ColumnNames can't be null");
+            if (LiteralParamBinding)
+                ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNameToMetadataIndexMap, "ColumnNameToMetadataIndexMap can't be null");
+
+            var stringBuilder = new StringBuilder(!paramsAsList ? "SELECT " : "");
+
             var columnNumber = 0;
             if (!paramsAsList)
             {
-                foreach (var columnName in columnNames)
-                    sourceSql += $"@P{columnNumber++}_0 \"{columnName}\",";
-                sourceSql = sourceSql.Remove(sourceSql.Length - 1, 1);
+                if (!LiteralParamBinding)
+                {
+                    foreach (var columnName in ColumnNames)
+                        stringBuilder.Append($"@P{columnNumber++}_0 \"{columnName}\",");
+                }
+                else
+                {
+                    foreach (var column in ColumnNameToMetadataIndexMap)
+                        stringBuilder.Append($"{_getNativeValueAsSqlString(column.Value >= 0 ? rows[0].Value[column.Value] : DBNull.Value)} \"{column.Key}\",");
+                }
+
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
 
-            for (var i = paramsAsList ? 0 : 1; i < rowCount; i++)
+            for (var i = paramsAsList ? 0 : 1; i < rows.Count; i++)
             {
-                sourceSql += !paramsAsList ? "\r\nUNION ALL\r\nSELECT " : "";
-                columnNumber = 0;
-                foreach (var dummy in columnNames)
-                    sourceSql += $"@P{columnNumber++}_{i},";
-                if (!paramsAsList || i == rowCount - 1)
-                    sourceSql = sourceSql.Remove(sourceSql.Length - 1, 1);
+                stringBuilder.Append(!paramsAsList ? "\r\nUNION ALL\r\nSELECT " : "");
+                if (!LiteralParamBinding)
+                {
+                    columnNumber = 0;
+                    foreach (var dummy in ColumnNames)
+                        stringBuilder.Append($"@P{columnNumber++}_{i},");
+                }
+                else
+                {
+                    foreach (var column in ColumnNameToMetadataIndexMap)
+                        stringBuilder.Append(_getNativeValueAsSqlString(column.Value >= 0 ? rows[i].Value[column.Value] : DBNull.Value) + ",");
+                }
+
+                if (!paramsAsList || i == rows.Count - 1)
+                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
 
             var newSqlCommandText = Regex.Replace(sqlCommandText,
                 @"(\/\*\<DATA\>\*\/.*?\/\*\<\/DATA\>\*\/)|@@@Parameters|@@@Params",
-                sourceSql,
+                stringBuilder.ToString(),
                 RegexOptions.Compiled | RegexOptions.Singleline);
 
             return newSqlCommandText;

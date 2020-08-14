@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
@@ -20,6 +19,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
             conn.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
+        }
+
+        public override string ValueToSqlLiteralText(object obj)
+        {
+            return SQLiteUtils.ValueToSqlLiteralText(obj);
         }
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SQLiteCommand sqlCommand, int rowCount)
