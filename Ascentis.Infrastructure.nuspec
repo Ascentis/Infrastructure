@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.7.5.9</version>
+    <version>2.7.6.10</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer, BoundedParallel, DataPipeline and DataReplicator</description>
-    <releaseNotes>Added support in DataReplicator to replace commands before each execution</releaseNotes>
+    <releaseNotes>Added support for transactions in DataReplicator</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+ threading Parallel SQLite MSSQL batch bulk</tags>
     <dependencies>
