@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SQLite;
-using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
 using Ascentis.Infrastructure.DataReplicator.Generic;
@@ -13,16 +11,16 @@ using Ascentis.Infrastructure.DataReplicator.Generic;
 namespace Ascentis.Infrastructure.DataReplicator.SQLite
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteDataReplicator : DataReplicator<SQLiteCommand, SQLiteConnection>
+    public class SQLiteDataReplicator : DataReplicator<SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline>
     {
-        private IDictionary<Type, string> TypeToExprMap { get; }
+        private readonly IDictionary<Type, string> _typeToExprMap;
         
         public SQLiteDataReplicator(
             string sourceConnStr, 
             string targetConnStr, 
             int parallelismLevel = DefaultParallelismLevel) : base(sourceConnStr, targetConnStr, parallelismLevel)
         {
-            TypeToExprMap = new Dictionary<Type, string>
+            _typeToExprMap = new Dictionary<Type, string>
             {
                 {typeof(bool), "INTEGER"},
                 {typeof(byte), "INTEGER"},
@@ -59,7 +57,7 @@ namespace Ascentis.Infrastructure.DataReplicator.SQLite
             var statement = $"CREATE TABLE {tableName} (\r\n";
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var colDef in metadatas)
-                statement += $"{colDef.ColumnName} {TypeToExprMap[colDef.DataType]} {(colDef.IsIdentity ?? false ? "PRIMARY KEY" : "")}{defDelimiter}";
+                statement += $"{colDef.ColumnName} {_typeToExprMap[colDef.DataType]} {(colDef.IsIdentity ?? false ? "PRIMARY KEY" : "")}{defDelimiter}";
             statement = statement.Remove(statement.Length - defDelimiter.Length, defDelimiter.Length);
             statement += ")";
 
@@ -76,20 +74,6 @@ namespace Ascentis.Infrastructure.DataReplicator.SQLite
         protected override string BuildTruncateTableStatement(string tableName)
         {
             return $"DELETE FROM {tableName}";
-        }
-
-        protected override TargetAdapterSql BuildTargetAdapter(string tableName, IEnumerable<string> columnNames, SQLiteConnection conn, int batchSize)
-        {
-            var adapter = new SQLiteAdapterBulkInsert(tableName, columnNames, conn, batchSize)
-            {
-                UseNativeTypeConvertor = UseNativeTypeConvertor
-            };
-            return adapter;
-        }
-
-        protected override DataPipeline<PoolEntry<object[]>> BuildDataPipeline()
-        {
-            return new SQLiteDataPipeline();
         }
 
         protected override void ConfigureTargetConnection(SQLiteConnection connection, int columnCount, int batchSize)

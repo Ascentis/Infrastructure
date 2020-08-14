@@ -11,9 +11,11 @@ using Ascentis.Infrastructure.DataPipeline;
 namespace Ascentis.Infrastructure.DataReplicator.Generic
 {
     [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    public abstract class DataReplicator<TTargetCmd, TTargetConn> : IDisposable
+    public abstract class DataReplicator<TTargetCmd, TTargetConn, TTargetAdapter, TDataPipeline> : IDisposable
         where TTargetCmd : DbCommand
         where TTargetConn : DbConnection
+        where TTargetAdapter : TargetAdapterSql
+        where TDataPipeline : DataPipeline<PoolEntry<object[]>>, new()
     {
         public const int DefaultParallelismLevel = 2;
 
@@ -182,8 +184,6 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             }
         }
 
-        protected abstract TargetAdapterSql BuildTargetAdapter(string tableName, IEnumerable<string> columnNames, TTargetConn conn, int batchSize);
-        protected abstract DataPipeline<PoolEntry<object[]>> BuildDataPipeline();
         protected virtual void ConfigureTargetConnection(TTargetConn connection, int columnCount, int batchSize) {}
         
         public virtual void Replicate<TSourceAdapter>(int readBufferSize, int insertBatchSize) 
@@ -205,10 +205,11 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     foreach (var meta in ColumnMetadataLists[i])
                         columnNames.Add(meta.ColumnName);
 
-                    var targetAdapter = BuildTargetAdapter(_sourceTables[i].Item1, columnNames, _targetConnections[i], insertBatchSize);
+                    var targetAdapter = GenericObjectBuilder.Build<TTargetAdapter>(_sourceTables[i].Item1, columnNames, _targetConnections[i], insertBatchSize);
+                    targetAdapter.UseNativeTypeConvertor = UseNativeTypeConvertor;
                     targetAdapter.AbortOnProcessException = true;
 
-                    var pipeline = BuildDataPipeline();
+                    var pipeline = new TDataPipeline();
                     ConfigureTargetConnection(_targetConnections[i], columnNames.Count, insertBatchSize);
 
                     var tran = UseTransaction ? _targetConnections[i].BeginTransaction() : null;

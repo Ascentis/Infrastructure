@@ -1,28 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Common;
 using System.Data.SqlClient;
-using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataReplicator.Generic;
 
 namespace Ascentis.Infrastructure.DataReplicator.SqlClient
 {
     // ReSharper disable once InconsistentNaming
-    public class SqlClientDataReplicator : DataReplicator<SqlCommand, SqlConnection>
+    public class SqlClientDataReplicator : DataReplicator<SqlCommand, SqlConnection, SqlClientAdapterBulkInsert, SqlClientDataPipeline>
     {
-        private IDictionary<Type, string> TypeToExprMap { get; }
+        private readonly IDictionary<Type, string> _typeToExprMap;
         
         public SqlClientDataReplicator(
             string sourceConnStr, 
             string targetConnStr, 
             int parallelismLevel = DefaultParallelismLevel) : base(sourceConnStr, targetConnStr, parallelismLevel)
         {
-            TypeToExprMap = new Dictionary<Type, string>
+            _typeToExprMap = new Dictionary<Type, string>
             {
                 {typeof(bool), "bit"},
                 {typeof(byte), "tinyint"},
@@ -40,7 +37,6 @@ namespace Ascentis.Infrastructure.DataReplicator.SqlClient
                 {typeof(string), "nvarchar"},
                 {typeof(TimeSpan), "time"}
             };
-            //UseTransaction = true;
         }
 
         protected override string BuildDropTableStatement(string tableName)
@@ -57,7 +53,7 @@ namespace Ascentis.Infrastructure.DataReplicator.SqlClient
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var colDef in metadatas)
                 statement += @$"{colDef.ColumnName} 
-                                {TypeToExprMap[colDef.DataType]} 
+                                {_typeToExprMap[colDef.DataType]} 
                                 {(colDef.DataType == typeof(string) || colDef.DataType == typeof(byte[]) ? "(" + (colDef.ColumnSize == int.MaxValue ? "MAX" : colDef.ColumnSize.ToString()) + ")" : "")} 
                                 {(colDef.IsIdentity ?? false ? "PRIMARY KEY" : "")}{defDelimiter}";
             statement = statement.Remove(statement.Length - defDelimiter.Length, defDelimiter.Length);
@@ -76,20 +72,6 @@ namespace Ascentis.Infrastructure.DataReplicator.SqlClient
         protected override string BuildTruncateTableStatement(string tableName)
         {
             return $"TRUNCATE TABLE {tableName}";
-        }
-
-        protected override TargetAdapterSql BuildTargetAdapter(string tableName, IEnumerable<string> columnNames, SqlConnection conn, int batchSize)
-        {
-            var adapter = new SqlClientAdapterBulkInsert(tableName, columnNames, conn, batchSize)
-            {
-                UseNativeTypeConvertor = UseNativeTypeConvertor
-            };
-            return adapter;
-        }
-
-        protected override DataPipeline<PoolEntry<object[]>> BuildDataPipeline()
-        {
-            return new SqlClientDataPipeline();
         }
     }
 }
