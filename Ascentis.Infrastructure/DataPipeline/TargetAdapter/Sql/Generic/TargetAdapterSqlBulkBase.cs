@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
@@ -19,16 +20,20 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         protected TCmd Cmd;
         protected TConn Conn;
         protected TTran Tran;
+        protected string SqlCommandText { get; }
 
-        protected TargetAdapterSqlBulkBase(IEnumerable<string> columnNames, TConn conn, int batchSize)
+        protected TargetAdapterSqlBulkBase(string sqlCommandText, IEnumerable<string> columnNames, TConn conn, int batchSize)
         {
+            SqlCommandText = sqlCommandText;
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
             ColumnNames = columnNames;
             BatchSize = batchSize;
             Conn = conn;
         }
-        
+
+        protected TargetAdapterSqlBulkBase(IEnumerable<string> columnNames, TConn conn, int batchSize) : this("", columnNames, conn, batchSize) { }
+
         public virtual TConn Connection => (TConn)Cmd.Connection;
         public override int BufferSize => BatchSize;
         public bool ParamsAsList { get; set; }
@@ -79,7 +84,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             base.AbortedWithException(e);
         }
 
-        protected abstract string BuildBulkSql(List<PoolEntry<object[]>> rows);
         protected abstract void MapParams(IDictionary<string, int> paramToMetaIndex, ref TCmd sqlCommand, int rowCount);
 
         protected void BuildSqlCommand(int rowCount, ref TCmd sqlCommand)
@@ -91,6 +95,17 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
             InvokeBeforeCommandPrepare(sqlCommand);
             sqlCommand.Prepare();
+        }
+
+        protected virtual string BuildBulkSql(List<PoolEntry<object[]>> rows)
+        {
+            var builder = new BulkSqlCommandTextBuilder(ValueToSqlLiteralText)
+            {
+                ColumnNames = ColumnNames,
+                LiteralParamBinding = LiteralParamBinding,
+                ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap
+            };
+            return builder.BuildBulkSql(SqlCommandText, rows, ParamsAsList);
         }
 
         public abstract void Flush();

@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
             Abort
         }
 
-        public string Id { get; set; }
+        public int Id { get; set; }
         public bool? AbortOnProcessException { get; set; }
         public virtual int BufferSize => 1;
         public virtual void UnPrepare() { }

@@ -2,6 +2,6 @@
 {
     public interface IAdapter
     {
-        string Id {get; set; }
+        int Id {get; set; }
     }
 }

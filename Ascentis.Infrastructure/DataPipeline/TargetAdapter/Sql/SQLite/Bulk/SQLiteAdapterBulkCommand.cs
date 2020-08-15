@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
 {
@@ -12,14 +10,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
         ITargetAdapterBulk, 
         ITargetAdapterSQLite
     {
-        private readonly string _sqlCommandText;
-
         public SQLiteAdapterBulkCommand(string sqlCommandText,
             IEnumerable<string> sourceColumnNames,
             SQLiteConnection conn,
-            int batchSize = SQLiteUtils.DefaultBatchSize) : base(sourceColumnNames, conn, batchSize)
+            int batchSize = SQLiteUtils.DefaultBatchSize) : base(sqlCommandText, sourceColumnNames, conn, batchSize)
         {
-            _sqlCommandText = sqlCommandText;
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
             conn.SetLimitOption(SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER, SQLiteUtils.DefaultMaxSQLiteParams);
@@ -28,17 +23,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
         public override string ValueToSqlLiteralText(object obj)
         {
             return SQLiteUtils.ValueToSqlLiteralText(obj);
-        }
-
-        protected override string BuildBulkSql(List<PoolEntry<object[]>> rows)
-        {
-            var builder = new BulkSqlCommandTextBuilder(ValueToSqlLiteralText)
-            {
-                ColumnNames = ColumnNames,
-                LiteralParamBinding = LiteralParamBinding,
-                ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap
-            };
-            return builder.BuildBulkSql(_sqlCommandText, rows, ParamsAsList);
         }
 
         public override void Flush()

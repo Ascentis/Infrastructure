@@ -56,10 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataPipeline\Exceptions\DataPipelineAbortedException.cs" />
     <Compile Include="DataPipeline\Exceptions\SourceAdapterException.cs" />
     <Compile Include="DataPipeline\Exceptions\TargetAdapterException.cs" />
     <Compile Include="DataPipeline\IAdapter.cs" />
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
+    <Compile Include="DataPipeline\JoinerDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SourceAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SqlDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteDataPipeline.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="DataPipeline\SourceAdapter\Text\DelimitedTextDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Text\FixedLengthTextDataPipeline.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Base\TargetAdapterSql.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\PassThru\PassThruTargetAdapter.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\SQLiteAdapterBulkInsert.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Bulk\SQLiteAdapterBulkCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\ITargetAdapterSQLite.cs" />
@@ -107,6 +110,7 @@
     <Compile Include="Patterns\IndexedProperty\ReadOnlyIndexedProperty.cs" />
     <Compile Include="Patterns\IndexedProperty\WriteOnlyIndexedProperty.cs" />
     <Compile Include="Patterns\Pool\IPool.cs" />
+    <Compile Include="Patterns\Pool\IPoolEntry.cs" />
     <Compile Include="Patterns\Pool\PoolEntry.cs" />
     <Compile Include="Patterns\WritableTuple\WritableTuple.cs" />
     <Compile Include="Patterns\WritableTuple\WritableTuple3.cs" />

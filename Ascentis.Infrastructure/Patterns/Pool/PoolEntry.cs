@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class PoolEntry<T>
+    public class PoolEntry<T> : IPoolEntry
     {
         private class DefaultPool : IPool<T>
         {
@@ -69,6 +69,11 @@ namespace Ascentis.Infrastructure
             if (taken)
                 OnTake?.Invoke(this);
             return taken;
+        }
+
+        public void Release()
+        {
+            Pool?.Release(this);
         }
     }
 }

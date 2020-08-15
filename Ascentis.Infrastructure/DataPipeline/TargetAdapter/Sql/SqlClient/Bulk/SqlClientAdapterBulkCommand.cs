@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
@@ -13,14 +11,11 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
         ITargetAdapterBulk, 
         ITargetAdapterSqlClient
     {
-        private readonly string _sqlCommandText;
-
         public SqlClientAdapterBulkCommand(string sqlCommandText,
             IEnumerable<string> sourceColumnNames,
             SqlConnection conn,
-            int batchSize = SqlClientUtils.DefaultBatchSize) : base(sourceColumnNames, conn, batchSize)
+            int batchSize = SqlClientUtils.DefaultBatchSize) : base(sqlCommandText, sourceColumnNames, conn, batchSize)
         {
-            _sqlCommandText = sqlCommandText;
             ColumnNameToMetadataIndexMap = new Dictionary<string, int>();
             Rows = new List<PoolEntry<object[]>>();
         }
@@ -28,17 +23,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
         public override string ValueToSqlLiteralText(object obj)
         {
             return SqlClientUtils.ValueToSqlLiteralText(obj);
-        }
-
-        protected override string BuildBulkSql(List<PoolEntry<object[]>> rows)
-        {
-            var builder = new BulkSqlCommandTextBuilder(ValueToSqlLiteralText)
-            {
-                ColumnNames = ColumnNames, 
-                LiteralParamBinding = LiteralParamBinding,
-                ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap
-            };
-            return builder.BuildBulkSql(_sqlCommandText, rows, ParamsAsList);
         }
 
         public override void Flush()
