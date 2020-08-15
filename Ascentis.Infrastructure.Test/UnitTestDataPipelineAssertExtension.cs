@@ -11,8 +11,8 @@ namespace Ascentis.Infrastructure.Test
         public const string ConnStr = "Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;";
         public const string SqlText = "SELECT TOP 1000 * FROM TIME ORDER BY IID";
         public const string SqlText2 = "SELECT TOP 1001 * FROM TIME ORDER BY IID";
-        public const string SqlText100K = "SELECT TOP 100000 * FROM TIME ORDER BY IID";
-        public const string SqlText100K2 = "SELECT TOP 100100 * FROM TIME ORDER BY IID";
+        public const string SqlText10K = "SELECT TOP 10000 * FROM TIME ORDER BY IID";
+        public const string SqlText10K2 = "SELECT TOP 10100 * FROM TIME ORDER BY IID";
 
         [TestMethod]
         public void TestBasicDataPipelineAssertExtension()
@@ -25,9 +25,9 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestHighVolumeDataPipelineAssertExtension()
         {
-            Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText100K, ConnStr, SqlText100K);
-            Assert.ThrowsException<AssertFailedException>(() => Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText100K2, ConnStr, SqlText100K));
-            Assert.That.AreNotEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText100K2, ConnStr, SqlText100K);
+            Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText10K, ConnStr, SqlText10K);
+            Assert.ThrowsException<AssertFailedException>(() => Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText10K2, ConnStr, SqlText10K));
+            Assert.That.AreNotEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(ConnStr, SqlText10K2, ConnStr, SqlText10K);
         }
     }
 }

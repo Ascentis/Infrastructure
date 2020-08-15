@@ -61,24 +61,25 @@ namespace Ascentis.Infrastructure.DataPipeline
                 processingThread.Start(onRowsJoined);
                 
                 var boundedParallel = new BoundedParallel(1, targetAdapters.Count);
-                boundedParallel.For((long)0, sourceAdapters.Count, index =>
+                boundedParallel.For(0, sourceAdapters.Count, index =>
                 {
                     var pipeline = new DataPipeline<TRow>();
-                    targetAdapters[(int)index].Id = (int)index;
+                    targetAdapters[index].Id = index;
                     pipeline.AfterTargetAdapterProcessRow += (a, row) =>
                     {
                         _rowsProcessedCount[index]++;
                         for (var idx = 0; idx < _finished.Length; idx++)
-                            if (_finished[idx] && _rowsProcessedCount[(int)index] > _rowsProcessedCount[idx])
+                            if (_finished[idx] && _rowsProcessedCount[index] > _rowsProcessedCount[idx])
                                 throw new DataPipelineAbortedException();
                     };
-                    pipeline.Pump(sourceAdapters[(int)index], targetAdapters[(int)index]);
-                    _finished[(int)index] = true;
+                    pipeline.Pump(sourceAdapters[index], targetAdapters[index]);
+                    _finished[index] = true;
                 });
 
                 _finishThread = true;
                 _itemAvailableEvent.Set();
                 processingThread.Join();
+
                 if (_threadException != null)
                     throw _threadException;
                 CheckOutOfBalanceSourceAdapters();

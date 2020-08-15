@@ -55,7 +55,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataPipeline\DataPipelineComparer.cs" />
     <Compile Include="DataPipeline\Exceptions\DataPipelineAbortedException.cs" />
+    <Compile Include="DataPipeline\Exceptions\DataPipelineComparer\DataPipelineComparerException.cs" />
+    <Compile Include="DataPipeline\Exceptions\DataPipelineComparer\DataPipelineComparerColumnCountMismatch.cs" />
+    <Compile Include="DataPipeline\Exceptions\DataPipelineComparer\DataPipelineComparerDataMismatch.cs" />
+    <Compile Include="DataPipeline\Exceptions\DataPipelineComparer\DataPipelineComparerOutOfBalance.cs" />
     <Compile Include="DataPipeline\Exceptions\SourceAdapterException.cs" />
     <Compile Include="DataPipeline\Exceptions\TargetAdapterException.cs" />
     <Compile Include="DataPipeline\IAdapter.cs" />
