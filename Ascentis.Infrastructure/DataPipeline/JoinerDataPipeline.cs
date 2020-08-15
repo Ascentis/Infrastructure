@@ -32,6 +32,14 @@ namespace Ascentis.Infrastructure.DataPipeline
             _itemAvailableEvent.Set();
         }
 
+        private void CheckOutOfBalanceSourceAdapters()
+        {
+            var cnt = _rowsProcessedCount[0];
+            for (var idx = 0; idx < _finished.Length; idx++)
+                if (!_finished[idx] || cnt != _rowsProcessedCount[idx])
+                    throw new DataPipelineAbortedException();
+        }
+
         public void Pump(IList<ISourceAdapter<TRow>> sourceAdapters, RowsJoinedDelegate onRowsJoined)
         {
             try
@@ -40,9 +48,7 @@ namespace Ascentis.Infrastructure.DataPipeline
                 _itemAvailableEvent = new ManualResetEventSlim(false);
                 var targetAdapters = new List<PassThruTargetAdapter<TRow>>();
                 foreach (var dummy in sourceAdapters)
-                {
                     targetAdapters.Add(new PassThruTargetAdapter<TRow>(ProcessRow) {AbortOnProcessException = true});
-                }
 
                 _rowsQueues = new ConcurrentQueue<TRow>[targetAdapters.Count];
                 _rowsProcessedCount = new int[targetAdapters.Count];
@@ -75,6 +81,12 @@ namespace Ascentis.Infrastructure.DataPipeline
                 processingThread.Join();
                 if (_threadException != null)
                     throw _threadException;
+                CheckOutOfBalanceSourceAdapters();
+                foreach (var queue in _rowsQueues)
+                {
+                    if (!queue.IsEmpty)
+                        throw new DataPipelineAbortedException();
+                }
             } 
             finally
             {

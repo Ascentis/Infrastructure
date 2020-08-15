@@ -70,6 +70,7 @@ namespace Ascentis.Infrastructure.DataPipeline
 
             sourceAdapter.Prepare();
             using var resettableSourceAdapter = new Resettable<ISourceAdapter<TRow>>(sourceAdapter, adapter => adapter.UnPrepare());
+
             foreach (var targetAdapter in targetAdapters)
                 targetAdapter.Prepare(sourceAdapter);
 

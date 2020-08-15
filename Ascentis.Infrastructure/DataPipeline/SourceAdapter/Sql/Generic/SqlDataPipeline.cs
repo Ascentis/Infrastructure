@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
 {
-    public abstract class SqlDataPipeline<TCmd, TAdapter> : DataPipeline<PoolEntry<object[]>> 
+    public abstract class SqlDataPipeline<TCmd, TConn, TAdapter> : DataPipeline<PoolEntry<object[]>> 
         where TCmd : DbCommand
         where TAdapter : SourceAdapterSqlBase
+        where TConn : DbConnection
     {
         public void Pump(DbDataReader source,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
@@ -42,7 +42,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         }
 
         public void Pump(string sourceSql,
-            SqlConnection sourceConnection,
+            DbConnection sourceConnection,
             ITargetAdapter<PoolEntry<object[]>> targetAdapter,
             int rowsPoolCapacity = SourceAdapterSqlBase.DefaultRowsCapacity)
         {
@@ -51,11 +51,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         }
 
         public void Pump(string sourceSql,
-            SqlConnection sourceConnection,
+            DbConnection sourceConnection,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
             int rowsPoolCapacity = SourceAdapterSqlBase.DefaultRowsCapacity)
         {
             using var cmd = GenericObjectBuilder.Build<TCmd>(sourceSql, sourceConnection);
+            Pump(cmd, dataPipelineTargetAdapters, rowsPoolCapacity);
+        }
+
+        public void Pump(string sourceSql,
+            string sourceConnectionString,
+            IEnumerable<ITargetAdapter<PoolEntry<object[]>>> dataPipelineTargetAdapters,
+            int rowsPoolCapacity = SourceAdapterSqlBase.DefaultRowsCapacity)
+        {
+            using var conn = GenericObjectBuilder.Build<TConn>(sourceConnectionString);
+            using var cmd = GenericObjectBuilder.Build<TCmd>(sourceSql, conn);
             Pump(cmd, dataPipelineTargetAdapters, rowsPoolCapacity);
         }
     }

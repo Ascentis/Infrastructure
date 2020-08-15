@@ -12,7 +12,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         public const int DefaultRowsCapacity = 1000;
 
         private readonly Pool<object[]> _rowsPool;
-        private readonly DbDataReader _sqlDataReader;
+        private DbDataReader _sqlDataReader;
+        private readonly string _connectionString;
+        private readonly string _sqlCommandText;
+        private DbConnection _connection;
+        private DbCommand _command;
+        private bool _ownsReader;
 
         public override int RowsPoolSize
         {
@@ -27,6 +32,15 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         }
 
         protected SourceAdapterSqlBase(DbDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
+
+        protected SourceAdapterSqlBase(
+            string connectionString, 
+            string sqlCommandText,
+            int rowsPoolCapacity = DefaultRowsCapacity) : this(null, rowsPoolCapacity)
+        {
+            _connectionString = connectionString;
+            _sqlCommandText = sqlCommandText;
+        }
         
         public override void ReleaseRow(PoolEntry<object[]> row)
         {
@@ -48,10 +62,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
 
         public override int FieldCount => _sqlDataReader.FieldCount;
 
+        protected abstract DbConnection BuildConnection(string connectionString);
+        protected abstract DbCommand BuildCommand(string sqlCommandText, DbConnection connection);
+
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public override void Prepare()
         {
             base.Prepare();
+            if (_sqlDataReader == null)
+            {
+                _connection = BuildConnection(_connectionString);
+                _connection.Open();
+                _command = BuildCommand(_sqlCommandText, _connection);
+                _sqlDataReader = _command.ExecuteReader();
+                _ownsReader = true;
+            }
 
             if (ColumnMetadatas != null)
                 return;
@@ -61,6 +86,10 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         public override void UnPrepare()
         {
             _sqlDataReader?.Close();
+            if (_ownsReader)
+                _sqlDataReader?.Dispose();
+            _command?.Dispose();
+            _connection?.Dispose();
             base.UnPrepare();
         }
 

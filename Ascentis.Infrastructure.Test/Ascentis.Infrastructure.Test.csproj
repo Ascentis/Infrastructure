@@ -51,7 +51,6 @@
       <HintPath>..\packages\MSTest.TestFramework.2.1.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
@@ -63,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
+    <Compile Include="UnitTestDataPipelineAssertExtension.cs" />
     <Compile Include="UnitTestDataReplicator.cs" />
     <Compile Include="UnitTestDbConnectionExtensions.cs" />
     <Compile Include="UnitTestJoinerDataPipeline.cs" />
@@ -84,6 +84,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ascentis.Infrastructure.TestHelpers\Ascentis.Infrastructure.TestHelpers.csproj">
+      <Project>{a716d9df-68bf-47ae-ac6d-81530cb26f63}</Project>
+      <Name>Ascentis.Infrastructure.TestHelpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ascentis.Infrastructure\Ascentis.Infrastructure.csproj">
       <Project>{4322e4f4-e201-4fea-a5db-38b06c8c1fea}</Project>
       <Name>Ascentis.Infrastructure</Name>
