@@ -4,9 +4,9 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataReplicator.SqlClient;
 using Ascentis.Infrastructure.DataReplicator.SQLite;
+using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestAsyncDisposer.Properties;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test

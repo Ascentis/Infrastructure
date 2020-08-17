@@ -21,9 +21,9 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
+using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UnitTestAsyncDisposer.Properties;
 using SQLiteCommand = System.Data.SQLite.SQLiteCommand;
 
 // ReSharper disable once CheckNamespace

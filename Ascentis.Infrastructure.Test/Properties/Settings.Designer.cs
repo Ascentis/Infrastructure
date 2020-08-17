@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace UnitTestAsyncDisposer.Properties {
+namespace Ascentis.Infrastructure.Test.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -23,27 +23,21 @@ namespace UnitTestAsyncDisposer.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;")]
         public string SqlConnectionString {
             get {
                 return ((string)(this["SqlConnectionString"]));
             }
-            set {
-                this["SqlConnectionString"] = value;
-            }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True;")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True; ")]
         public string SqlConnectionString2ndDatabase {
             get {
                 return ((string)(this["SqlConnectionString2ndDatabase"]));
-            }
-            set {
-                this["SqlConnectionString2ndDatabase"] = value;
             }
         }
     }
