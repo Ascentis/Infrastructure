@@ -34,6 +34,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
         {
             base.Prepare(source);
 
+            if (BatchSize == MaxPossibleBatchSize)
+                BatchSize = SqlClientUtils.MaxMSSQLParams / ColumnNameToMetadataIndexMap.Count;
+
             if (!LiteralParamBinding && ColumnNameToMetadataIndexMap.Count * BatchSize > SqlClientUtils.MaxMSSQLParams)
                 throw new TargetAdapterException(
                     $"Number of columns in target adapter buffer size ({ColumnNameToMetadataIndexMap.Count * BatchSize}) exceeds MSSQL limit of {SqlClientUtils.MaxMSSQLParams} parameters in a query");

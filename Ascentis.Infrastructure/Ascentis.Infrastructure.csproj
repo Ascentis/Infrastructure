@@ -34,7 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -143,7 +143,7 @@
     <Compile Include="Patterns\Misc\Resettable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patterns\Misc\Retrier.cs" />
-    <Compile Include="Utils\PropSetter.cs" />
+    <Compile Include="Utils\ObjectExtensions.cs" />
     <Compile Include="Utils\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
     <Compile Include="Utils\Sql\Base\DbConnectionExtensions.cs" />

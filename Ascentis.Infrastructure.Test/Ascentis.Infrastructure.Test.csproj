@@ -31,6 +31,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -39,6 +40,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -76,6 +78,7 @@
     <Compile Include="UnitTestDataPipeline.cs" />
     <Compile Include="UnitTestAutoInit.cs" />
     <Compile Include="UnitTestGenericObjectBuilder.cs" />
+    <Compile Include="UnitTestObjectExtensions.cs" />
     <Compile Include="UnitTestResettable.cs" />
     <Compile Include="UnitTestBoundedParallel.cs" />
     <Compile Include="TestObject.cs" />

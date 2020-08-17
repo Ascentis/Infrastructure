@@ -33,7 +33,7 @@ namespace Ascentis.Infrastructure.Test
     [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
     public class UnitTestDataPipeline
     {
-        private const string DataSourceSqLiteConnectionString = "Data Source=inmemorydb;mode=memory;cache=shared";
+        private const string DataSourceSqLiteConnectionString = "FullUri=file::memory:?cache=shared;";
         private SqlConnection _conn;
 
         [TestInitialize]

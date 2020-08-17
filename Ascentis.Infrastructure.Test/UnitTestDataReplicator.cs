@@ -1,7 +1,9 @@
 ﻿using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataReplicator.SqlClient;
 using Ascentis.Infrastructure.DataReplicator.SQLite;
 using Ascentis.Infrastructure.Test.Properties;
@@ -16,15 +18,15 @@ namespace Ascentis.Infrastructure.Test
     public class UnitTestDataReplicator
     {
         // ReSharper disable once InconsistentNaming
-        private const string SQLiteConnectionString = "Data Source=inmemorydb;mode=memory;cache=shared;synchronous=Off;";
+        private const string SQLiteConnectionString = "FullUri=file:Client1?cache=shared&mode=memory;";
         private const string SelectFromSitesOrderByIid = "SELECT * FROM SITES ORDER BY IID";
-        private const string SelectTopFromTimeOrderByIid = "SELECT TOP 10000 * FROM TIME ORDER BY IID";
-        private const string SelectTopFromATimesheetOrderBySeq = "SELECT TOP 10000 * FROM A_TIMESHEET ORDER BY SEQ";
-        private const string SelectTopFromAScheduleOrderBySeq = "SELECT TOP 10000 * FROM A_SCHEDULE ORDER BY SEQ";
-        private const string SelectTopFromPmDistOrderByIid = "SELECT TOP 10000 * FROM PM_DIST ORDER BY IID";
-        private const string SelectTopFromPmLogOrderByIid = "SELECT TOP 10000 * FROM PM_LOG ORDER BY IID";
-        private const string SelectTopFromAuditlogOrderByIid = "SELECT TOP 10000 * FROM AUDITLOG ORDER BY IID";
-        private const string SelectTopFromApprovprOrderByIid = "SELECT TOP 10000 * FROM APPROVPR ORDER BY IID";
+        private const string SelectTop10000FromTimeOrderByIid = "SELECT TOP 10000 * FROM TIME ORDER BY IID";
+        private const string SelectTop10000FromATimesheetOrderBySeq = "SELECT TOP 10000 * FROM A_TIMESHEET ORDER BY SEQ";
+        private const string SelectTop10000FromAScheduleOrderBySeq = "SELECT TOP 10000 * FROM A_SCHEDULE ORDER BY SEQ";
+        private const string SelectTop10000FromPmDistOrderByIid = "SELECT TOP 10000 * FROM PM_DIST ORDER BY IID";
+        private const string SelectTop10000FromPmLogOrderByIid = "SELECT TOP 10000 * FROM PM_LOG ORDER BY IID";
+        private const string SelectTop10000FromAuditlogOrderByIid = "SELECT TOP 10000 * FROM AUDITLOG ORDER BY IID";
+        private const string SelectTop10000FromApprovprOrderByIid = "SELECT TOP 10000 * FROM APPROVPR ORDER BY IID";
         private const string SelectVersionAsSqlServerVersion = "SELECT @@VERSION AS 'SQL Server Version'";
         private const string SelectTop1000FromTimeOrderByIid = "SELECT TOP 1000 * FROM TIME ORDER BY IID";
         private const string SelectTop1000FromATimesheetOrderBySeq = "SELECT TOP 1000 * FROM A_TIMESHEET ORDER BY SEQ";
@@ -76,18 +78,20 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestBasicReplicate()
         {
+            using var baseConn = new SQLiteConnection(SQLiteConnectionString);
+            baseConn.Open();
             using var replicator = new SQLiteDataReplicator(
                 Settings.Default.SqlConnectionString,
                 SQLiteConnectionString)
             { ParallelismLevel = 2 };
             replicator.AddSourceTable(SelectFromSitesOrderByIid);
-            replicator.AddSourceTable(SelectTopFromTimeOrderByIid);
-            replicator.AddSourceTable(SelectTopFromATimesheetOrderBySeq);
-            replicator.AddSourceTable(SelectTopFromAScheduleOrderBySeq);
-            replicator.AddSourceTable(SelectTopFromPmDistOrderByIid);
-            replicator.AddSourceTable(SelectTopFromPmLogOrderByIid);
-            replicator.AddSourceTable(SelectTopFromAuditlogOrderByIid);
-            replicator.AddSourceTable(SelectTopFromApprovprOrderByIid);
+            replicator.AddSourceTable(SelectTop10000FromTimeOrderByIid);
+            replicator.AddSourceTable(SelectTop10000FromATimesheetOrderBySeq);
+            replicator.AddSourceTable(SelectTop10000FromAScheduleOrderBySeq);
+            replicator.AddSourceTable(SelectTop10000FromPmDistOrderByIid);
+            replicator.AddSourceTable(SelectTop10000FromPmLogOrderByIid);
+            replicator.AddSourceTable(SelectTop10000FromAuditlogOrderByIid);
+            replicator.AddSourceTable(SelectTop10000FromApprovprOrderByIid);
             replicator.ForceDropTable = true;
             replicator.Prepare<SqlCommand, SqlConnection>();
             replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
@@ -96,22 +100,22 @@ namespace Ascentis.Infrastructure.Test
                 Settings.Default.SqlConnectionString, SelectFromSitesOrderByIid,
                 SQLiteConnectionString, SelectFromSitesOrderByIid);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromTimeOrderByIid,
+                Settings.Default.SqlConnectionString, SelectTop10000FromTimeOrderByIid,
                 SQLiteConnectionString, SelectAllFromTimeOrderByIid);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromAScheduleOrderBySeq,
+                Settings.Default.SqlConnectionString, SelectTop10000FromAScheduleOrderBySeq,
                 SQLiteConnectionString, SelectAllFromAScheduleOrderBySeq);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromPmDistOrderByIid,
+                Settings.Default.SqlConnectionString, SelectTop10000FromPmDistOrderByIid,
                 SQLiteConnectionString, SelectAllFromPmDistOrderByIid);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromPmLogOrderByIid,
+                Settings.Default.SqlConnectionString, SelectTop10000FromPmLogOrderByIid,
                 SQLiteConnectionString, SelectAllFromPmLogOrderByIid);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromAuditlogOrderByIid,
+                Settings.Default.SqlConnectionString, SelectTop10000FromAuditlogOrderByIid,
                 SQLiteConnectionString, SelectAllFromAuditlogOrderByIid);
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
-                Settings.Default.SqlConnectionString, SelectTopFromApprovprOrderByIid,
+                Settings.Default.SqlConnectionString, SelectTop10000FromApprovprOrderByIid,
                 SQLiteConnectionString, SelectAllFromApprovprOrderByIid);
         }
 
@@ -177,6 +181,8 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestBasicReplicateWithoutTransactions()
         {
+            using var baseConn = new SQLiteConnection(SQLiteConnectionString);
+            baseConn.Open();
             using var replicator = new SQLiteDataReplicator(
                     Settings.Default.SqlConnectionString2ndDatabase,
                     SQLiteConnectionString)
@@ -184,6 +190,7 @@ namespace Ascentis.Infrastructure.Test
             replicator.AddSourceTable(TableNameSITES, SelectFromSitesOrderByIid);
             replicator.UseTransaction = false;
             replicator.Prepare<SqlCommand, SqlConnection>();
+            replicator.ForceDropTable = true;
             replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
@@ -203,7 +210,7 @@ namespace Ascentis.Infrastructure.Test
             replicator.UseTransaction = true;
             replicator.ForceDropTable = true;
             replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.Replicate<SqlClientSourceAdapter>(3000, 13);
+            replicator.Replicate<SqlClientSourceAdapter>(3000, SqlClientAdapterBulkInsert.MaxPossibleBatchSize);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,

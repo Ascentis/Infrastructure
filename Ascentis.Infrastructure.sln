@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascentis.SimpleMemoryCache"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascentis.Infrastructure.TestHelpers", "Ascentis.Infrastructure.TestHelpers\Ascentis.Infrastructure.TestHelpers.csproj", "{A716D9DF-68BF-47AE-AC6D-81530CB26F63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascentis.SQLite.TesterConsole", "Ascentis.SQLite.TesterConsole\Ascentis.SQLite.TesterConsole.csproj", "{564906BF-59AF-42F9-9FEA-F566F8F6462D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -172,6 +174,18 @@ Global
 		{A716D9DF-68BF-47AE-AC6D-81530CB26F63}.Release|x64.Build.0 = Release|Any CPU
 		{A716D9DF-68BF-47AE-AC6D-81530CB26F63}.Release|x86.ActiveCfg = Release|Any CPU
 		{A716D9DF-68BF-47AE-AC6D-81530CB26F63}.Release|x86.Build.0 = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|x64.Build.0 = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Debug|x86.Build.0 = Debug|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|x64.ActiveCfg = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|x64.Build.0 = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|x86.ActiveCfg = Release|Any CPU
+		{564906BF-59AF-42F9-9FEA-F566F8F6462D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

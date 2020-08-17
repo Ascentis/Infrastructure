@@ -12,6 +12,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         where TConn : DbConnection
     {
         private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TConn), typeof(TTran));
+        public const int MaxPossibleBatchSize = int.MaxValue;
 
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
         protected IEnumerable<string> ColumnNames;

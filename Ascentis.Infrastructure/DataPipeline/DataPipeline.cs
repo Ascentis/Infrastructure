@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 
@@ -36,7 +37,6 @@ namespace Ascentis.Infrastructure.DataPipeline
             sourceAdapter.AbortOnReadException = AbortOnSourceAdapterException;
 
             targetAdaptersCount = 0;
-            var totalTargetBufferSize = 0;
             foreach (var targetAdapter in targetAdapters)
             {
                 targetAdapter.BeforeTargetAdapterProcessRow += BeforeTargetAdapterProcessRow;
@@ -44,10 +44,14 @@ namespace Ascentis.Infrastructure.DataPipeline
                 targetAdapter.OnTargetAdapterRowProcessError += OnTargetAdapterRowProcessError;
                 targetAdapter.AbortOnProcessException ??= AbortOnTargetAdapterException;
                 targetAdaptersCount++;
-                totalTargetBufferSize += targetAdapter.BufferSize;
             }
 
             sourceAdapter.ParallelLevel = targetAdaptersCount;
+        }
+
+        private static void CheckDeadlockPotential(ISourceAdapter<TRow> sourceAdapter, IEnumerable<ITargetAdapter<TRow>> targetAdapters)
+        {
+            var totalTargetBufferSize = targetAdapters.Sum(targetAdapter => targetAdapter.BufferSize);
             if (sourceAdapter.RowsPoolSize > 0 && sourceAdapter.RowsPoolSize < totalTargetBufferSize)
                 throw new DataPipelineException("Source adapter rows pool size can't be lesser than the sum of all target adapters buffer sizes. Deadlock would occur upon call to Pump()");
         }
@@ -71,6 +75,7 @@ namespace Ascentis.Infrastructure.DataPipeline
 
             foreach (var targetAdapter in targetAdapters)
                 targetAdapter.Prepare(sourceAdapter);
+            CheckDeadlockPotential(sourceAdapter, targetAdapters);
 
             var targetAdapterIndex = 0;
             var targetAdapterConveyors = new Conveyor<TRow>[targetAdaptersCount];
