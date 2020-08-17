@@ -14,7 +14,12 @@ namespace Ascentis.Infrastructure.DataReplicator.SQLite
     public class SQLiteDataReplicator : DataReplicator<SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline>
     {
         private readonly IDictionary<Type, string> _typeToExprMap;
-        
+
+        static SQLiteDataReplicator()
+        {
+            SQLiteTypeMappings.InitAutoMapper();
+        }
+
         public SQLiteDataReplicator(
             string sourceConnStr, 
             string targetConnStr, 
@@ -22,25 +27,21 @@ namespace Ascentis.Infrastructure.DataReplicator.SQLite
         {
             _typeToExprMap = new Dictionary<Type, string>
             {
-                {typeof(bool), "INTEGER"},
-                {typeof(byte), "INTEGER"},
-                {typeof(byte[]), "BLOB"},
-                {typeof(char), "TEXT"},
-                {typeof(DateTime), "TEXT"},
-                {typeof(DateTimeOffset), "TEXT"},
-                {typeof(decimal), "TEXT"},
-                {typeof(double), "REAL"},
-                {typeof(Guid), "TEXT"},
-                {typeof(short), "INTEGER"},
-                {typeof(int), "INTEGER"},
-                {typeof(long), "INTEGER"},
-                {typeof(sbyte), "INTEGER"},
-                {typeof(float), "REAL"},
-                {typeof(string), "TEXT"},
-                {typeof(TimeSpan), "TEXT"},
-                {typeof(ushort), "INTEGER"},
-                {typeof(uint), "INTEGER"},
-                {typeof(ulong), "INTEGER"}
+                {typeof(bool), "int_bit"},
+                {typeof(byte), "tinyint"},
+                {typeof(byte[]), "blob_binary"},
+                {typeof(char), "nchar"},
+                {typeof(DateTime), "datetime"},
+                {typeof(DateTimeOffset), "datetimeoffset"},
+                {typeof(decimal), "text_decimal"},
+                {typeof(double), "double"},
+                {typeof(Guid), "text_uniqueidentifier"},
+                {typeof(short), "smallint"},
+                {typeof(int), "int"},
+                {typeof(long), "bigint"},
+                {typeof(float), "float"},
+                {typeof(string), "nvarchar"},
+                {typeof(TimeSpan), "time"}
             };
             UseTransaction = true;
         }

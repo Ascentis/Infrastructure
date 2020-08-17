@@ -31,7 +31,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base
             return value ?? DBNull.Value;
         }
 
-        protected void InvokeBeforeCommandPrepare(DbCommand cmd)
+        protected virtual void InvokeBeforeCommandPrepare(DbCommand cmd)
         {
             BeforeCommandPrepare?.Invoke(this, cmd);
         }
