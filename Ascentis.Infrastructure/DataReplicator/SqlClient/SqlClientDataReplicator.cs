@@ -53,7 +53,7 @@ namespace Ascentis.Infrastructure.DataReplicator.SqlClient
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var colDef in metadatas)
                 statement += @$"{colDef.ColumnName} 
-                                {_typeToExprMap[colDef.DataType]} 
+                                {(colDef.DataTypeName != string.Empty ? colDef.DataTypeName : _typeToExprMap[colDef.DataType])} 
                                 {(colDef.DataType == typeof(string) || colDef.DataType == typeof(byte[]) ? "(" + (colDef.ColumnSize == int.MaxValue ? "MAX" : colDef.ColumnSize.ToString()) + ")" : "")}
                                 {(colDef.DataType == typeof(decimal) ? "(" + colDef.NumericPrecision + "," + colDef.NumericScale + ")" : "")}
                                 {(colDef.IsIdentity ?? false ? "PRIMARY KEY" : "")}{defDelimiter}";
