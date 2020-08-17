@@ -32,8 +32,6 @@ namespace Ascentis.Infrastructure.DataPipeline
             IEnumerable<ITargetAdapter<TRow>> targetAdapters,
             out int targetAdaptersCount)
         {
-            if (sourceAdapter.Id == 0)
-                sourceAdapter.Id = 1;
             sourceAdapter.OnSourceAdapterRowReadError += OnSourceAdapterRowReadError;
             sourceAdapter.AbortOnReadException = AbortOnSourceAdapterException;
 

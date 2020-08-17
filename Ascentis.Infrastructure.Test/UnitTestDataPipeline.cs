@@ -21,21 +21,25 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
+using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using UnitTestAsyncDisposer.Properties;
 using SQLiteCommand = System.Data.SQLite.SQLiteCommand;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
+    [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
     public class UnitTestDataPipeline
     {
+        private const string DataSourceSqLiteConnectionString = "Data Source=inmemorydb;mode=memory;cache=shared";
         private SqlConnection _conn;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _conn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            _conn = new SqlConnection(Settings.Default.SqlConnectionString);
             _conn.Open();
         }
 
@@ -138,7 +142,7 @@ namespace Ascentis.Infrastructure.Test
 
         [TestMethod]
         [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
-        public void TestSqlToFixedpipelinerorOnOverflowString()
+        public void TestSqlToFixedPipelineErrorOnOverflowString()
         {
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
@@ -151,7 +155,7 @@ namespace Ascentis.Infrastructure.Test
 
         [TestMethod]
         [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
-        public void TestSqlToFixedpipelinerorOnOverflowOnInt()
+        public void TestSqlToFixedpipelineErrorOnOverflowOnInt()
         {
             using var cmd = new SqlCommand("SELECT TRIM(CPCODE_EXP), NPAYCODE FROM TIME WHERE IID BETWEEN 18 AND 36", _conn);
             var buf = new byte[1000];
@@ -183,7 +187,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestSqlToFixedStreamThrowsExceptionOnBufferSizes()
         {
             using var cmd = new SqlCommand("SELECT TOP 10000 TRIM(CPCODE_EXP), NPAYCODE FROM TIME", _conn);
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
             var pipeline = new SqlClientDataPipeline();
             Assert.IsTrue(Assert.ThrowsException<DataPipelineException>(() => pipeline.Pump(cmd,
@@ -250,7 +254,7 @@ namespace Ascentis.Infrastructure.Test
             pipeline.OnSourceAdapterRowReadError += (adapter, sourceObject, e) =>
             {
                 exceptionCalled = (string)sourceObject == "WKHR-               A";
-                Assert.AreEqual("src", adapter.Id);
+                Assert.AreEqual(0, adapter.Id);
             };
             pipeline.Pump(reader, new ColumnMetadataList
             {
@@ -427,7 +431,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestSqlToSqlBasic()
         {
             using var cmd = new SqlCommand("SELECT TOP 100 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn.Open();
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
@@ -442,7 +446,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 100 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
             
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn.Open();
             
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
@@ -483,13 +487,13 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 40015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
             
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
-            using var targetConn1 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn1 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn1.Open();
-            using var targetConn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn2 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn2.Open();
-            using var targetConn3 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn3 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn3.Open();
 
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
@@ -513,7 +517,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 10000 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
 
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
 
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
@@ -538,7 +542,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 10 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
 
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
             
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
@@ -561,9 +565,9 @@ namespace Ascentis.Infrastructure.Test
         {
             using var cmd = new SqlCommand("SELECT TOP 40015 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
 
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
-            using var targetConn1 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn1 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn1.Open();
 
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
@@ -618,7 +622,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestSqlToBulkSqlBasic()
         {
             using var cmd = new SqlCommand(@"SELECT TOP 10000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn.Open();
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
@@ -659,7 +663,7 @@ namespace Ascentis.Infrastructure.Test
         public void TestSqlToBulkSqlBasicBindUsingLiterals()
         {
             using var cmd = new SqlCommand(@"SELECT TOP 10000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn.Open();
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
             truncateCmd.ExecuteNonQuery();
@@ -700,10 +704,10 @@ namespace Ascentis.Infrastructure.Test
         public void TestSqlToBulkSqlCompositeInsertAndUpdate()
         {
             using var cmd = new SqlCommand(@"SELECT TOP 20000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
-            using var targetConn = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn.Open();
 
-            using var targetConn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn2 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn2.Open();
 
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn);
@@ -759,7 +763,7 @@ namespace Ascentis.Infrastructure.Test
 
         private async void TestManualToCsvBasicAsyncInternal(BlockingQueueDataPipeline pipeline)
         {
-            using var targetConn0 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var targetConn0 = new SqlConnection(Settings.Default.SqlConnectionString);
             targetConn0.Open();
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", targetConn0);
             truncateCmd.ExecuteNonQuery();
@@ -853,14 +857,14 @@ namespace Ascentis.Infrastructure.Test
         // ReSharper disable once InconsistentNaming
         public void TestMSSQLToSQLiteBulkAndBack()
         {
-            using var conn = new SQLiteConnection("Data Source=inmemorydb;mode=memory;cache=shared");
+            using var conn = new SQLiteConnection(DataSourceSqLiteConnectionString);
             conn.Open();
             using var cmd = new SQLiteCommand("DROP TABLE IF EXISTS TIME_BASE", conn);
             cmd.ExecuteNonQuery();
             cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
             cmd.ExecuteNonQuery();
 
-            using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP", _conn);
             var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000) {AbortOnProcessException = true};
             var pipeline = new SqlClientDataPipeline();
             pipeline.Pump(sourceCmd, targetAdapter, 5000);
@@ -868,7 +872,7 @@ namespace Ascentis.Infrastructure.Test
             using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME_BASE", _conn);
             truncateCmd.ExecuteNonQuery();
             
-            using var conn2 = new SqlConnection("Server=vm-pc-sql02;Database=NEU14270_200509_Seba;Trusted_Connection=True;");
+            using var conn2 = new SqlConnection(Settings.Default.SqlConnectionString);
             conn2.Open();
             using var sqlLiteSrc = new SQLiteCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME_BASE", conn);
             var backPipeline = new SQLiteDataPipeline();
@@ -880,6 +884,9 @@ namespace Ascentis.Infrastructure.Test
                     {AbortOnProcessException = true, UseTakeSemantics = true}
             };
             backPipeline.Pump(sqlLiteSrc, targets, 2000);
+            Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
+                Settings.Default.SqlConnectionString, "SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP",
+                Settings.Default.SqlConnectionString, "SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME_BASE ORDER BY CPCODE_EXP");
         }
     }
 }

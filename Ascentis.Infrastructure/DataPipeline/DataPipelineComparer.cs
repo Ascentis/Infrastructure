@@ -55,10 +55,12 @@ namespace Ascentis.Infrastructure.DataPipeline
 
                     for (var i = 0; i < columnCount; i++)
                     {
-                        var firstValue = rowsRowsList[0].Value[i];
+                        var firstValueOriginal = rowsRowsList[0].Value[i];
+                        var firstValueDownConverted = source1.DownConvertToText(rowsRowsList[0].Value[i]);
                         for (var j = 1; j < rowsRowsList.Count; j++)
-                            if (!firstValue.Equals(rowsRowsList[j].Value[i]))
-                                throw new DataPipelineComparerDataMismatch(firstValue, rowsRowsList[j].Value[i]);
+                            if (!(firstValueOriginal.GetType() == rowsRowsList[j].Value[i].GetType() && firstValueOriginal == rowsRowsList[j].Value[i] ||
+                                firstValueDownConverted == source2.DownConvertToText(rowsRowsList[j].Value[i])))
+                                throw new DataPipelineComparerDataMismatch(firstValueDownConverted, rowsRowsList[j].Value[i]);
                     }
 
                     RowCount++;

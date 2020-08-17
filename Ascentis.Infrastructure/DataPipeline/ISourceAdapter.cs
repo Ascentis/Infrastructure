@@ -13,6 +13,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         IEnumerable<TRow> RowsEnumerable { get; }
         int FieldCount { get; }
         ColumnMetadataList ColumnMetadatas { get; }
+        string DownConvertToText(object obj);
         int ParallelLevel { get; set; }
         Dictionary<string, int> MetadatasColumnToIndexMap { get; }
         int RowsPoolSize { get; }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils
 {
@@ -24,7 +25,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils
                     if (prop == null)
                         continue;
                     var value = field[column];
-                    prop.SetValue(meta, !(value is DBNull) ? value : null);
+                    switch (value)
+                    {
+                        case int i:
+                            break;
+                    }
+                    PropSetter.SetProp(prop, meta, !(value is DBNull) ? value : null);
                 }
             }
         }

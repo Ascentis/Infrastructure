@@ -19,6 +19,21 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
             }
         }
 
+        public virtual string DownConvertToText(object obj)
+        {
+            /* This down-conversion use the data-types supported by SQLite. Can't dummy down things more than this */
+            return obj switch
+            {
+                string s => s,
+                DateTime dateTime => $"{dateTime:yyyy-MM-dd HH:mm:ss.FFFFFFF}",
+                DateTimeOffset dateTimeOffset => $"{dateTimeOffset:yyyy-MM-dd HH:mm:ss.FFFFFFFzzz}",
+                TimeSpan timeSpan => $"{timeSpan:d.hh:mm:ss.fffffff}",
+                bool b => b ? "1" : "0",
+                Guid guid => $"{guid:00000000-0000-0000-0000-000000000000}",
+                _ => obj is DBNull ? "NULL" : obj.ToString()
+            };
+        }
+
         public int ParallelLevel { get; set; }
         public virtual int RowsPoolSize
         {
