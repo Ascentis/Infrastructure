@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
