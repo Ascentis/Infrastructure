@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
@@ -11,12 +12,14 @@ using Ascentis.Infrastructure.DataPipeline;
 namespace Ascentis.Infrastructure.DataReplicator.Generic
 {
     [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    public abstract class DataReplicator<TTargetCmd, TTargetConn, TTargetAdapter, TDataPipeline> : IDisposable
+    public abstract class DataReplicator<TTargetCmd, TTargetConn, TTargetAdapter, TDataPipeline, TSourceAdapter> : IDisposable
         where TTargetCmd : DbCommand
         where TTargetConn : DbConnection
         where TTargetAdapter : TargetAdapterSql
         where TDataPipeline : DataPipeline<PoolEntry<object[]>>, new()
+        where TSourceAdapter : SourceAdapterSqlBase
     {
+        public enum ReplicateModes {TruncateAndPump, DropTableAndPump, PumpOnly}
         public const int DefaultParallelismLevel = 2;
 
         private bool _prepared;
@@ -29,10 +32,11 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         private TTargetConn[] _targetConnections;
         private BoundedParallel _parallelRunner;
 
+        public ReplicateModes ReplicateMode {get; set; }
         public int ParallelismLevel { get; set; }
         public ColumnMetadataList[] ColumnMetadataLists { get; private set; }
         public bool UseTransaction { get; set; }
-        public bool ForceDropTable { get; set; }
+
         public bool UseNativeTypeConvertor { get; set; }
         public bool LiteralParamBinding { get; set; }
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
@@ -96,9 +100,23 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                 _readers[index].Close();
         }
 
-        public virtual void Prepare<TSrcCmd, TSrcConn>() 
-            where TSrcCmd : DbCommand
-            where TSrcConn : DbConnection
+        private delegate DbCommand BuildCommandDelegate(string sqlStatement, DbConnection connection);
+        private BuildCommandDelegate _buildCommand;
+        private DbCommand BuildSourceCommand(string sqlStatement)
+        {
+            _buildCommand ??= GenericMethod.BuildMethodDelegate<BuildCommandDelegate, TSourceAdapter>("_BuildCommand");
+            return _buildCommand(sqlStatement, null);
+        }
+
+        private delegate DbConnection BuildConnectionDelegate(string connectionString);
+        private BuildConnectionDelegate _buildConnection;
+        private DbConnection BuildSourceConnection(string connectionString)
+        {
+            _buildConnection ??= GenericMethod.BuildMethodDelegate<BuildConnectionDelegate, TSourceAdapter>("_BuildConnection");
+            return _buildConnection(connectionString);
+        }
+
+        public virtual void Prepare()
         {
             if (_prepared)
                 throw new InvalidOperationException("DataReplicator already prepared.");
@@ -107,7 +125,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                 _sourceCmds = new List<DbCommand>();
                 foreach (var sqlStatement in _sourceTables)
                 {
-                    _sourceCmds.Add(sqlStatement.Item4 ?? GenericObjectBuilder.Build<TSrcCmd>(sqlStatement.Item2));
+                    _sourceCmds.Add(sqlStatement.Item4 ?? BuildSourceCommand(sqlStatement.Item2));
                     sqlStatement.Item4 = null;
                 }
 
@@ -124,7 +142,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     if (_sourceTables[i].Item4 != null)
                         _sourceConnections[i] = _sourceTables[i].Item4.Connection;
                     else
-                        _sourceConnections[i] = GenericObjectBuilder.Build<TSrcConn>(_sourceConnStr);
+                        _sourceConnections[i] = BuildSourceConnection(_sourceConnStr);
                     _sourceConnections[i].Open();
 
                     _sourceCmds[i].Connection = _sourceConnections[i];
@@ -159,7 +177,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             var tableName = _sourceTables[tableNumber].Item1;
             var customCommands = _sourceTables[tableNumber].Item3;
 
-            if (ForceDropTable || !TableExists(tableName, _targetConnections[tableNumber]))
+            if (ReplicateMode == ReplicateModes.DropTableAndPump || !TableExists(tableName, _targetConnections[tableNumber]))
             {
                 var dropTableStatement = BuildDropTableStatement(tableName);
                 using var dropTableCmd = GenericObjectBuilder.Build<TTargetCmd>(dropTableStatement, _targetConnections[tableNumber]);
@@ -178,7 +196,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     customCommand.ExecuteNonQuery();
                 }
             }
-            else
+            else if (ReplicateMode == ReplicateModes.TruncateAndPump)
             {
                 using var truncateTableCmd = GenericObjectBuilder.Build<TTargetCmd>(BuildTruncateTableStatement(tableName), _targetConnections[tableNumber]);
                 truncateTableCmd.ExecuteNonQuery();
@@ -187,8 +205,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
 
         protected virtual void ConfigureTargetConnection(TTargetConn connection, int columnCount, int batchSize) {}
         
-        public virtual void Replicate<TSourceAdapter>(int readBufferSize, int insertBatchSize) 
-            where TSourceAdapter : SourceAdapterSqlBase
+        public virtual void Replicate(int readBufferSize, int insertBatchSize)
         {
             if (!_prepared)
                 throw new InvalidOperationException("DataReplicator not prepared. Can't run.");
