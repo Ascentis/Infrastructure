@@ -30,7 +30,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
-            _sqlBuilder = new IClassSqlBuilder(GetType());
+            _sqlBuilder = this;
         }
 
         protected SourceAdapterSqlBase(DbDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }

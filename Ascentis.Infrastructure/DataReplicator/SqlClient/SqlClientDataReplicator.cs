@@ -11,8 +11,8 @@ using Ascentis.Infrastructure.DataReplicator.Generic;
 namespace Ascentis.Infrastructure.DataReplicator.SqlClient
 {
     // ReSharper disable once InconsistentNaming
-    public class SqlClientDataReplicator<TSourceAdapter> : DataReplicator
-        <SqlCommand, SqlConnection, SqlClientAdapterBulkInsert, SqlClientDataPipeline, TSourceAdapter>
+    public class SqlClientDataReplicator<TSourceAdapter> : 
+        DataReplicator<SqlCommand, SqlConnection, SqlClientAdapterBulkInsert, SqlClientDataPipeline, TSourceAdapter>
         where TSourceAdapter : SourceAdapterSqlBase
     {
         private readonly IDictionary<Type, string> _typeToExprMap;
@@ -44,8 +44,7 @@ namespace Ascentis.Infrastructure.DataReplicator.SqlClient
 
         protected override string BuildDropTableStatement(string tableName)
         {
-            return @$"IF OBJECT_ID('dbo.{tableName}', 'U') IS NOT NULL 
-                        DROP TABLE dbo.{tableName};";
+            return @$"IF OBJECT_ID('dbo.{tableName}', 'U') IS NOT NULL DROP TABLE dbo.{tableName};";
         }
 
         protected override string BuildCreateTableStatement(string tableName, ColumnMetadataList metadatas)

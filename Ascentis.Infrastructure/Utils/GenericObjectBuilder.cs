@@ -68,9 +68,13 @@ namespace Ascentis.Infrastructure
 
         public static T Build<T>(Type[] paramTypes, params object[] args)
         {
-            var type = typeof(T);
-            var constructor = GetConstructor(type, paramTypes);
-            return (T) constructor(args);
+            return (T) Build(typeof(T), paramTypes, args);
+        }
+
+        public static object Build(Type targetType, Type[] paramTypes, params object[] args)
+        {
+            var constructor = GetConstructor(targetType, paramTypes);
+            return constructor(args);
         }
 
         public static ConstructorDelegate<T> Builder<T>(params Type[] paramTypes)

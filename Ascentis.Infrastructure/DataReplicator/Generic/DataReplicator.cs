@@ -105,7 +105,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                 throw new InvalidOperationException("DataReplicator already prepared.");
             try
             {
-                var sqlBuilder = new IClassSqlBuilder(typeof(TSourceAdapter));
+                var sqlBuilder = (IClassSqlBuilder)typeof(TSourceAdapter);
                 _sourceCmds = new List<DbCommand>();
                 foreach (var sqlStatement in _sourceTables)
                 {

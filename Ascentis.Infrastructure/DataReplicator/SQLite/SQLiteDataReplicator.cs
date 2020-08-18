@@ -12,8 +12,8 @@ using Ascentis.Infrastructure.DataReplicator.Generic;
 namespace Ascentis.Infrastructure.DataReplicator.SQLite
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteDataReplicator<TSourceAdapter> : DataReplicator
-        <SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline, TSourceAdapter>
+    public class SQLiteDataReplicator<TSourceAdapter> : 
+        DataReplicator<SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline, TSourceAdapter>
         where TSourceAdapter : SourceAdapterSqlBase
     {
         private readonly IDictionary<Type, string> _typeToExprMap;
