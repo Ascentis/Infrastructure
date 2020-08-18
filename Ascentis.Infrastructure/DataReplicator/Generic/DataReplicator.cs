@@ -99,32 +99,17 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                 _readers[index].Close();
         }
 
-        private delegate DbCommand BuildCommandDelegate(string sqlStatement, DbConnection connection);
-        private BuildCommandDelegate _buildCommand;
-        private DbCommand BuildSourceCommand(string sqlStatement)
-        {
-            _buildCommand ??= GenericMethod.BuildMethodDelegate<BuildCommandDelegate, TSourceAdapter>("_BuildCommand");
-            return _buildCommand(sqlStatement, null);
-        }
-
-        private delegate DbConnection BuildConnectionDelegate(string connectionString);
-        private BuildConnectionDelegate _buildConnection;
-        private DbConnection BuildSourceConnection(string connectionString)
-        {
-            _buildConnection ??= GenericMethod.BuildMethodDelegate<BuildConnectionDelegate, TSourceAdapter>("_BuildConnection");
-            return _buildConnection(connectionString);
-        }
-
         public virtual void Prepare()
         {
             if (_prepared)
                 throw new InvalidOperationException("DataReplicator already prepared.");
             try
             {
+                var sqlBuilder = new IClassSqlBuilder(typeof(TSourceAdapter));
                 _sourceCmds = new List<DbCommand>();
                 foreach (var sqlStatement in _sourceTables)
                 {
-                    _sourceCmds.Add(sqlStatement.Item4 ?? BuildSourceCommand(sqlStatement.Item2));
+                    _sourceCmds.Add(sqlStatement.Item4 ?? sqlBuilder.BuildCommand(sqlStatement.Item2, null));
                     sqlStatement.Item4 = null;
                 }
 
@@ -141,7 +126,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     if (_sourceTables[i].Item4 != null)
                         _sourceConnections[i] = _sourceTables[i].Item4.Connection;
                     else
-                        _sourceConnections[i] = BuildSourceConnection(_sourceConnStr);
+                        _sourceConnections[i] = sqlBuilder.BuildConnection(_sourceConnStr);
                     _sourceConnections[i].Open();
 
                     _sourceCmds[i].Connection = _sourceConnections[i];

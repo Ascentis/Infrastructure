@@ -66,6 +66,7 @@
     <Compile Include="DataPipeline\IAdapter.cs" />
     <Compile Include="DataPipeline\ITargetAdapter.cs" />
     <Compile Include="DataPipeline\JoinerDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\IClassSqlBuilder.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SourceAdapterSqlBase.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\Generic\SqlDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteDataPipeline.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Patterns\WritableTuple\WritableTuple3.cs" />
     <Compile Include="Patterns\WritableTuple\WritableTuple5.cs" />
     <Compile Include="Patterns\WritableTuple\WritableTuple4.cs" />
+    <Compile Include="Utils\ClassInterface.cs" />
     <Compile Include="Utils\Disposer.cs" />
     <Compile Include="Utils\EnumerableForEachExtension.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Text\DelimitedTextTargetAdapter.cs" />

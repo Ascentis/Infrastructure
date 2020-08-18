@@ -18,6 +18,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         private DbConnection _connection;
         private DbCommand _command;
         private bool _ownsReader;
+        private readonly IClassSqlBuilder _sqlBuilder;
 
         public override int RowsPoolSize
         {
@@ -29,6 +30,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
         {
             _sqlDataReader = sqlDataReader;
             _rowsPool = new Pool<object[]>(rowsPoolCapacity, pool => pool.NewPoolEntry(new object[_sqlDataReader.FieldCount], ParallelLevel));
+            _sqlBuilder = new IClassSqlBuilder(GetType());
         }
 
         protected SourceAdapterSqlBase(DbDataReader sqlDataReader) : this(sqlDataReader, DefaultRowsCapacity) { }
@@ -62,18 +64,15 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
 
         public override int FieldCount => _sqlDataReader.FieldCount;
 
-        protected abstract DbConnection BuildConnection(string connectionString);
-        protected abstract DbCommand BuildCommand(string sqlCommandText, DbConnection connection);
-
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public override void Prepare()
         {
             base.Prepare();
             if (_sqlDataReader == null)
             {
-                _connection = BuildConnection(_connectionString);
+                _connection = _sqlBuilder.BuildConnection(_connectionString);
                 _connection.Open();
-                _command = BuildCommand(_sqlCommandText, _connection);
+                _command = _sqlBuilder.BuildCommand(_sqlCommandText, _connection);
                 _sqlDataReader = _command.ExecuteReader();
                 _ownsReader = true;
             }

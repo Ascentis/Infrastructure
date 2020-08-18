@@ -18,26 +18,14 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite
             string connectionString,
             string sqlCommandText) : this(connectionString, sqlCommandText, DefaultRowsCapacity) { }
 
-        protected override DbConnection BuildConnection(string connectionString)
-        {
-            return _BuildConnection(connectionString);
-        }
-
-        protected override DbCommand BuildCommand(string sqlCommandText, DbConnection connection)
-        {
-            return _BuildCommand(sqlCommandText, connection);
-        }
-
-        #region Methods used dynamically from DataReplicator to build connection and commands
-        private static DbConnection _BuildConnection(string connectionString)
+        public static DbConnection BuildConnection(string connectionString)
         {
             return new SQLiteConnection(connectionString);
         }
 
-        private static DbCommand _BuildCommand(string sqlCommandText, DbConnection connection)
+        public static DbCommand BuildCommand(string sqlCommandText, DbConnection connection)
         {
             return new SQLiteCommand(sqlCommandText, (SQLiteConnection)connection);
         }
-        #endregion
     }
 }

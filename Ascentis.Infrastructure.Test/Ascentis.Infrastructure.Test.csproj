@@ -69,6 +69,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
+    <Compile Include="UnitTestClassInterface.cs" />
     <Compile Include="UnitTestDataPipelineAssertExtension.cs" />
     <Compile Include="UnitTestDataReplicator.cs" />
     <Compile Include="UnitTestDbConnectionExtensions.cs" />
