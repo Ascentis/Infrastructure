@@ -150,9 +150,8 @@
     <Compile Include="Utils\SolidComPlus.cs" />
     <Compile Include="Threading\TLSAccessor.cs" />
     <Compile Include="Utils\Sql\Base\DbConnectionExtensions.cs" />
+    <Compile Include="Utils\Sql\Base\DbCommandExtensions.cs" />
     <Compile Include="Utils\Sql\SqlClient\SqlConnectionExtensions.cs" />
-    <Compile Include="Utils\Sql\SqlClient\SqlCommandExtensions.cs" />
-    <Compile Include="Utils\Sql\SQLite\SQLiteCommandExtensions.cs" />
     <Compile Include="Utils\Sql\SQLite\SQLiteTypeMappings.cs" />
     <Compile Include="Utils\Sql\SQLite\TypeToSQLiteDbType.cs" />
     <Compile Include="Utils\TypeAndTypeArrayTupleEqualityComparer.cs" />

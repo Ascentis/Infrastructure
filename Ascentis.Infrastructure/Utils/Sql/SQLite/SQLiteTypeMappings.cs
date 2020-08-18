@@ -8,8 +8,12 @@ namespace Ascentis.Infrastructure
     // ReSharper disable once InconsistentNaming
     public class SQLiteTypeMappings
     {
+        private static bool _initialized;
+
         public static void InitAutoMapper()
         {
+            if (_initialized)
+                return;
             SQLiteConnection.Changed += (sender, args) =>
             {
                 if (args.EventType != SQLiteConnectionEventType.Opened)
@@ -17,6 +21,7 @@ namespace Ascentis.Infrastructure
                 if (sender is SQLiteConnection connection)
                     AddTypeMappings(connection);
             };
+            _initialized = true;
         }
 
         private static readonly Tuple<string, DbType>[] TypeMappings =
