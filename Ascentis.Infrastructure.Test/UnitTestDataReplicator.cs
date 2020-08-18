@@ -56,7 +56,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestReadMetadata()
         {
-            using var replicator = new SQLiteDataReplicator(
+            using var replicator = new SQLiteDataReplicator<SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString,
                 SQLiteConnectionString) {ParallelismLevel = 2};
             replicator.AddSourceTable("", SelectVersionAsSqlServerVersion);
@@ -65,7 +65,7 @@ namespace Ascentis.Infrastructure.Test
             replicator.AddSourceTable("", SelectVersionAsSqlServerVersion);
             replicator.AddSourceTable("", SelectVersionAsSqlServerVersion);
             replicator.AddSourceTable("", SelectVersionAsSqlServerVersion);
-            replicator.Prepare<SqlCommand, SqlConnection>();
+            replicator.Prepare();
             Assert.AreEqual(6, replicator.ColumnMetadataLists.Length);
             foreach (var metaList in replicator.ColumnMetadataLists)
             {
@@ -80,7 +80,7 @@ namespace Ascentis.Infrastructure.Test
         {
             using var baseConn = new SQLiteConnection(SQLiteConnectionString);
             baseConn.Open();
-            using var replicator = new SQLiteDataReplicator(
+            using var replicator = new SQLiteDataReplicator<SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString,
                 SQLiteConnectionString)
             { ParallelismLevel = 2 };
@@ -92,9 +92,9 @@ namespace Ascentis.Infrastructure.Test
             replicator.AddSourceTable(SelectTop10000FromPmLogOrderByIid);
             replicator.AddSourceTable(SelectTop10000FromAuditlogOrderByIid);
             replicator.AddSourceTable(SelectTop10000FromApprovprOrderByIid);
-            replicator.ForceDropTable = true;
-            replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
+            replicator.ReplicateMode = SQLiteDataReplicator<SqlClientSourceAdapter>.ReplicateModes.DropTableAndPump;
+            replicator.Prepare();
+            replicator.Replicate(1000, 1);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectFromSitesOrderByIid,
@@ -124,7 +124,7 @@ namespace Ascentis.Infrastructure.Test
         {
             var srcConnStr = Settings.Default.SqlConnectionString;
 
-            using var replicator = new SQLiteDataReplicator(srcConnStr, SQLiteConnectionString)
+            using var replicator = new SQLiteDataReplicator<SqlClientSourceAdapter>(srcConnStr, SQLiteConnectionString)
             { ParallelismLevel = 2 };
             replicator.AddSourceTable(TableNameSITES, SelectFromSitesOrderByIid);
             replicator.AddSourceTable(TableNameTIME, SelectTop1000FromTimeOrderByIid);
@@ -139,7 +139,7 @@ namespace Ascentis.Infrastructure.Test
             replicator.AddSourceTable(TableNamePM_LOG, pmLogCmd); // Here we Add a command to the list of tables. command could be created with extension method CreateBulkQueryCommand
             replicator.AddSourceTable(TableNameAUDITLOG, SelectTop1000FromAuditlogOrderByIid);
             replicator.AddSourceTable(TableNameAPPROVPR, SelectTop1000FromApprovprOrderByIid);
-            replicator.Prepare<SqlCommand, SqlConnection>();
+            replicator.Prepare();
             Assert.AreEqual(8, replicator.SourceCommandCount);
             for (var i = 0; i < 5; i++)
             {
@@ -148,7 +148,7 @@ namespace Ascentis.Infrastructure.Test
                 replicator.CloseReader(1);
                 var cmd = ((SqlConnection) replicator.SourceConnections[1]).CreateBulkQueryCommand("SELECT TOP 10 * FROM TIME WHERE IID IN (@@@Params) ORDER BY IID", new object[] { i + 18});
                 replicator.SourceCommand[1] = cmd; // Every loop we can replace the source command with a new one linked to the new dataset we intend to replicate
-                replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
+                replicator.Replicate(1000, 1);
                 Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
                     Settings.Default.SqlConnectionString, SelectFromSitesOrderByIid,
                     SQLiteConnectionString, SelectFromSitesOrderByIid);
@@ -183,15 +183,15 @@ namespace Ascentis.Infrastructure.Test
         {
             using var baseConn = new SQLiteConnection(SQLiteConnectionString);
             baseConn.Open();
-            using var replicator = new SQLiteDataReplicator(
+            using var replicator = new SQLiteDataReplicator<SqlClientSourceAdapter>(
                     Settings.Default.SqlConnectionString2ndDatabase,
                     SQLiteConnectionString)
             { ParallelismLevel = 2 };
             replicator.AddSourceTable(TableNameSITES, SelectFromSitesOrderByIid);
             replicator.UseTransaction = false;
-            replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.ForceDropTable = true;
-            replicator.Replicate<SqlClientSourceAdapter>(1000, 1);
+            replicator.Prepare();
+            replicator.ReplicateMode = SQLiteDataReplicator<SqlClientSourceAdapter>.ReplicateModes.DropTableAndPump;
+            replicator.Replicate(1000, 1);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SQLiteSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectFromSitesOrderByIid,
@@ -202,15 +202,15 @@ namespace Ascentis.Infrastructure.Test
         // ReSharper disable once InconsistentNaming
         public void TestBasicReplicateMSSQLToMSSQL()
         {
-            using var replicator = new SqlClientDataReplicator(
+            using var replicator = new SqlClientDataReplicator<SqlClientSourceAdapter>(
                     Settings.Default.SqlConnectionString,
                     Settings.Default.SqlConnectionString2ndDatabase)
             { ParallelismLevel = 2 };
             replicator.AddSourceTable(SelectTop1000FromTimeOrderByIid);
             replicator.UseTransaction = true;
-            replicator.ForceDropTable = true;
-            replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.Replicate<SqlClientSourceAdapter>(3000, SqlClientAdapterBulkInsert.MaxPossibleBatchSize);
+            replicator.ReplicateMode = SqlClientDataReplicator<SqlClientSourceAdapter>.ReplicateModes.DropTableAndPump;
+            replicator.Prepare();
+            replicator.Replicate(3000, SqlClientAdapterBulkInsert.MaxPossibleBatchSize);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,
@@ -221,16 +221,16 @@ namespace Ascentis.Infrastructure.Test
         // ReSharper disable once InconsistentNaming
         public void TestBasicReplicateMSSQLToMSSQLUsingLiteralParameterBinding()
         {
-            using var replicator = new SqlClientDataReplicator(
+            using var replicator = new SqlClientDataReplicator<SqlClientSourceAdapter>(
                     Settings.Default.SqlConnectionString,
                     Settings.Default.SqlConnectionString2ndDatabase)
             { ParallelismLevel = 2 };
             replicator.AddSourceTable(SelectTop1000FromTimeOrderByIid);
             replicator.UseTransaction = true;
-            replicator.ForceDropTable = true;
+            replicator.ReplicateMode = SqlClientDataReplicator<SqlClientSourceAdapter>.ReplicateModes.DropTableAndPump;
             replicator.LiteralParamBinding = true;
-            replicator.Prepare<SqlCommand, SqlConnection>();
-            replicator.Replicate<SqlClientSourceAdapter>(3000, 50);
+            replicator.Prepare();
+            replicator.Replicate(3000, 50);
             replicator.UnPrepare();
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,

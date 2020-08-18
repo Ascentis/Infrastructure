@@ -1,10 +1,11 @@
 ﻿using System.Data.Common;
 using System.Data.SQLite;
+using System.Diagnostics.CodeAnalysis;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite
 {
-    // ReSharper disable once InconsistentNaming
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class SQLiteSourceAdapter : SourceAdapterSqlBase
     {
         public SQLiteSourceAdapter(SQLiteDataReader sqlDataReader, int rowsPoolCapacity) : base(sqlDataReader, rowsPoolCapacity) { }
@@ -19,12 +20,24 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite
 
         protected override DbConnection BuildConnection(string connectionString)
         {
-            return new SQLiteConnection(connectionString);
+            return _BuildConnection(connectionString);
         }
 
         protected override DbCommand BuildCommand(string sqlCommandText, DbConnection connection)
         {
+            return _BuildCommand(sqlCommandText, connection);
+        }
+
+        #region Methods used dynamically from DataReplicator to build connection and commands
+        private static DbConnection _BuildConnection(string connectionString)
+        {
+            return new SQLiteConnection(connectionString);
+        }
+
+        private static DbCommand _BuildCommand(string sqlCommandText, DbConnection connection)
+        {
             return new SQLiteCommand(sqlCommandText, (SQLiteConnection)connection);
         }
+        #endregion
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SQLite;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
@@ -11,7 +12,9 @@ using Ascentis.Infrastructure.DataReplicator.Generic;
 namespace Ascentis.Infrastructure.DataReplicator.SQLite
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteDataReplicator : DataReplicator<SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline>
+    public class SQLiteDataReplicator<TSourceAdapter> : DataReplicator
+        <SQLiteCommand, SQLiteConnection, SQLiteAdapterBulkInsert, SQLiteDataPipeline, TSourceAdapter>
+        where TSourceAdapter : SourceAdapterSqlBase
     {
         private readonly IDictionary<Type, string> _typeToExprMap;
 

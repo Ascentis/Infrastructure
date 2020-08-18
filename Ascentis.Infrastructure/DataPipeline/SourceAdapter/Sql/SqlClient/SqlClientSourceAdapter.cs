@@ -7,7 +7,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient
 {
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
     public class SqlClientSourceAdapter : SourceAdapterSqlBase
-    {
+    { 
         public SqlClientSourceAdapter(SqlDataReader sqlDataReader, int rowsPoolCapacity) : base(sqlDataReader, rowsPoolCapacity) { }
         public SqlClientSourceAdapter(SqlDataReader sqlDataReader) : base(sqlDataReader) { } 
         public SqlClientSourceAdapter(
@@ -20,12 +20,24 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient
 
         protected override DbConnection BuildConnection(string connectionString)
         {
+            return _BuildConnection(connectionString);
+        }
+
+        protected override  DbCommand BuildCommand(string sqlCommandText, DbConnection connection)
+        {
+            return _BuildCommand(sqlCommandText, (SqlConnection)connection);
+        }
+
+        #region Methods used dynamically from DataReplicator to build connection and commands
+        private static DbConnection _BuildConnection(string connectionString)
+        {
             return new SqlConnection(connectionString);
         }
 
-        protected override DbCommand BuildCommand(string sqlCommandText, DbConnection connection)
+        private static DbCommand _BuildCommand(string sqlCommandText, DbConnection connection)
         {
             return new SqlCommand(sqlCommandText, (SqlConnection)connection);
         }
+        #endregion
     }
 }
