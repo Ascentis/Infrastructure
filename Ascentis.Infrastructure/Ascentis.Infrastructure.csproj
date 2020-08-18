@@ -139,6 +139,7 @@
     <Compile Include="Patterns\Concurrent\ConcurrentObjectAccessor.cs" />
     <Compile Include="Patterns\Concurrent\ConcurrentIncrementableResettableInt.cs" />
     <Compile Include="Utils\Except.cs" />
+    <Compile Include="Utils\GenericMethod.cs" />
     <Compile Include="Utils\GenericObjectBuilder.cs" />
     <Compile Include="Patterns\Misc\Resettable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
