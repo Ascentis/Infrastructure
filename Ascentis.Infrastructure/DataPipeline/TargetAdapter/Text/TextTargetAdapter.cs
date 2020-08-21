@@ -47,7 +47,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
         protected string ColumnFormatString(int index)
         {
-            return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
+            return ColumnFormatStrings != null && !string.IsNullOrEmpty(ColumnFormatStrings[index]) ? ":" + ColumnFormatStrings[index] : "";
         }
 
         private void BuildDefaultColumnFormatStrings(ISourceAdapter<PoolEntry<object[]>> source)
@@ -57,10 +57,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var meta in source.ColumnMetadatas)
             {
-                if (meta.DataType == typeof(decimal))
-                    ColumnFormatStrings[index++] = "#." + new string('#', meta.NumericScale ?? DefaultNumericScale);
-                else
-                    index++;
+                if (meta.DataType == typeof(decimal) && (meta.NumericScale ?? 0) != 0)
+                    ColumnFormatStrings[index] = "0." + new string('#', meta.NumericScale ?? DefaultNumericScale);
+                index++;
             }
         }
 
@@ -70,7 +69,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 
             if (ColumnFormatStrings != null && ColumnFormatStrings.Length != Source.FieldCount)
                 throw new DataPipelineException("When ColumnFormatStrings is provided its length must match result set field count");
-
+            
             if (ColumnFormatStrings == null)
                 BuildDefaultColumnFormatStrings(source);
         }
