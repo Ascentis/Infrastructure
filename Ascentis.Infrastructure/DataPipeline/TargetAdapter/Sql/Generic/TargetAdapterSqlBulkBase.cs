@@ -90,6 +90,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         protected void BuildSqlCommand(int rowCount, ref TCmd sqlCommand)
         {
             DisposeAndNullify(ref sqlCommand);
+            if (rowCount <= 0)
+                return;
             var sqlCommandText = BuildBulkSql(Rows);
             sqlCommand = CmdBuilder(sqlCommandText, Conn, Tran);
             if (!LiteralParamBinding)
@@ -163,6 +165,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         protected void InternalFlush()
         {
+            if (Rows.Count <= 0)
+                return;
             BindParameters();
             Cmd.ExecuteNonQuery();
             if (LiteralParamBinding)

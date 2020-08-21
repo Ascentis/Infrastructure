@@ -79,7 +79,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
 
             if (ColumnMetadatas != null)
                 return;
-            base.ColumnMetadatas = new ColumnMetadataList(_sqlDataReader);
+            base.ColumnMetadatas = new ColumnMetadataListFromDbReader(_sqlDataReader);
         }
 
         public override void UnPrepare()

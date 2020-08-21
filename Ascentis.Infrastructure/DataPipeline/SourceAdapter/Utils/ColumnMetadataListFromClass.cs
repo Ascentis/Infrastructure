@@ -2,6 +2,10 @@
 {
     public class ColumnMetadataList<T> : ColumnMetadataList
     {
+        public const int DefaultStringColumnSize = 255;
+        public const int DefaultDecimalPrecision = 20;
+        public const int DefaultDecimalScale = 7;
+
         public ColumnMetadataList()
         {
             foreach (var prop in typeof(T).GetProperties())
@@ -12,11 +16,11 @@
                     ColumnName = prop.Name
                 };
                 if (prop.PropertyType == typeof(string))
-                    meta.ColumnSize = 255;
+                    meta.ColumnSize = DefaultStringColumnSize;
                 else if (prop.PropertyType == typeof(decimal))
                 {
-                    meta.NumericPrecision = 17;
-                    meta.NumericScale = 7;
+                    meta.NumericPrecision = DefaultDecimalPrecision;
+                    meta.NumericScale = DefaultDecimalScale;
                 }
                 Add(meta);
             }

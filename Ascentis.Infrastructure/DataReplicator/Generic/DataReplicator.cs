@@ -133,7 +133,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
                     var reader = _sourceCmds[i].ExecuteReader();
                     _readers[i] = reader;
 
-                    ColumnMetadataLists[i] = new ColumnMetadataList(reader);
+                    ColumnMetadataLists[i] = new ColumnMetadataListFromDbReader(reader);
 
                     _targetConnections[i] = GenericObjectBuilder.Build<TTargetConn>(_targetConnStr);
                     _targetConnections[i].Open();

@@ -76,12 +76,28 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
             }
         }
 
-        internal void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        public PoolEntry<object[]> AcquireEntry()
+        {
+            return _rowsPool.Acquire();
+        }
+
+        public void WaitPrepared()
         {
             _preparedEvent.Wait();
-            var entry = _rowsPool.Acquire();
-            entry.OnReleaseOne += onReleaseOne;
+        }
+
+        public void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        {
+            WaitPrepared();
+            var entry = AcquireEntry();
             entry.Value = obj;
+            Insert(entry, onReleaseOne);
+        }
+
+        public void Insert(PoolEntry<object[]> entry, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        {
+            WaitPrepared();
+            entry.OnReleaseOne += onReleaseOne;
             _dataQueue.Enqueue(entry);
             _dataAvailable.Set();
         }

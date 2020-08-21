@@ -11,79 +11,104 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
     {
         private BlockingQueueSourceAdapter _blockingQueueSourceAdapter;
         private readonly ManualResetEventSlim _startedRunning;
-
+        
         public BlockingQueueDataPipeline() 
         {
             _startedRunning = new ManualResetEventSlim(false);
         }
 
-        private void WaitForPumpStart()
+        private void WaitForPumpStartAndSourceAdapterPrepared()
         {
             _startedRunning.Wait();
             if (_blockingQueueSourceAdapter == null)
                 throw new InvalidOperationException("Can't call BlockingQueueDataPipeline.Insert(). Pump is not running");
+            _blockingQueueSourceAdapter.WaitPrepared();
         }
 
-        private void Insert(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        #region Insert sync
+        private void InsertArray(object[] obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
-            WaitForPumpStart();
+            WaitForPumpStartAndSourceAdapterPrepared();
             _blockingQueueSourceAdapter.Insert(obj, onReleaseOne);
         }
 
-        public void Insert(object[] obj)
+        private void InsertSingle(object obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
-            Insert(obj, null);
+            WaitForPumpStartAndSourceAdapterPrepared();
+            var entry = _blockingQueueSourceAdapter.AcquireEntry();
+            entry.Value = SerializerObjectToValues.ObjectToValuesArray(obj, entry.Value);
+            _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
         }
 
-        public void Insert(IEnumerable<object[]> objs)
+        private void InsertGeneric<T>(T obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
-            foreach (var obj in objs)
-                Insert(obj);
+            switch (obj)
+            {
+                case IEnumerable<T> genericObjects:
+                    foreach (var genericObject in genericObjects)
+                        InsertGeneric(genericObject, onReleaseOne);
+                    return;
+                case IEnumerable<object[]> objectArrayEnumerable:
+                    foreach (var objArray in objectArrayEnumerable)
+                        InsertArray(objArray, onReleaseOne);
+                    return;
+                case object[] objArray:
+                    InsertArray(objArray, onReleaseOne);
+                    return;
+                case IEnumerable<object> objects:
+                    foreach (var aObj in objects)
+                        InsertSingle(aObj, onReleaseOne);
+                    return;
+                default:
+                    WaitForPumpStartAndSourceAdapterPrepared();
+                    var entry = _blockingQueueSourceAdapter.AcquireEntry();
+                    entry.Value = SerializerObjectToValues<T>.ObjectToValuesArray(obj, entry.Value);
+                    _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
+                    return;
+            }
         }
 
-        public void Insert(object obj)
+        public void Insert<T>(T obj)
         {
-            Insert(SerializerObjectToValuesArray.ObjectToValuesArray(obj), null);
+            InsertGeneric(obj, null);
         }
+        #endregion
 
-        public void Insert(IEnumerable<object> objs)
+        #region Insert async
+        private Task InsertAsyncGeneric<T>(ICollection<T> objs)
         {
-            foreach (var obj in objs)
-                Insert(obj);
-        }
-
-        public Task InsertAsync(object[] obj)
-        {
-            IEnumerable<object[]> objs = new [] { obj };
-            return InsertAsync(objs);
-        }
-
-        public Task InsertAsync(object obj)
-        {
-            return InsertAsync(SerializerObjectToValuesArray.ObjectToValuesArray(obj));
-        }
-
-        public Task InsertAsync(IEnumerable<object> objs)
-        {
-            return InsertAsync(objs.Select(SerializerObjectToValuesArray.ObjectToValuesArray).ToList());
-        }
-
-        public Task InsertAsync(IEnumerable<object[]> objs)
-        {
-            WaitForPumpStart();
-
-            var objsList = objs.ToList();
-            var objectsCount = objsList.Count;
+            var objectsCount = objs.Count;
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.None);
-            foreach (var obj in objsList)
-                Insert(obj, poolEntry =>
+            foreach (var obj in objs)
+            {
+                InsertGeneric(obj, poolEntry =>
                 {
                     if (Interlocked.Decrement(ref objectsCount) == 0)
                         tcs.SetResult(true);
                 });
+            }
 
             return tcs.Task;
         }
+
+        public Task InsertAsync<T>(T obj)
+        {
+            switch (obj)
+            {
+                case IEnumerable<T> genericObjects:
+                    return InsertAsyncGeneric(genericObjects.ToList());
+                case IEnumerable<object[]> objectArrayEnumerable:
+                    return InsertAsyncGeneric(objectArrayEnumerable.ToList());
+                case object[] objArray:
+                    return InsertAsyncGeneric(objArray);
+                case IEnumerable<object> objects:
+                    return InsertAsyncGeneric(objects.ToList());
+                default:
+                    ICollection<T> objs = new[] { obj };
+                    return InsertAsyncGeneric(objs);
+            }
+        }
+        #endregion
 
         public void Finish(bool wait, int timeout = -1)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
@@ -829,8 +828,41 @@ namespace Ascentis.Infrastructure.Test
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
             Assert.AreEqual("1,Hello,12.34\r\n2,Good bye,11.334\r\n5,truncate dec,11.1234568\r\n3,Final good bye,1332.8875\r\n", str);
         }
-        
+
+        [TestMethod]
+        public void TestBlockingQueueToCsvBasicUsingGenericSerializer()
+        {
+            var buf = new byte[1000];
+            var stream = new MemoryStream(buf);
+            var source = new BlockingQueueSourceAdapter { ColumnMetadatas = new ColumnMetadataList<SampleBusinessObject>() };
+            var pipeline = new BlockingQueueDataPipeline();
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new DelimitedTextTargetAdapter(stream))));
+            var objs = new List<object>
+            {
+                new SampleBusinessObject {IntValue = 1, StrValue = "Hello", DecValue = 12.34M},
+                new SampleBusinessObject {IntValue = 2, StrValue = "Good bye", DecValue = 11.334M},
+                new SampleBusinessObject {IntValue = 5, StrValue = "truncate dec", DecValue = 11.12345678M}
+            };
+            var lastBizObj = new SampleBusinessObject { IntValue = 3, StrValue = "Final good bye", DecValue = 1332.8875M };
+            pipeline.Insert(objs);
+            pipeline.Insert(lastBizObj);
+            IEnumerable<SampleBusinessObject> objsSpecific = new List<SampleBusinessObject>
+            {
+                new SampleBusinessObject {IntValue = 10, StrValue = "last", DecValue = 1.4M}
+            };
+            pipeline.Insert(objsSpecific);
+            pipeline.Finish(true);
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("1,Hello,12.34\r\n2,Good bye,11.334\r\n5,truncate dec,11.1234568\r\n3,Final good bye,1332.8875\r\n10,last,1.4\r\n", str);
+        }
+
         private ManualResetEventSlim _asyncMethodFinished;
+
+        public class TinyBizObject
+        {
+            public string StrProp { get; set; }
+            public int IntProp { get; set; }
+        }
 
         private async void TestManualToCsvBasicAsyncInternal(BlockingQueueDataPipeline pipeline)
         {
@@ -843,7 +875,7 @@ namespace Ascentis.Infrastructure.Test
             var stream = new MemoryStream(buf);
             var source = new BlockingQueueSourceAdapter
             {
-                ColumnMetadatas = new ColumnMetadataList()
+                ColumnMetadatas = new ColumnMetadataList
                 {
                     new ColumnMetadata
                     {
@@ -891,8 +923,10 @@ namespace Ascentis.Infrastructure.Test
                 new object []{ "WKHT", 0 }
             };
             await pipeline.InsertAsync(entries);
+            var tinyObj = new TinyBizObject {IntProp = 1, StrProp = "WWWW"};
+            await pipeline.InsertAsync(tinyObj);
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
-            Assert.AreEqual("WKHR,0\r\nWKHT,0\r\n", str);
+            Assert.AreEqual("WKHR,0\r\nWKHT,0\r\nWWWW,1\r\n", str);
             if (flushCalled && waitForDataTimeout)
                 _asyncMethodFinished.Set();
         }
@@ -903,7 +937,7 @@ namespace Ascentis.Infrastructure.Test
             _asyncMethodFinished = new ManualResetEventSlim(false);
             var pipeline = new BlockingQueueDataPipeline {AbortOnTargetAdapterException = true};
             TestManualToCsvBasicAsyncInternal(pipeline);
-            Assert.IsTrue(_asyncMethodFinished.Wait(2000));
+            Assert.IsTrue(_asyncMethodFinished.Wait(3000));
             pipeline.Finish(true);
         }
 

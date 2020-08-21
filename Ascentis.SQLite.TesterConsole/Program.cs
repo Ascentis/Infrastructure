@@ -5,56 +5,44 @@ using System.Data.Common;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Threading;
+using Ascentis.Infrastructure;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.SQLite.TesterConsole
 {
+    class BizObject
+    {
+        public int IntValue { get; set; }
+    }
+
     class Program
     {
+        delegate int GetIntDelegate(BizObject obj);
         static void Main()
         {
             try
             {
-                // mode=memory
-                // "Data Source=c:\\inmemorydb.db;cache=shared;synchronous=Off;New=True;"
-                //using var conn = new SQLiteConnection("Data Source=inmemorydb.db;New=True;");
+                var obj = new BizObject();
+                var pool = new Pool<BizObject>(int.MaxValue, p => new PoolEntry<BizObject>(obj));
+
                 var stopwatch = new Stopwatch();
+                var slot = Thread.AllocateDataSlot();
+                Thread.SetData(slot, new object[]{obj});
+                BizObject v = obj;
                 stopwatch.Start();
-                for (var i = 0; i < 4000; i++)
+                for (var i = 0; i < 1000000; i++)
                 {
-                    using var conn = new SQLiteConnection("FullUri=file::memory:?cache=shared;");
-                    conn.Open();
-                   // conn.Close();
+                    var entry = pool.Acquire();
+                    v = entry.Value;
+                    pool.Release(entry);
+                    //var arr = (object[]) Thread.GetData(slot);
+                    //var arr = new object[] {obj};
+                    //v = (BizObject)arr[0];
                 }
                 stopwatch.Stop();
                 
                 Console.WriteLine(stopwatch.ElapsedMilliseconds);
-
-                /*using var createTbl = new SQLiteCommand("CREATE TABLE TEST (F TEXT)", conn);
-                createTbl.ExecuteNonQuery();
-                conn.Close();
-                conn.Dispose();*/
-                using var conn2 = new SQLiteConnection("FullUri=file::memory:?cache=shared;");
-                conn2.Open();
-                using var q = new SQLiteCommand("SELECT tbl_name FROM sqlite_master WHERE type='table'", conn2);
-                using var reader = q.ExecuteReader();
-                var metadata = new ColumnMetadataList(reader);
-                foreach (var meta in metadata)
-                {
-                    Console.Write("{0} ", meta.ColumnName);
-                }
-
-                Console.WriteLine();
-                var row = new object[reader.FieldCount];
-                while (true)
-                {
-                    if (!reader.Read())
-                        break;
-                    reader.GetValues(row);
-                    foreach (var value in row)
-                        Console.Write("{0} ", value);
-                    Console.WriteLine();
-                }
+                Console.WriteLine(v.IntValue);
 
                 Console.ReadLine();
             }
