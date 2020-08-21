@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Data.Common;
 using System.Data.SQLite;
+using System.Diagnostics;
+using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.SQLite.TesterConsole
@@ -13,12 +18,22 @@ namespace Ascentis.SQLite.TesterConsole
                 // mode=memory
                 // "Data Source=c:\\inmemorydb.db;cache=shared;synchronous=Off;New=True;"
                 //using var conn = new SQLiteConnection("Data Source=inmemorydb.db;New=True;");
-                var conn = new SQLiteConnection("FullUri=file::memory:?cache=shared;");
-                conn.Open();
-                using var createTbl = new SQLiteCommand("CREATE TABLE TEST (F TEXT)", conn);
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                for (var i = 0; i < 4000; i++)
+                {
+                    using var conn = new SQLiteConnection("FullUri=file::memory:?cache=shared;");
+                    conn.Open();
+                   // conn.Close();
+                }
+                stopwatch.Stop();
+                
+                Console.WriteLine(stopwatch.ElapsedMilliseconds);
+
+                /*using var createTbl = new SQLiteCommand("CREATE TABLE TEST (F TEXT)", conn);
                 createTbl.ExecuteNonQuery();
                 conn.Close();
-                conn.Dispose();
+                conn.Dispose();*/
                 using var conn2 = new SQLiteConnection("FullUri=file::memory:?cache=shared;");
                 conn2.Open();
                 using var q = new SQLiteCommand("SELECT tbl_name FROM sqlite_master WHERE type='table'", conn2);
@@ -41,7 +56,7 @@ namespace Ascentis.SQLite.TesterConsole
                     Console.WriteLine();
                 }
 
-                //Console.ReadLine();
+                Console.ReadLine();
             }
             catch (Exception e)
             {

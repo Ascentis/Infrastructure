@@ -17,5 +17,6 @@ namespace Ascentis.Infrastructure.DataPipeline
         int ParallelLevel { get; set; }
         Dictionary<string, int> MetadatasColumnToIndexMap { get; }
         int RowsPoolSize { get; }
+        public IEnumerable<string> ColumnNames();
     }
 }

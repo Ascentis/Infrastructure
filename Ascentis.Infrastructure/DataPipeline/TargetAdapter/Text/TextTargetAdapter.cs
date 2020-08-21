@@ -10,6 +10,9 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
 {
     public class TextTargetAdapter : TargetAdapter<PoolEntry<object[]>>
     {
+        // ReSharper disable once InconsistentNaming
+        private const int _DefaultNumericScale = 7;
+
         protected Stream Target { get; }
         protected string FormatString { get; set; }
         protected byte[] WriteBuffer { get; set; }
@@ -17,6 +20,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
         public string[] ColumnFormatStrings { get; set; }
         public Encoding OutputEncoding { get; set; } = Encoding.UTF8;
         public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
+        public int DefaultNumericScale { get; set; } = _DefaultNumericScale;
 
         public TextTargetAdapter(Stream target)
         {
@@ -46,12 +50,29 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text
             return ColumnFormatStrings != null && ColumnFormatStrings[index] != "" ? ":" + ColumnFormatStrings[index] : "";
         }
 
+        private void BuildDefaultColumnFormatStrings(ISourceAdapter<PoolEntry<object[]>> source)
+        {
+            ColumnFormatStrings = new string [source.ColumnMetadatas.Count];
+            var index = 0;
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var meta in source.ColumnMetadatas)
+            {
+                if (meta.DataType == typeof(decimal))
+                    ColumnFormatStrings[index++] = "#." + new string('#', meta.NumericScale ?? DefaultNumericScale);
+                else
+                    index++;
+            }
+        }
+
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
             base.Prepare(source);
 
             if (ColumnFormatStrings != null && ColumnFormatStrings.Length != Source.FieldCount)
                 throw new DataPipelineException("When ColumnFormatStrings is provided its length must match result set field count");
+
+            if (ColumnFormatStrings == null)
+                BuildDefaultColumnFormatStrings(source);
         }
 
         public override void Process(PoolEntry<object[]> row)

@@ -59,5 +59,14 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
         }
 
         public int Id { get; set; }
+
+        public virtual IEnumerable<string> ColumnNames()
+        {
+            if (ColumnMetadatas == null)
+                throw new InvalidOperationException("ColumnMetadatas is null trying to enumerate column names");
+
+            foreach (var meta in ColumnMetadatas)
+                yield return meta.ColumnName;
+        }
     }
 }

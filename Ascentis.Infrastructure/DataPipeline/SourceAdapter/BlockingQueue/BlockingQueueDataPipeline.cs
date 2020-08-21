@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
 {
     public class BlockingQueueDataPipeline : DataPipeline<PoolEntry<object[]>>
     {
@@ -40,10 +41,31 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
                 Insert(obj);
         }
 
+        public void Insert(object obj)
+        {
+            Insert(SerializerObjectToValuesArray.ObjectToValuesArray(obj), null);
+        }
+
+        public void Insert(IEnumerable<object> objs)
+        {
+            foreach (var obj in objs)
+                Insert(obj);
+        }
+
         public Task InsertAsync(object[] obj)
         {
             IEnumerable<object[]> objs = new [] { obj };
             return InsertAsync(objs);
+        }
+
+        public Task InsertAsync(object obj)
+        {
+            return InsertAsync(SerializerObjectToValuesArray.ObjectToValuesArray(obj));
+        }
+
+        public Task InsertAsync(IEnumerable<object> objs)
+        {
+            return InsertAsync(objs.Select(SerializerObjectToValuesArray.ObjectToValuesArray).ToList());
         }
 
         public Task InsertAsync(IEnumerable<object[]> objs)

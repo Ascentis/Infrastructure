@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
@@ -701,7 +702,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestSqlToBulkSqlCompositeInsertAndUpdate()
+        public void TestSqlToBulkSqlCommandUpdate()
         {
             using var cmd = new SqlCommand(@"SELECT TOP 20000 CEMPID, CPAYTYPE FROM TIME ORDER BY CEMPID", _conn);
             using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString);
@@ -726,15 +727,57 @@ namespace Ascentis.Infrastructure.Test
                     SELECT CEMPID, CPAYTYPE
                 FROM (
                     /*<DATA>*/
-                    SELECT 99993 CEMPID, '1' CPAYTYPE
-                    UNION ALL
-                    SELECT 99999, '2'
+                    SELECT SOME DATA
                     /*</DATA>*/) SRC
                     ) SRC ON
                 T.CEMPID = SRC.CEMPID";
             var adapter1 = new SqlClientAdapterBulkCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
             var adapter2 = new SqlClientAdapterBulkCommand(compositeSql, new[] {"CEMPID", "CPAYTYPE"}, targetConn2, 200) {AbortOnProcessException = true, UseTakeSemantics = true};
             pipeline2.Pump(cmd2, new [] {adapter1, adapter2}, 2000);
+        }
+
+        [TestMethod]
+        public void TestSqlToBulkSqlCommandInsert()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 10000 * FROM TIME ORDER BY IID", _conn);
+
+            using var targetConn = new SqlConnection(Settings.Default.SqlConnectionString2ndDatabase);
+            targetConn.Open();
+
+            using var truncateCmd = new SqlCommand("TRUNCATE TABLE TIME", targetConn);
+            truncateCmd.ExecuteNonQuery();
+
+            using var targetConn2 = new SqlConnection(Settings.Default.SqlConnectionString2ndDatabase);
+            targetConn2.Open();
+            var tran2 = targetConn2.BeginTransaction();
+
+            using var targetConn3 = new SqlConnection(Settings.Default.SqlConnectionString2ndDatabase);
+            targetConn3.Open();
+            var tran3 = targetConn3.BeginTransaction();
+
+            var tran = targetConn.BeginTransaction();
+
+            var pipeline2 = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            
+            const string insertSql = "INSERT INTO TIME SELECT * FROM(@@@Params) SRC";
+
+            var adapter1 = new SqlClientAdapterBulkCommand(insertSql, pipeline2.SourceColumnNames(), targetConn, 1) { AbortOnProcessException = true, UseTakeSemantics = true };
+            var adapter2 = new SqlClientAdapterBulkCommand(insertSql, pipeline2.SourceColumnNames(), targetConn2, 1) { AbortOnProcessException = true, UseTakeSemantics = true };
+            var adapter3 = new SqlClientAdapterBulkCommand(insertSql, pipeline2.SourceColumnNames(), targetConn3, 1) { AbortOnProcessException = true, UseTakeSemantics = true };
+
+            adapter1.Transaction = tran;
+            adapter2.Transaction = tran2;
+            adapter3.Transaction = tran3;
+
+            pipeline2.Pump(cmd, new[] { adapter1, adapter2, adapter3 }, 1000);
+
+            tran.Commit();
+            tran2.Commit();
+            tran3.Commit();
+
+            Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
+                Settings.Default.SqlConnectionString, "SELECT TOP 10000 * FROM TIME ORDER BY IID",
+                Settings.Default.SqlConnectionString2ndDatabase, "SELECT * FROM TIME ORDER BY IID");
         }
 
         [TestMethod]
@@ -759,6 +802,35 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual("WKHR,0\r\nWKHR,0\r\n", str);
         }
 
+        public class SampleBusinessObject
+        {
+            public int IntValue { get; set; }
+            public string StrValue { get; set; }
+            public decimal DecValue { get; set; }
+        }
+
+        [TestMethod]
+        public void TestBlockingQueueToCsvBasic()
+        {
+            var buf = new byte[1000];
+            var stream = new MemoryStream(buf);
+            var source = new BlockingQueueSourceAdapter {ColumnMetadatas = new ColumnMetadataList<SampleBusinessObject>()};
+            var pipeline = new BlockingQueueDataPipeline();
+            Assert.IsTrue(ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, new DelimitedTextTargetAdapter(stream))));
+            var objs = new List<object>
+            {
+                new SampleBusinessObject {IntValue = 1, StrValue = "Hello", DecValue = 12.34M},
+                new SampleBusinessObject {IntValue = 2, StrValue = "Good bye", DecValue = 11.334M},
+                new SampleBusinessObject {IntValue = 5, StrValue = "truncate dec", DecValue = 11.12345678M}
+            };
+            var lastBizObj = new SampleBusinessObject {IntValue = 3, StrValue = "Final good bye", DecValue = 1332.8875M};
+            pipeline.Insert(objs);
+            pipeline.Insert(lastBizObj);
+            pipeline.Finish(true);
+            var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
+            Assert.AreEqual("1,Hello,12.34\r\n2,Good bye,11.334\r\n5,truncate dec,11.1234568\r\n3,Final good bye,1332.8875\r\n", str);
+        }
+        
         private ManualResetEventSlim _asyncMethodFinished;
 
         private async void TestManualToCsvBasicAsyncInternal(BlockingQueueDataPipeline pipeline)
@@ -864,7 +936,7 @@ namespace Ascentis.Infrastructure.Test
             cmd.CommandText = "CREATE TABLE TIME_BASE (CPCODE_EXP TEXT, NPAYCODE TEXT)";
             cmd.ExecuteNonQuery();
 
-            using var sourceCmd = new SqlCommand("SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP", _conn);
+            using var sourceCmd = new SqlCommand("SELECT TOP 10000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP", _conn);
             var targetAdapter = new SQLiteAdapterBulkInsert("TIME_BASE", new[] {"CPCODE_EXP", "NPAYCODE"}, conn, 1000) {AbortOnProcessException = true};
             var pipeline = new SqlClientDataPipeline();
             pipeline.Pump(sourceCmd, targetAdapter, 5000);
@@ -885,8 +957,8 @@ namespace Ascentis.Infrastructure.Test
             };
             backPipeline.Pump(sqlLiteSrc, targets, 2000);
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
-                Settings.Default.SqlConnectionString, "SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP",
-                Settings.Default.SqlConnectionString, "SELECT TOP 100000 CPCODE_EXP, NPAYCODE FROM TIME_BASE ORDER BY CPCODE_EXP");
+                Settings.Default.SqlConnectionString, "SELECT TOP 10000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP",
+                Settings.Default.SqlConnectionString, "SELECT TOP 10000 CPCODE_EXP, NPAYCODE FROM TIME_BASE ORDER BY CPCODE_EXP");
         }
     }
 }

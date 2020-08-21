@@ -1,4 +1,4 @@
-﻿using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
+﻿using Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable once CheckNamespace

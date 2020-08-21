@@ -73,11 +73,13 @@
     <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadata.cs" />
     <Compile Include="DataPipeline\ISourceAdapter.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueDataPipeline.cs" />
-    <Compile Include="DataPipeline\SourceAdapter\Manual\BlockingQueueSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\BlockingQueue\BlockingQueueDataPipeline.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\BlockingQueue\BlockingQueueSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Generic\SourceAdapterGeneric.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Base\SourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataList.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromClass.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Utils\SerializerObjectToValuesArray.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\TypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientDataPipeline.cs" />

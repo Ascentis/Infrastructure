@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.DataReplicator.Generic;
 using Ascentis.Infrastructure.DataReplicator.SqlClient;
 using Ascentis.Infrastructure.DataReplicator.SQLite;
 using Ascentis.Infrastructure.Test.Properties;
@@ -29,6 +30,7 @@ namespace Ascentis.Infrastructure.Test
         private const string SelectTop10000FromApprovprOrderByIid = "SELECT TOP 10000 * FROM APPROVPR ORDER BY IID";
         private const string SelectVersionAsSqlServerVersion = "SELECT @@VERSION AS 'SQL Server Version'";
         private const string SelectTop1000FromTimeOrderByIid = "SELECT TOP 1000 * FROM TIME ORDER BY IID";
+        private const string SelectTop1000FromPayrollOrderByIid = "SELECT TOP 1000 * FROM PAYROLL ORDER BY IID";
         private const string SelectTop1000FromATimesheetOrderBySeq = "SELECT TOP 1000 * FROM A_TIMESHEET ORDER BY SEQ";
         private const string SelectTop1000FromAScheduleOrderBySeq = "SELECT TOP 1000 * FROM A_SCHEDULE ORDER BY SEQ";
         private const string SelectTop1000FromPmDistOrderByIid = "SELECT TOP 1000 * FROM PM_DIST ORDER BY IID";
@@ -46,6 +48,7 @@ namespace Ascentis.Infrastructure.Test
         private const string TableNameAPPROVPR = "APPROVPR";
 
         private const string SelectAllFromTimeOrderByIid = "SELECT * FROM TIME ORDER BY IID";
+        private const string SelectAllFromPayrollOrderByIid = "SELECT * FROM PAYROLL ORDER BY IID";
         private const string SelectAllFromAScheduleOrderBySeq = "SELECT * FROM A_SCHEDULE ORDER BY SEQ";
         private const string SelectAllFromPmDistOrderByIid = "SELECT * FROM PM_DIST ORDER BY IID";
         private const string SelectAllFromPmLogOrderByIid = "SELECT * FROM PM_LOG ORDER BY IID";
@@ -200,7 +203,7 @@ namespace Ascentis.Infrastructure.Test
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void TestBasicReplicateMSSQLToMSSQL()
+        public void TestBasicReplicateMSSQLToMSSQLTimeTable()
         {
             using var replicator = new SqlClientDataReplicator<SqlClientSourceAdapter>(
                     Settings.Default.SqlConnectionString,
@@ -215,6 +218,25 @@ namespace Ascentis.Infrastructure.Test
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,
                 Settings.Default.SqlConnectionString2ndDatabase, SelectAllFromTimeOrderByIid);
+        }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestBasicReplicateMSSQLToMSSQLPayrollTable()
+        {
+            using var replicator = new SqlClientDataReplicator<SqlClientSourceAdapter>(
+                    Settings.Default.SqlConnectionString,
+                    Settings.Default.SqlConnectionString2ndDatabase)
+            { ParallelismLevel = 2 };
+            replicator.AddSourceTable(SelectTop1000FromPayrollOrderByIid);
+            replicator.UseTransaction = true;
+            replicator.ReplicateMode = SqlClientDataReplicator<SqlClientSourceAdapter>.ReplicateModes.TruncateAndPump;
+            replicator.Prepare();
+            replicator.Replicate(3000, /*SqlClientAdapterBulkInsert.MaxPossibleBatchSize*/10);
+            replicator.UnPrepare();
+            Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
+                Settings.Default.SqlConnectionString, SelectTop1000FromPayrollOrderByIid,
+                Settings.Default.SqlConnectionString2ndDatabase, SelectAllFromPayrollOrderByIid);
         }
 
         [TestMethod]

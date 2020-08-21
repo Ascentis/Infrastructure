@@ -23,6 +23,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         public bool AbortOnSourceAdapterException { get; set; }
         public bool AbortOnTargetAdapterException { get; set; }
         protected ManualResetEvent FinishedEvent { get; }
+        protected ISourceAdapter<TRow> CurrentSourceAdapter { get; private set; }
 
         public DataPipeline()
         {
@@ -67,6 +68,7 @@ namespace Ascentis.Infrastructure.DataPipeline
         public virtual void Pump(ISourceAdapter<TRow> sourceAdapter,
             IEnumerable<ITargetAdapter<TRow>> targetAdapters)
         {
+            using var resetCurrentSourceAdapter = new Resettable<ISourceAdapter<TRow>>(CurrentSourceAdapter = sourceAdapter, adapter => CurrentSourceAdapter = null);
             using var setEventFinished = new Resettable<ManualResetEvent>(FinishedEvent, evt => evt.Set());
             SetupAndHealthCheckAdapters(sourceAdapter, targetAdapters, out var targetAdaptersCount);
 
@@ -108,6 +110,18 @@ namespace Ascentis.Infrastructure.DataPipeline
                 targetAdapters.ForEach(adapter => adapter.AbortedWithException(e));
                 throw;
             }
+        }
+
+        public virtual IEnumerable<string> SourceColumnNames()
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            /* DO NOT CONVERT this to LINQ expression. This method needs yield to work. We need to lazily
+               wait for CurrentSourceAdapter to be initialized when Pump() is called */
+            if (CurrentSourceAdapter == null)
+                throw new InvalidOperationException(
+                    "Can't use ColumnNames() iterator unless Pump() has been called and CurrentSourceAdapter initialized");
+            foreach (var columnName in CurrentSourceAdapter.ColumnNames())
+                yield return columnName;
         }
     }
 }

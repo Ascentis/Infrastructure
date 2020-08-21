@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using Ascentis.Infrastructure.DataPipeline;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual;
+using Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;

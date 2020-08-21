@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 /*
@@ -23,17 +27,34 @@ using System.Reflection;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
+    [SuppressMessage("ReSharper", "ConvertToLambdaExpression")]
     public class ClassInterface
     {
+        private static readonly ConcurrentDictionary<Tuple<Type, string>, Delegate> StaticMethodDelegatesCache;
+        private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> ClassInterfaceDelegatePropertiesCache;
+
+        static ClassInterface()
+        {
+            StaticMethodDelegatesCache = new ConcurrentDictionary<Tuple<Type, string>, Delegate>();
+            ClassInterfaceDelegatePropertiesCache = new ConcurrentDictionary<Type, List<PropertyInfo>>();
+        }
+
         public ClassInterface(Type targetType)
         {
             const BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy;
 
-            foreach (var prop in GetType().GetProperties())
+            var properties = ClassInterfaceDelegatePropertiesCache.GetOrAdd(GetType(), 
+                type =>
             {
-                if (!typeof(Delegate).IsAssignableFrom(prop.PropertyType))
-                    continue;
-                var method = GenericMethod.BuildMethodDelegate(prop.Name, targetType, prop.PropertyType, bindingFlags);
+                return type.GetProperties().Where(prop => typeof(Delegate).IsAssignableFrom(prop.PropertyType)).ToList();
+            });
+            foreach (var prop in properties)
+            {
+                var method = StaticMethodDelegatesCache.GetOrAdd(new Tuple<Type, string>(targetType, prop.Name), 
+                    cacheKey =>
+                {
+                    return GenericMethod.BuildMethodDelegate(cacheKey.Item2, cacheKey.Item1, prop.PropertyType, bindingFlags);
+                });
                 prop.SetValue(this, method);
             }
         }

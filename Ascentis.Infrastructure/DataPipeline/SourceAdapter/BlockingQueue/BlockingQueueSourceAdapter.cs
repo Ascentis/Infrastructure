@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Generic;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Manual
+namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
 {
     public class BlockingQueueSourceAdapter : SourceAdapter<PoolEntry<object[]>>
     {
