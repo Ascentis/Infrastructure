@@ -98,6 +98,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
                     catch (Exception e)
                     {
                         InvokeRowReadErrorEvent(s, e);
+                        ReleaseRow(values);
                         if (AbortOnReadException)
                             throw;
                         continue;
