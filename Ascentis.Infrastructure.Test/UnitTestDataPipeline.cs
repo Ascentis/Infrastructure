@@ -324,12 +324,11 @@ namespace Ascentis.Infrastructure.Test
         // ReSharper disable once InconsistentNaming
         public void TestSqlToFixedStreamToFile1MMRowsAndToCsv()
         {
-
             using var cmd = new SqlCommand("SELECT TOP 1000000 CPCODE_EXP, NPAYCODE, DWORKDATE, NRATE FROM TIME", _conn);
             using var fileStream = new FileStream("T:\\dump.txt", FileMode.Create, FileAccess.ReadWrite);
             //using var stream = new BufferedStream(fileStream, 1024 * 1024);
             var pipeline = new SqlClientDataPipeline();
-            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(fileStream) {FieldSizes = new []{40, 40, 20, 20}});
+            pipeline.Pump(cmd, new FixedLengthTextTargetAdapter(fileStream) {FieldSizes = new [] {40, 40, 20, 20}});
             fileStream.Close();
             using var fileStreamSource = new FileStream("T:\\dump.txt", FileMode.Open, FileAccess.Read);
             using var fileSourceReader = new StreamReader(fileStreamSource);
