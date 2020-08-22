@@ -4,13 +4,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
 {
     public class BlockingQueueDataPipeline : DataPipeline<PoolEntry<object[]>>
     {
+        public delegate void FlushEventDelegate(IAdapter targetAdapter);
+
+        public event FlushEventDelegate BeforeFlushEvent;
+        public event FlushEventDelegate AfterFlushEvent;
+
         private BlockingQueueSourceAdapter _blockingQueueSourceAdapter;
         private readonly ManualResetEventSlim _startedRunning;
+        private static readonly object FlushSignal = new object[1];
         
         public BlockingQueueDataPipeline() 
         {
@@ -32,37 +39,19 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
             _blockingQueueSourceAdapter.Insert(obj, onReleaseOne);
         }
 
-        private void InsertSingle(object obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
-        {
-            WaitForPumpStartAndSourceAdapterPrepared();
-            var entry = _blockingQueueSourceAdapter.AcquireEntry();
-            entry.Value = SerializerObjectToValues.ObjectToValuesArray(obj, entry.Value);
-            _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
-        }
-
         private void InsertGeneric<T>(T obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
         {
             switch (obj)
             {
-                case IEnumerable<T> genericObjects:
-                    foreach (var genericObject in genericObjects)
-                        InsertGeneric(genericObject, onReleaseOne);
-                    return;
-                case IEnumerable<object[]> objectArrayEnumerable:
-                    foreach (var objArray in objectArrayEnumerable)
-                        InsertArray(objArray, onReleaseOne);
-                    return;
                 case object[] objArray:
                     InsertArray(objArray, onReleaseOne);
-                    return;
-                case IEnumerable<object> objects:
-                    foreach (var aObj in objects)
-                        InsertSingle(aObj, onReleaseOne);
                     return;
                 default:
                     WaitForPumpStartAndSourceAdapterPrepared();
                     var entry = _blockingQueueSourceAdapter.AcquireEntry();
-                    entry.Value = SerializerObjectToValues<T>.ObjectToValuesArray(obj, entry.Value);
+                    entry.Value = typeof(T) == typeof(object) 
+                        ? SerializerObjectToValues.ObjectToValuesArray(obj, entry.Value) 
+                        : SerializerObjectToValues<T>.ObjectToValuesArray(obj, entry.Value);
                     _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
                     return;
             }
@@ -70,7 +59,29 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
 
         public void Insert<T>(T obj)
         {
-            InsertGeneric(obj, null);
+            switch (obj)
+            {
+                case object[] objArray:
+                    InsertGeneric(objArray, null);
+                    return;
+                case IEnumerable<object[]> objectArrayEnumerable:
+                    foreach (var objArray in objectArrayEnumerable)
+                        InsertGeneric(objArray, null);
+                    return;
+                case IEnumerable<object> objects:
+                    foreach (var aObj in objects)
+                        InsertGeneric(aObj, null);
+                    return;
+                default:
+                    InsertGeneric(obj, null);
+                    return;
+            }
+        }
+
+        public void Insert<T>(IEnumerable<T> objs)
+        {
+            foreach (var obj in objs)
+                InsertGeneric(obj, null);
         }
         #endregion
 
@@ -95,20 +106,25 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
         {
             switch (obj)
             {
-                case IEnumerable<T> genericObjects:
-                    return InsertAsyncGeneric(genericObjects.ToList());
-                case IEnumerable<object[]> objectArrayEnumerable:
-                    return InsertAsyncGeneric(objectArrayEnumerable.ToList());
                 case object[] objArray:
                     return InsertAsyncGeneric(objArray);
+                case IEnumerable<object[]> objectArrayEnumerable:
+                    return InsertAsyncGeneric(objectArrayEnumerable.ToList());
                 case IEnumerable<object> objects:
                     return InsertAsyncGeneric(objects.ToList());
+                case IEnumerable<T> genericObjects:
+                    return InsertAsyncGeneric(genericObjects.ToList());
                 default:
                     ICollection<T> objs = new[] { obj };
                     return InsertAsyncGeneric(objs);
             }
         }
         #endregion
+
+        public void InsertFlushEvent()
+        {
+            Insert(FlushSignal);
+        }
 
         public void Finish(bool wait, int timeout = -1)
         {
@@ -120,13 +136,33 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
                 FinishedEvent.WaitOne(timeout);
         }
 
+        private TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult AttemptFlush(IAdapter targetAdapter, PoolEntry<object[]> row)
+        {
+            if (row.Value != FlushSignal)
+                return TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult.Continue;
+            if (!(targetAdapter is ITargetAdapterFlushable flushable))
+                return TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult.Abort;
+            BeforeFlushEvent?.Invoke(targetAdapter);
+            flushable.Flush();
+            AfterFlushEvent?.Invoke(targetAdapter);
+            return TargetAdapter.Base.TargetAdapter.BeforeProcessRowResult.Abort;
+        }
+
         public override void Pump(ISourceAdapter<PoolEntry<object[]>> sourceAdapter,
             IEnumerable<ITargetAdapter<PoolEntry<object[]>>> targetAdapters)
         {
             _blockingQueueSourceAdapter = sourceAdapter as BlockingQueueSourceAdapter ?? 
                              throw new InvalidOperationException($"sourceAdapter must be of class {nameof(BlockingQueueSourceAdapter)}");
             _startedRunning.Set();
-            base.Pump(sourceAdapter, targetAdapters);
+            BeforeTargetAdapterProcessRow += AttemptFlush;
+            try
+            {
+                base.Pump(sourceAdapter, targetAdapters);
+            }
+            finally
+            {
+                BeforeTargetAdapterProcessRow -= AttemptFlush;
+            }
         }
     }
 }

@@ -125,7 +125,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             Rows.Add(row);
             
             InvokeAfterTargetAdapterProcessRowEvent(row);
-            
+
             if (Rows.Count >= BatchSize)
                 Flush();
         }

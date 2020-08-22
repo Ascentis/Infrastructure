@@ -1,6 +1,6 @@
 ﻿namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 {
-    public interface ITargetAdapterBulk
+    public interface ITargetAdapterFlushable
     {
         void Flush();
     }

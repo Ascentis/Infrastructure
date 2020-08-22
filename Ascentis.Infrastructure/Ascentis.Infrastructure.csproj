@@ -100,7 +100,7 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterBulkInsertBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBulkBase.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\TargetAdapterSqlBase.cs" />
-    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ITargetAdapterBulk.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Generic\ITargetAdapterFlushable.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\SqlClientAdapterBulkCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\ITargetAdapterSqlClient.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Generic\TargetAdapterGeneric.cs" />

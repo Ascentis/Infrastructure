@@ -8,7 +8,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
     public class SqlClientAdapterBulkCommand : 
         TargetAdapterSqlBulkBase<SqlCommand, SqlTransaction, SqlConnection>, 
-        ITargetAdapterBulk, 
+        ITargetAdapterFlushable, 
         ITargetAdapterSqlClient
     {
         public SqlClientAdapterBulkCommand(string sqlCommandText,

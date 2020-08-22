@@ -598,7 +598,7 @@ namespace Ascentis.Infrastructure.Test
                     Thread.SetData(CounterSlot, newData);
                     if (newData % 100 != 0)
                         return;
-                    var adapterBulk = (ITargetAdapterBulk) adapter;
+                    var adapterBulk = (ITargetAdapterFlushable) adapter;
                     adapterBulk.Flush();
                     var adapterBulkSqlClient = (ITargetAdapterSqlClient) adapterBulk;
                     adapterBulkSqlClient.Transaction.Commit();
@@ -851,9 +851,20 @@ namespace Ascentis.Infrastructure.Test
                 new SampleBusinessObject {IntValue = 10, StrValue = "last", DecValue = 1.4M}
             };
             pipeline.Insert(objsSpecific);
+            var objAsArray = new object[] {2, "one", 1};
+            pipeline.Insert(objAsArray);
+
+            IEnumerable<object[]> objAsArrayArray = new List<object[]> { objAsArray };
+            pipeline.Insert(objAsArrayArray);
+
+            IEnumerable<object> objsGeneric = new List<SampleBusinessObject>
+            {
+                new SampleBusinessObject {IntValue = 100, StrValue = "last last", DecValue = 1.5M}
+            };
+            pipeline.Insert(objsGeneric);
             pipeline.Finish(true);
             var str = Encoding.UTF8.GetString(buf, 0, (int)stream.Position);
-            Assert.AreEqual("1,Hello,12.34\r\n2,Good bye,11.334\r\n5,truncate dec,11.1234568\r\n3,Final good bye,1332.8875\r\n10,last,1.4\r\n", str);
+            Assert.AreEqual("1,Hello,12.34\r\n2,Good bye,11.334\r\n5,truncate dec,11.1234568\r\n3,Final good bye,1332.8875\r\n10,last,1.4\r\n2,one,1\r\n2,one,1\r\n100,last last,1.5\r\n", str);
         }
 
         private ManualResetEventSlim _asyncMethodFinished;
@@ -899,22 +910,12 @@ namespace Ascentis.Infrastructure.Test
                 new DelimitedTextTargetAdapter(stream)
             };
             var flushCalled = false;
-            var flushSignal = new object [0];
-            pipeline.BeforeTargetAdapterProcessRow += (targetAdapter, row) =>
-            {
-                if (row.Value != flushSignal) 
-                    return TargetAdapter.BeforeProcessRowResult.Continue;
-                if (!(targetAdapter is ITargetAdapterBulk bulk)) 
-                    return TargetAdapter.BeforeProcessRowResult.Abort;
-                flushCalled = true;
-                bulk.Flush();
-                return TargetAdapter.BeforeProcessRowResult.Abort;
-            };
             var waitForDataTimeout = false;
+            pipeline.AfterFlushEvent += adapter => flushCalled = true;
             source.OnWaitForDataTimeout += adapter =>
             {
                 waitForDataTimeout = true;
-                pipeline.Insert(flushSignal); // We need to Flush() in the target conveyor thread
+                pipeline.InsertFlushEvent(); // We need to Flush() in the target conveyor thread
             };
             ThreadPool.QueueUserWorkItem(obj => pipeline.Pump(source, targetAdapters));
             var entries = new List<object[]>

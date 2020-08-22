@@ -50,6 +50,18 @@ namespace Ascentis.Infrastructure.DataPipeline
             sourceAdapter.ParallelLevel = targetAdaptersCount;
         }
 
+        private void UnSetupAdapters(ISourceAdapter<TRow> sourceAdapter,
+            IEnumerable<ITargetAdapter<TRow>> targetAdapters)
+        {
+            sourceAdapter.OnSourceAdapterRowReadError -= OnSourceAdapterRowReadError;
+            foreach (var targetAdapter in targetAdapters)
+            {
+                targetAdapter.BeforeTargetAdapterProcessRow -= BeforeTargetAdapterProcessRow;
+                targetAdapter.AfterTargetAdapterProcessRow -= AfterTargetAdapterProcessRow;
+                targetAdapter.OnTargetAdapterRowProcessError -= OnTargetAdapterRowProcessError;
+            }
+        }
+
         private static void CheckDeadlockPotential(ISourceAdapter<TRow> sourceAdapter, IEnumerable<ITargetAdapter<TRow>> targetAdapters)
         {
             var totalTargetBufferSize = targetAdapters.Sum(targetAdapter => targetAdapter.BufferSize);
@@ -69,11 +81,12 @@ namespace Ascentis.Infrastructure.DataPipeline
             IEnumerable<ITargetAdapter<TRow>> targetAdapters)
         {
             using var resetCurrentSourceAdapter = new Resettable<ISourceAdapter<TRow>>(CurrentSourceAdapter = sourceAdapter, adapter => CurrentSourceAdapter = null);
-            using var setEventFinished = new Resettable<ManualResetEvent>(FinishedEvent, evt => evt.Set());
+            using var setEventFinishedResettable = new Resettable<ManualResetEvent>(FinishedEvent, evt => evt.Set());
             SetupAndHealthCheckAdapters(sourceAdapter, targetAdapters, out var targetAdaptersCount);
+            using var unSetupAdaptersResettable = new Resettable<object>(this, obj => UnSetupAdapters(sourceAdapter, targetAdapters));
 
             sourceAdapter.Prepare();
-            using var resettableSourceAdapter = new Resettable<ISourceAdapter<TRow>>(sourceAdapter, adapter => adapter.UnPrepare());
+            using var unPrepareSourceAdapterResettable = new Resettable<ISourceAdapter<TRow>>(sourceAdapter, adapter => adapter.UnPrepare());
 
             foreach (var targetAdapter in targetAdapters)
                 targetAdapter.Prepare(sourceAdapter);
