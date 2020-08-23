@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
+using Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer;
 
 namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
 {
@@ -50,8 +50,8 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
                     WaitForPumpStartAndSourceAdapterPrepared();
                     var entry = _blockingQueueSourceAdapter.AcquireEntry();
                     entry.Value = typeof(T) == typeof(object) 
-                        ? SerializerObjectToValues.ObjectToValuesArray(obj, entry.Value) 
-                        : SerializerObjectToValues<T>.ObjectToValuesArray(obj, entry.Value);
+                        ? Serializer<object>.ObjectToValuesArray(obj, entry.Value) 
+                        : Serializer<T>.ObjectToValuesArray(obj, entry.Value);
                     _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
                     return;
             }
