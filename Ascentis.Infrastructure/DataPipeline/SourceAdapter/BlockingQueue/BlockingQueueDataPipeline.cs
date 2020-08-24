@@ -39,7 +39,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
             _blockingQueueSourceAdapter.Insert(obj, onReleaseOne);
         }
 
-        private void InsertGeneric<T>(T obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne)
+        private void InsertGeneric<T>(T obj, PoolEntry<object[]>.PoolEntryDelegate onReleaseOne, Serializer<T> serializer)
         {
             switch (obj)
             {
@@ -49,44 +49,44 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
                 default:
                     WaitForPumpStartAndSourceAdapterPrepared();
                     var entry = _blockingQueueSourceAdapter.AcquireEntry();
-                    entry.Value = typeof(T) == typeof(object) 
-                        ? Serializer<object>.ObjectToValuesArray(obj, entry.Value) 
-                        : Serializer<T>.ObjectToValuesArray(obj, entry.Value);
+                    entry.Value = serializer?.ToValues(obj, entry.Value) ?? (typeof(T) == typeof(object) 
+                        ? Serializer<object>.ToValues(obj, entry.Value)
+                        : Serializer<T>.ToValues(obj, entry.Value));
                     _blockingQueueSourceAdapter.Insert(entry, onReleaseOne);
                     return;
             }
         }
 
-        public void Insert<T>(T obj)
+        public void Insert<T>(T obj, Serializer<T> serializer = null)
         {
             switch (obj)
             {
                 case object[] objArray:
-                    InsertGeneric(objArray, null);
+                    InsertGeneric(objArray, null, null);
                     return;
                 case IEnumerable<object[]> objectArrayEnumerable:
                     foreach (var objArray in objectArrayEnumerable)
-                        InsertGeneric(objArray, null);
+                        InsertGeneric(objArray, null, null);
                     return;
                 case IEnumerable<object> objects:
                     foreach (var aObj in objects)
-                        InsertGeneric(aObj, null);
+                        InsertGeneric(aObj, null, (Serializer<object>)serializer);
                     return;
                 default:
-                    InsertGeneric(obj, null);
+                    InsertGeneric(obj, null, serializer);
                     return;
             }
         }
 
-        public void Insert<T>(IEnumerable<T> objs)
+        public void Insert<T>(IEnumerable<T> objs, Serializer<T> serializer = null)
         {
             foreach (var obj in objs)
-                InsertGeneric(obj, null);
+                InsertGeneric(obj, null, serializer);
         }
         #endregion
 
         #region Insert async
-        private Task InsertAsyncGeneric<T>(ICollection<T> objs)
+        private Task InsertAsyncGeneric<T>(ICollection<T> objs, Serializer<T> serializer)
         {
             var objectsCount = objs.Count;
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.None);
@@ -96,27 +96,27 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue
                 {
                     if (Interlocked.Decrement(ref objectsCount) == 0)
                         tcs.SetResult(true);
-                });
+                }, serializer);
             }
 
             return tcs.Task;
         }
 
-        public Task InsertAsync<T>(T obj)
+        public Task InsertAsync<T>(T obj, Serializer<T> serializer = null)
         {
             switch (obj)
             {
                 case object[] objArray:
-                    return InsertAsyncGeneric(objArray);
+                    return InsertAsyncGeneric(objArray, null);
                 case IEnumerable<object[]> objectArrayEnumerable:
-                    return InsertAsyncGeneric(objectArrayEnumerable.ToList());
+                    return InsertAsyncGeneric(objectArrayEnumerable.ToList(), null);
                 case IEnumerable<object> objects:
-                    return InsertAsyncGeneric(objects.ToList());
+                    return InsertAsyncGeneric(objects.ToList(), (Serializer<object>)serializer);
                 case IEnumerable<T> genericObjects:
-                    return InsertAsyncGeneric(genericObjects.ToList());
+                    return InsertAsyncGeneric(genericObjects.ToList(), serializer);
                 default:
                     ICollection<T> objs = new[] { obj };
-                    return InsertAsyncGeneric(objs);
+                    return InsertAsyncGeneric(objs, serializer);
             }
         }
         #endregion

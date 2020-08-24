@@ -5,21 +5,22 @@ using System.Collections.Generic;
 
 namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 {
-    public class Serializer
+    internal class SerializerHelper
     {
-        protected delegate void MoveValueToArraySlotDelegate<in T>(object[] values, int index, T obj);
+        internal delegate void MoveValueToArraySlotDelegate<in T>(object[] values, int index, T obj);
+
         private static readonly ConcurrentDictionary<Type, List<MoveValueToArraySlotDelegate<object>>> PropertyMovers;
         private static readonly ConcurrentDictionary<Type, Dictionary<string, int>> Properties;
         private static readonly ConcurrentDictionary<Type, int[]> DefaultFieldMaps;
 
-        static Serializer()
+        static SerializerHelper()
         {
             PropertyMovers = new ConcurrentDictionary<Type, List<MoveValueToArraySlotDelegate<object>>>();
             DefaultFieldMaps = new ConcurrentDictionary<Type, int[]>();
             Properties = new ConcurrentDictionary<Type, Dictionary<string, int>>();
         }
 
-        protected static List<MoveValueToArraySlotDelegate<object>> GetPropertyMoversForObject(object obj)
+        internal static List<MoveValueToArraySlotDelegate<object>> GetPropertyMoversForObject(object obj)
         {
             var propertyMovers = PropertyMovers.GetOrAdd(obj.GetType(), type =>
             {
@@ -38,7 +39,7 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
             return propertyMovers;
         }
 
-        protected static int[] GetFieldMap(object obj)
+        internal static int[] GetFieldMapForObject(object obj)
         {
             var fieldMaps = DefaultFieldMaps.GetOrAdd(obj.GetType(), type =>
             {
@@ -51,7 +52,7 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
             return fieldMaps;
         }
 
-        protected static Dictionary<string, int> GetPropertiesForObject(object obj)
+        internal static Dictionary<string, int> GetPropertiesForObject(object obj)
         {
             var properties = Properties.GetOrAdd(obj.GetType(), type =>
             {

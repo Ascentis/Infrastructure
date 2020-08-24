@@ -68,6 +68,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="UnitTestBitArrayAsDictionaryKey.cs" />
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
     <Compile Include="UnitTestClassInterface.cs" />
     <Compile Include="UnitTestDataPipelineAssertExtension.cs" />

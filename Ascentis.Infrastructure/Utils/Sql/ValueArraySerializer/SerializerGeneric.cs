@@ -8,13 +8,14 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 {
     [SuppressMessage("ReSharper", "MethodOverloadWithOptionalParameter")]
     [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
-    public class Serializer<T> : Serializer
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    public class Serializer<T>
     {
-        private static readonly List<MoveValueToArraySlotDelegate<T>> PropertyMovers;
+        private static readonly List<SerializerHelper.MoveValueToArraySlotDelegate<T>> PropertyMovers;
         private static readonly IDictionary<string, int> FieldNames;
         private static readonly int[] DefaultMap;
 
-        private int _fieldsEnabledCount;
+        private int? _fieldsEnabledCount;
         private IOnOffArray _propertySerializationEnabledArray;
         
         private static void AddPropertyMover<TRet>(PropertyInfo prop)
@@ -27,7 +28,7 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
         {
             if (typeof(T) == typeof(object))
                 return;
-            PropertyMovers = new List<MoveValueToArraySlotDelegate<T>>();
+            PropertyMovers = new List<SerializerHelper.MoveValueToArraySlotDelegate<T>>();
             FieldNames = new Dictionary<string, int>();
             var idx = 0;
             foreach (var prop in typeof(T).GetProperties())
@@ -69,17 +70,23 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
                 if (value == _propertySerializationEnabledArray)
                     return;
                 _propertySerializationEnabledArray = value;
-
                 if (_propertySerializationEnabledArray == null)
                 {
-                    _fieldsEnabledCount = 0;
+                    _fieldsEnabledCount = null;
                     return;
                 }
-
-                for (var i = 0; i < _propertySerializationEnabledArray.Count; i++)
-                    if (_propertySerializationEnabledArray[i])
-                        _fieldsEnabledCount++;
+                _fieldsEnabledCount = _propertySerializationEnabledArray.Count -
+                                      _propertySerializationEnabledArray.DisabledCount;
             }
+        }
+
+        public static explicit operator Serializer<object>(Serializer<T> serializer)
+        {
+            if (serializer == null)
+                return null;
+            if (typeof(T) == typeof(object))
+                return (Serializer<object>)serializer;
+            throw new InvalidOperationException($"Can't convert from {serializer.GetType().Name} class to Serializer<object>");
         }
 
         private static void CheckNotBaseObject(string methodName)
@@ -88,13 +95,13 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
                 throw new InvalidOperationException($"Method {methodName} can't be used with base object type");
         }
 
-        public static IOnOffArray BuildFieldEnabledFlagArray()
+        public static IOnOffArray BuildFieldEnabledArray()
         {
-            CheckNotBaseObject("BuildFieldEnabledFlagArray");
+            CheckNotBaseObject("BuildFieldEnabledArray");
             return new OnOffArray(PropertyMovers.Count);
         }
 
-        public static IOnOffArray BuildFieldEnabledFlagArray(T obj)
+        public static IOnOffArray BuildFieldEnabledArray(T obj)
         {
             var propertyMovers = GetPropertyMovers(obj);
             return new OnOffArray(propertyMovers.Count);
@@ -110,7 +117,7 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 
         public static int IndexOfProperty(T obj, string name)
         {
-            var properties = GetPropertiesForObject(obj);
+            var properties = SerializerHelper.GetPropertiesForObject(obj);
             return properties[name];
         }
 
@@ -118,16 +125,16 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
         {
             var propertyMovers = typeof(T) != typeof(object)
                 ? PropertyMovers
-                : (ICollection) GetPropertyMoversForObject(obj);
+                : (ICollection) SerializerHelper.GetPropertyMoversForObject(obj);
             return propertyMovers;
         }
 
         private static int[] GetFieldMap(T obj, int[] map)
         {
-            return map ?? (typeof(T) != typeof(object) ? DefaultMap : GetFieldMap(obj));
+            return map ?? (typeof(T) != typeof(object) ? DefaultMap : SerializerHelper.GetFieldMapForObject(obj));
         }
 
-        private static int FieldsCount(T obj, IOnOffArray onOffsEnabled, int[] map)
+        private static int GetFieldCount(T obj, IOnOffArray onOffsEnabled, int[] map)
         {
             var count = 0;
             var index = 0;
@@ -142,8 +149,22 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
                     continue;
                 count++;
             }
-
+            
             return count;
+        }
+
+        public int FieldCount
+        {
+            get
+            {
+                CheckNotBaseObject("FieldCount");
+                return GetFieldCount(default, OnOffsEnabled, FieldMap);
+            }
+        }
+
+        public int GetFieldCount(T obj)
+        {
+            return GetFieldCount(default, OnOffsEnabled, FieldMap);
         }
 
         private static int[] BuildFieldMap(IDictionary<string, int> properties, ICollection<string> columnsMap)
@@ -170,55 +191,61 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 
         public static int[] BuildFieldMap(T obj, ICollection<string> columnsMap)
         {
-            return BuildFieldMap(GetPropertiesForObject(obj), columnsMap);
+            return BuildFieldMap(SerializerHelper.GetPropertiesForObject(obj), columnsMap);
         }
 
-        public object[] ObjectToValuesArray(T obj)
+        public object[] ToValues(T obj)
         {
-            var values = new object[_fieldsEnabledCount > 0 ? _fieldsEnabledCount : GetPropertyMovers(obj).Count];
-            ObjectToValuesArray(obj, values, _propertySerializationEnabledArray, FieldMap);
+            _fieldsEnabledCount ??= GetFieldCount(obj, OnOffsEnabled, FieldMap);
+            var values = new object[_fieldsEnabledCount ?? 0];
+            ToValues(obj, values, _propertySerializationEnabledArray, FieldMap);
 
             return values;
         }
 
-        public object[] ObjectToValuesArray(T obj, object[] values)
+        public object[] ToValues(T obj, object[] values)
         {
-            ObjectToValuesArray(obj, values, _propertySerializationEnabledArray, FieldMap);
+            ToValues(obj, values, _propertySerializationEnabledArray, FieldMap);
 
             return values;
         }
 
-        public static object[] ObjectToValuesArray(
+        public static object[] ToValues(
             T obj, 
             IOnOffArray onOffsEnabled = null, 
             int[] map = null)
         {
-            var values = new object[FieldsCount(obj, onOffsEnabled, map)];
-            ObjectToValuesArray(obj, values, onOffsEnabled, map);
+            var values = new object[GetFieldCount(obj, onOffsEnabled, map)];
+            ToValues(obj, values, onOffsEnabled, map);
 
             return values;
         }
 
-        public static object[] ObjectToValuesArray(
+        public static object[] ToValues(
             T obj, 
             object[] values, 
             IOnOffArray onOffsEnabled = null, 
             int[] map = null)
         {
+            if (onOffsEnabled != null && map != null)
+                throw new InvalidOperationException("Fields map and fields on/off feature are mutually exclusive");
             var sourceIndex = 0;
-            var targetIndex = 0;
             var indexMap = GetFieldMap(obj, map);
             var skipCount = 0;
-            values ??= new object[FieldsCount(obj, onOffsEnabled, indexMap)];
-            var propertyMovers = GetPropertyMovers(obj);
+            values ??= new object[GetFieldCount(obj, onOffsEnabled, indexMap)];
+            var propertyMovers = (IEnumerable<SerializerHelper.MoveValueToArraySlotDelegate<T>>)GetPropertyMovers(obj);
 
             foreach (var propMover in propertyMovers)
             {
-                if ((onOffsEnabled?[sourceIndex] ?? true) && indexMap[sourceIndex] >= 0)
-                    ((MoveValueToArraySlotDelegate<T>)propMover)(values, indexMap[sourceIndex] - skipCount, obj);
-                if (!(onOffsEnabled?[sourceIndex] ?? true))
+                var localSourceIndex = sourceIndex++;
+                if (!(onOffsEnabled?[localSourceIndex] ?? true))
+                {
                     skipCount++;
-                sourceIndex++;
+                    continue;
+                }
+
+                if (indexMap[localSourceIndex] >= 0)
+                    propMover(values, indexMap[localSourceIndex] - skipCount, obj);
             }
 
             return values;

@@ -82,8 +82,9 @@
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromDbReader.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\IOnOffArray.cs" />
+    <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArrayEqualityComparer.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\SerializerGeneric.cs" />
-    <Compile Include="Utils\Sql\ValueArraySerializer\Serializer.cs" />
+    <Compile Include="Utils\Sql\ValueArraySerializer\SerializerHelper.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\TypeSizeMap.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientDataPipeline.cs" />

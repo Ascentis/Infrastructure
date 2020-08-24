@@ -2,9 +2,11 @@
 
 namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 {
-    internal class OnOffArray : IOnOffArray
+    public class OnOffArray : IOnOffArray
     {
         private readonly BitArray _flags;
+
+        public int DisabledCount { get; private set; }
 
         public OnOffArray(int count)
         {
@@ -14,7 +16,17 @@ namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
         public bool this[int index]
         {
             get => _flags[index];
-            set => _flags[index] = value;
+            set
+            {
+                if (value == _flags[index])
+                    return;
+                if (!value)
+                    DisabledCount++;
+                else
+                    DisabledCount--;
+
+                _flags[index] = value;
+            }
         }
 
         public int Count => _flags.Count;

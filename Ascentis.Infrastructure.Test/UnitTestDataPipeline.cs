@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SQLite;
@@ -13,7 +14,6 @@ using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
@@ -23,6 +23,7 @@ using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
 using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
+using Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SQLiteCommand = System.Data.SQLite.SQLiteCommand;
 
@@ -844,13 +845,14 @@ namespace Ascentis.Infrastructure.Test
                 new SampleBusinessObject {IntValue = 5, StrValue = "truncate dec", DecValue = 11.12345678M}
             };
             var lastBizObj = new SampleBusinessObject { IntValue = 3, StrValue = "Final good bye", DecValue = 1332.8875M };
+            var serializer = new Serializer<SampleBusinessObject>();
             pipeline.Insert(objs);
-            pipeline.Insert(lastBizObj);
+            pipeline.Insert(lastBizObj, serializer);
             IEnumerable<SampleBusinessObject> objsSpecific = new List<SampleBusinessObject>
             {
                 new SampleBusinessObject {IntValue = 10, StrValue = "last", DecValue = 1.4M}
             };
-            pipeline.Insert(objsSpecific);
+            pipeline.Insert(objsSpecific, serializer);
             var objAsArray = new object[] {2, "one", 1};
             pipeline.Insert(objAsArray);
 

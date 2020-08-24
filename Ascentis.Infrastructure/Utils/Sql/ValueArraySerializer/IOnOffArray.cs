@@ -4,5 +4,6 @@
     {
         bool this[int index] { get; set; }
         int Count { get; }
+        int DisabledCount { get; }
     }
 }

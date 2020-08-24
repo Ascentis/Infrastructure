@@ -35,7 +35,7 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float) 1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var values = Serializer<BizObj>.ObjectToValuesArray(obj);
+            var values = Serializer<BizObj>.ToValues(obj);
             Assert.AreEqual(9, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -63,10 +63,10 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float)1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var fieldsToSerialize = Serializer<BizObj>.BuildFieldEnabledFlagArray();
+            var fieldsToSerialize = Serializer<BizObj>.BuildFieldEnabledArray();
             fieldsToSerialize[Serializer<BizObj>.IndexOfProperty("AStr")] = false;
             fieldsToSerialize[Serializer<BizObj>.IndexOfProperty("AFloat")] = false;
-            var values = Serializer<BizObj>.ObjectToValuesArray(obj, fieldsToSerialize);
+            var values = Serializer<BizObj>.ToValues(obj, fieldsToSerialize);
             Assert.AreEqual(7, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -93,7 +93,7 @@ namespace Ascentis.Infrastructure.Test
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
             var serializer = new Serializer<BizObj>();
-            var values = serializer.ObjectToValuesArray(obj);
+            var values = serializer.ToValues(obj);
             Assert.AreEqual(9, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -105,7 +105,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(obj.AFloat, values[7]);
             Assert.AreEqual(obj.ADateTimeOffset, values[8]);
             values = new object[9];
-            serializer.ObjectToValuesArray(obj, values);
+            serializer.ToValues(obj, values);
             Assert.AreEqual(9, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -133,11 +133,11 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float)1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var fieldsToSerialize = Serializer<BizObj>.BuildFieldEnabledFlagArray();
+            var fieldsToSerialize = Serializer<BizObj>.BuildFieldEnabledArray();
             fieldsToSerialize[Serializer<BizObj>.IndexOfProperty("AStr")] = false;
             fieldsToSerialize[Serializer<BizObj>.IndexOfProperty("AFloat")] = false;
             var serializer = new Serializer<BizObj> {OnOffsEnabled = fieldsToSerialize};
-            var values = serializer.ObjectToValuesArray(obj);
+            var values = serializer.ToValues(obj);
             Assert.AreEqual(7, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -244,7 +244,7 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float)1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var values = Serializer<BizObj>.ObjectToValuesArray(obj, null, indexMap);
+            var values = Serializer<BizObj>.ToValues(obj, null, indexMap);
             Assert.AreEqual(obj.AShort, values[0]);
             Assert.AreEqual(obj.AInt, values[1]);
             Assert.AreEqual(obj.ADouble, values[2]);
@@ -269,7 +269,7 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float)1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var values = Serializer<object>.ObjectToValuesArray(obj);
+            var values = Serializer<object>.ToValues(obj);
             Assert.AreEqual(9, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -298,7 +298,7 @@ namespace Ascentis.Infrastructure.Test
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
             var serializer = new Serializer<object>();
-            var values = serializer.ObjectToValuesArray(obj);
+            var values = serializer.ToValues(obj);
             Assert.AreEqual(9, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -326,11 +326,11 @@ namespace Ascentis.Infrastructure.Test
                 AFloat = (float)1.5,
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
-            var fieldsToSerialize = Serializer<object>.BuildFieldEnabledFlagArray(obj);
+            var fieldsToSerialize = Serializer<object>.BuildFieldEnabledArray(obj);
             fieldsToSerialize[Serializer<object>.IndexOfProperty(obj, "AStr")] = false;
             fieldsToSerialize[Serializer<object>.IndexOfProperty(obj, "AFloat")] = false;
             var serializer = new Serializer<object> { OnOffsEnabled = fieldsToSerialize };
-            var values = serializer.ObjectToValuesArray(obj);
+            var values = serializer.ToValues(obj);
             Assert.AreEqual(7, values.Length);
             Assert.AreEqual(obj.AInt, values[0]);
             Assert.AreEqual(obj.AShort, values[1]);
@@ -367,15 +367,36 @@ namespace Ascentis.Infrastructure.Test
                 ADateTimeOffset = DateTimeOffset.MaxValue
             };
             var indexMap = Serializer<object>.BuildFieldMap(obj, map);
-            var serializer = new Serializer<object> {FieldMap = indexMap};
-            var values = serializer.ObjectToValuesArray(obj);
-            Assert.AreEqual(obj.AShort, values[0]);
-            Assert.AreEqual(obj.AInt, values[1]);
-            Assert.AreEqual(obj.ADouble, values[2]);
-            Assert.AreEqual(obj.AFloat, values[3]);
-            Assert.AreEqual(obj.ADateTimeOffset, values[4]);
-            Assert.AreEqual(obj.ABool, values[5]);
-            Assert.AreEqual(obj.ADateTime, values[6]);
+            var fieldsToSerialize = Serializer<object>.BuildFieldEnabledArray(obj);
+            fieldsToSerialize[Serializer<object>.IndexOfProperty(obj, "AInt")] = false;
+            var serializer = new Serializer<object>
+            {
+                FieldMap = indexMap, 
+                OnOffsEnabled = fieldsToSerialize
+            };
+            Assert.ThrowsException<InvalidOperationException>(() => serializer.ToValues(obj));
+        }
+
+        [TestMethod]
+        public void TestSerializationPerformance()
+        {
+            var obj = new BizObj
+            {
+                AInt = 10,
+                AShort = 9,
+                AStr = "hello",
+                ADec = 10.2M,
+                ABool = true,
+                ADateTime = DateTime.MaxValue,
+                ADouble = 1.23,
+                AFloat = (float)1.5,
+                ADateTimeOffset = DateTimeOffset.MaxValue
+            };
+            var serializer = new Serializer<BizObj>();
+            var values = new object[serializer.FieldCount];
+            Assert.AreEqual(9, serializer.GetFieldCount(obj));
+            for (var i = 0; i < 1000000; i++)
+                Serializer<BizObj>.ToValues(obj, values);
         }
     }
 }
