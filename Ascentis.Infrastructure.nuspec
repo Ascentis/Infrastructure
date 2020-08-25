@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.8.2.20</version>
+    <version>2.8.3.21</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
