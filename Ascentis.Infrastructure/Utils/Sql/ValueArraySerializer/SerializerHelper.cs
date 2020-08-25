@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer
 {
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
     internal class SerializerHelper
     {
         internal delegate void MoveValueToArraySlotDelegate<in T>(object[] values, int index, T obj);
