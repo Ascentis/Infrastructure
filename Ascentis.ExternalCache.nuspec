@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Ascentis.ExternalCache</id>
+    <version>1.3.0.3</version>
+    <authors>Jose Sebastian Battig</authors>
+    <owners>Ascentis</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>External cache class using .NET COM+</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2020, Ascentis Corporation</copyright>
+    <tags>caching MemoryCache COM COM+</tags>
+    <dependencies>
+      <dependency id="Ascentis.Infrastructure" version="2.9.0.22" />
+      <dependency id="Ascentis.SimpleMemoryCache" version="1.0.0.1" />
+    </dependencies>
+    <contentFiles>
+    </contentFiles>
+    <references>
+      <reference file="Ascentis.ComPlusCache.dll" />
+      <reference file="Ascentis.ExternalCache.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="bin\Release\Ascentis.ExternalCache.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.ExternalCache.pdb" target="lib\net40" />
+    <file src="bin\Release\Ascentis.ComPlusCache.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.ComPlusCache.pdb" target="lib\net40" />
+    <file src="bin\Release\Ascentis.Dynamo.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.Dynamo.pdb" target="lib\net40" />
+  </files>
+</package>

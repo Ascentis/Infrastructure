@@ -36,9 +36,6 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ascentis.Infrastructure, Version=2.9.0.22, Culture=neutral, PublicKeyToken=374afd0f141d13fa, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ascentis.Infrastructure.2.9.0.22\lib\net40\Ascentis.Infrastructure.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -87,6 +84,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ascentis.Infrastructure\Ascentis.Infrastructure.csproj">
+      <Project>{4322e4f4-e201-4fea-a5db-38b06c8c1fea}</Project>
+      <Name>Ascentis.Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
