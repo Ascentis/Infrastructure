@@ -84,7 +84,7 @@ Generalized Pool class. Will build instances lazily and wait for new objects ret
 
 ## Conveyor
 
-Abstraction on top of a Thread that allows for continous processing of objects passed by calling InsertPacket method. 
+Abstraction on top of a Thread that allows for continuous processing of objects passed by calling InsertPacket method. 
 
 ## DataPipeline
 

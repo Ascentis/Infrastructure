@@ -99,6 +99,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ascentis.Infrastructure.Sql\Ascentis.Infrastructure.Sql.csproj">
+      <Project>{71178d28-f92b-489a-97cc-85955d7433ab}</Project>
+      <Name>Ascentis.Infrastructure.Sql</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ascentis.Infrastructure.TestHelpers\Ascentis.Infrastructure.TestHelpers.csproj">
       <Project>{a716d9df-68bf-47ae-ac6d-81530cb26f63}</Project>
       <Name>Ascentis.Infrastructure.TestHelpers</Name>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Ascentis.SimpleMemoryCache</id>
+    <version>1.0.0.1</version>
+    <authors>Jose Sebastian Battig</authors>
+    <owners>Ascentis</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Simple memory cache to replace standard MemoryCache. This class is based on a simple Dictionary</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2020, Ascentis Corporation</copyright>
+    <tags>caching MemoryCache COM COM+</tags>
+    <dependencies>
+    </dependencies>
+    <contentFiles>
+    </contentFiles>
+    <references>
+      <reference file="Ascentis.SimpleMemoryCache.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="bin\Release\Ascentis.SimpleMemoryCache.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.SimpleMemoryCache.pdb" target="lib\net40" />
+  </files>
+</package>
