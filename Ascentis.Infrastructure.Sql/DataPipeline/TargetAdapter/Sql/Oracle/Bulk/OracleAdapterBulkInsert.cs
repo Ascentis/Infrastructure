@@ -37,6 +37,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
         protected override void ConfigureBulkCommandBuilder(BulkSqlCommandTextBuilder cmdBuilder)
         {
             cmdBuilder.SingleParamSetInsertStatement = !LiteralParamBinding;
+            cmdBuilder.ParamIndicator = ':';
         }
 
         public override void BindParameters()
@@ -70,8 +71,8 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
 
         public override void UnPrepare()
         {
-            _oracleArrayBindingHelper = null;
             base.UnPrepare();
+            _oracleArrayBindingHelper = null;
         }
     }
 }

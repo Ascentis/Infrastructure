@@ -1719,5 +1719,26 @@ namespace Ascentis.Infrastructure.Test
             var targetAdapter = new OracleTargetAdapterCommand(targetCmd) { AnsiStringParameters = new[] { "CPCODE_EXP" } };
             pipeline.Pump(cmd, targetAdapter);
         }
+
+        [TestMethod]
+        public void TestSqlToOracleBulkInsertBasic()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 100205 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+
+            using var targetConn0 = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn0.Open();
+
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME2", targetConn0);
+            truncateCmd.ExecuteNonQuery();
+
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+
+            var outPipes = new[]
+            {
+                new OracleAdapterBulkInsert("TIME2", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 2000) {UseTakeSemantics = false}
+            };
+            // ReSharper disable once RedundantArgumentDefaultValue
+            pipeline.Pump(cmd, outPipes, 5000);
+        }
     }
 }
