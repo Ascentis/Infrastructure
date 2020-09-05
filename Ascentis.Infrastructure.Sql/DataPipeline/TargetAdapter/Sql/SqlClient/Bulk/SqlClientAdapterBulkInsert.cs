@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
+using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
 {
     public class SqlClientAdapterBulkInsert : 
         TargetAdapterBulkInsertBase<SqlCommand, SqlTransaction, SqlConnection, SqlException>, 

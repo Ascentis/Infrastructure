@@ -9,7 +9,7 @@ namespace Ascentis.Infrastructure
     {
         public static IList<string> ParseParameters(this DbCommand cmd)
         {
-            const string rxPattern = @"@(?:[\w#_$]{1,128}|(?:(\[)|"").{1,128}?(?(1)]|""))";
+            const string rxPattern = @"[@|:](?:[\w#_$]{1,128}|(?:(\[)|"").{1,128}?(?(1)]|""))";
 
             var parameterMatches = Regex.Matches(cmd.CommandText, rxPattern, RegexOptions.Compiled);
             var list = new List<string>();

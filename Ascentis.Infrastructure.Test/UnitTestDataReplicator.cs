@@ -1,12 +1,12 @@
 ﻿using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataReplicator.Generic;
 using Ascentis.Infrastructure.DataReplicator.SqlClient;
-using Ascentis.Infrastructure.DataReplicator.SQLite;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.Sql.DataReplicator.SQLite;
 using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

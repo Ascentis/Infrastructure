@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class SqlClientUtils

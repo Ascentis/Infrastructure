@@ -1,6 +1,6 @@
 ﻿using System.Data.SqlClient;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient
 {
     public interface ITargetAdapterSqlClient
     {

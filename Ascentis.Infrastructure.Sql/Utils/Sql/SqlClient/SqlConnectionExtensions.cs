@@ -6,7 +6,7 @@ using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Base;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure

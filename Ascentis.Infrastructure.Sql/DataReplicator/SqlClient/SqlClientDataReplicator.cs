@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 using Ascentis.Infrastructure.DataReplicator.Generic;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
 
 namespace Ascentis.Infrastructure.DataReplicator.SqlClient
 {

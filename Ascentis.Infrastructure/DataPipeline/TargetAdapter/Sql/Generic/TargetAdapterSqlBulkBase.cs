@@ -11,7 +11,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
         where TTran : DbTransaction
         where TConn : DbConnection
     {
-        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TConn), typeof(TTran));
+        private static readonly GenericObjectBuilder.ConstructorDelegate<TCmd> CmdBuilder = GenericObjectBuilder.Builder<TCmd>(typeof(string), typeof(TConn));
         public const int MaxPossibleBatchSize = int.MaxValue;
 
         protected IDictionary<string, int> ColumnNameToMetadataIndexMap;
@@ -93,12 +93,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             if (rowCount <= 0)
                 return;
             var sqlCommandText = BuildBulkSql(Rows);
-            sqlCommand = CmdBuilder(sqlCommandText, Conn, Tran);
+            sqlCommand = CmdBuilder(sqlCommandText, Conn);
+            sqlCommand.Transaction = Tran;
             if (!LiteralParamBinding)
                 MapParams(ColumnNameToMetadataIndexMap, ref sqlCommand, rowCount);
             InvokeBeforeCommandPrepare(sqlCommand);
             sqlCommand.Prepare();
         }
+
+        protected virtual void ConfigureBulkCommandBuilder(BulkSqlCommandTextBuilder cmdBuilder) {}
 
         protected virtual string BuildBulkSql(List<PoolEntry<object[]>> rows)
         {
@@ -108,6 +111,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 LiteralParamBinding = LiteralParamBinding,
                 ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap
             };
+            ConfigureBulkCommandBuilder(builder);
             return builder.BuildBulkSql(SqlCommandText, rows, ParamsAsList);
         }
 
@@ -144,7 +148,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
             base.UnPrepare();
         }
 
-        private void EnsureCommandBuilt()
+        protected void EnsureCommandBuilt()
         {
             if (Cmd == null || Rows.Count != BatchSize)
                 BuildSqlCommand(Rows.Count, ref Cmd);

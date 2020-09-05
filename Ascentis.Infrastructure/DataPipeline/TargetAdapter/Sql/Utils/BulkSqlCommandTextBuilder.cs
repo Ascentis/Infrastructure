@@ -10,6 +10,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
     [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
     public class BulkSqlCommandTextBuilder
     {
+        public const string ParamsReplacementRegEx = @"(\/\*\<DATA\>\*\/.*?\/\*\<\/DATA\>\*\/)|@@@Parameters|@@@Params";
+
         public delegate string GetValueAsSqlStringDelegate(object value);
 
         private readonly GetValueAsSqlStringDelegate _getNativeValueAsSqlString = value => value.ToString();
@@ -17,11 +19,16 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
         public string TableName { get; set; }
         public IEnumerable<string> ColumnNames { get; set; }
         public IDictionary<string, int> ColumnNameToMetadataIndexMap { get; set; }
+        public char ParamIndicator { get; set; }
+        public string InternalSelectSuffix { get; set; }
+        public bool SingleParamSetInsertStatement { get; set; }
 
         public BulkSqlCommandTextBuilder(GetValueAsSqlStringDelegate getValueAsSqlString = null)
         {
             if (getValueAsSqlString != null)
                 _getNativeValueAsSqlString = getValueAsSqlString;
+            ParamIndicator = '@';
+            InternalSelectSuffix = "";
         }
         
         public string BuildBulkInsertSql(List<PoolEntry<object[]>> rows)
@@ -48,7 +55,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
                 {
                     var columnIndex = 0;
                     foreach (var dummy in ColumnNames)
-                        stringBuilder.Append($"@P{columnIndex++}_{i},");
+                        stringBuilder.Append($"{ParamIndicator}P{columnIndex++}_{i},");
                 }
                 else
                 {
@@ -58,6 +65,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
                 stringBuilder.Append($"){rowSeparator}");
+                if (SingleParamSetInsertStatement)
+                    break;
             }
             stringBuilder.Remove(stringBuilder.Length - rowSeparator.Length, rowSeparator.Length);
 
@@ -82,7 +91,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
                 if (!LiteralParamBinding)
                 {
                     foreach (var columnName in ColumnNames)
-                        stringBuilder.Append($"@P{columnNumber++}_0 \"{columnName}\",");
+                        stringBuilder.Append($"{ParamIndicator}P{columnNumber++}_0 \"{columnName}\",");
                 }
                 else
                 {
@@ -91,6 +100,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
                 }
 
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                stringBuilder.Append($" {InternalSelectSuffix} ");
             }
 
             for (var i = paramsAsList ? 0 : 1; i < rows.Count; i++)
@@ -100,7 +110,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
                 {
                     columnNumber = 0;
                     foreach (var dummy in ColumnNames)
-                        stringBuilder.Append($"@P{columnNumber++}_{i},");
+                        stringBuilder.Append($"{ParamIndicator}P{columnNumber++}_{i},");
                 }
                 else
                 {
@@ -110,6 +120,8 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 
                 if (!paramsAsList || i == rows.Count - 1)
                     stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                if (!paramsAsList)
+                    stringBuilder.Append($" {InternalSelectSuffix} ");
             }
 
             var newSqlCommandText = Regex.Replace(sqlCommandText,

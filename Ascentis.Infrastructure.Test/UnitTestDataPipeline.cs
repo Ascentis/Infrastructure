@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SQLite;
@@ -10,21 +9,25 @@ using System.Threading;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.BlockingQueue;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Text;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.Oracle;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Single;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Single;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Bulk;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Single;
 using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Ascentis.Infrastructure.Utils.Sql.ValueArraySerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Oracle.ManagedDataAccess.Client;
 using SQLiteCommand = System.Data.SQLite.SQLiteCommand;
 
 // ReSharper disable once CheckNamespace
@@ -995,6 +998,726 @@ namespace Ascentis.Infrastructure.Test
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, "SELECT TOP 10000 CPCODE_EXP, NPAYCODE FROM TIME ORDER BY CPCODE_EXP",
                 Settings.Default.SqlConnectionString, "SELECT TOP 10000 CPCODE_EXP, NPAYCODE FROM TIME_BASE ORDER BY CPCODE_EXP");
+        }
+
+        [TestMethod]
+        public void TestSqlToOracleBasic()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 1 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn.Open();
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            var targetAdapter = new OracleAdapterBulkCommand(
+                "INSERT INTO TIME (CPCODE_EXP, NPAYCODE) SELECT * FROM (@@@Params)", 
+                new []{"CPCODE_EXP", "NPAYCODE"}, targetConn);
+            pipeline.Pump(cmd, targetAdapter);
+        }
+
+        [TestMethod]
+        public void TestSqlToOracleUseArrayBinding()
+        {
+            using var cmd = new SqlCommand("SELECT TOP 200000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn.Open();
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            var targetAdapter = new OracleAdapterBulkCommand(
+                "INSERT INTO TIME (CPCODE_EXP, NPAYCODE) VALUES (@@@Params)",
+                new[] { "CPCODE_EXP", "NPAYCODE" }, targetConn, 1000) {UseArrayBinding = true};
+            pipeline.Pump(cmd, targetAdapter);
+        }
+
+        [TestMethod]
+        public void TestSqlToOracle100KRowsWideTable()
+        {
+            using var cmd = new SqlCommand(@"
+                  SELECT TOP 100000 [IID]
+                  ,[CEMPID]
+                  ,[DWORKDATE]
+                  ,[TPDATE]
+                  ,[CDAY_EXP]
+                  ,[NPAYCODE]
+                  ,[CPCODE_EXP]
+                  ,CAST([LPCTYPE] AS int) ""LPCTYPE""
+                  ,[CPAYTYPE]
+                  ,[YPAYAMT]
+                  ,CAST([LCALCULATE] AS int) ""LCALCULATE""
+                  ,[TIN_ORG]
+                  ,[TOUT_ORG]
+                  ,[TIN]
+                  ,[TOUT]
+                  ,CAST([LIN_MOD] AS int) ""LIN_MOD""
+                  ,CAST([LOUT_MOD] AS int) ""LOUT_MOD""
+                  ,[CIN_EXP]
+                  ,[COUT_EXP]
+                  ,[CIN_EXSAV]
+                  ,[COUT_EXSAV]
+                  ,[CSHIFT_EXP]
+                  ,[NSCHHRS]
+                  ,CAST([LSCHWEEK] AS int) ""LSCHWEEK""
+                  ,CAST([LOUT_SCH] AS int) ""LOUT_SCH""
+                  ,CAST([LUOT] AS int) ""LOUT""
+                  ,CAST([LAUTHOTCHG] AS int) ""LAUTHOTCHG""
+                  ,CAST([LCOR] AS int) ""LCOR""
+                  ,[NREGHR]
+                  ,[NOVERT1]
+                  ,[NOVERT2]
+                  ,[NOVERT3]
+                  ,[NOVERT4]
+                  ,[NOVERT5]
+                  ,[YREG_PAY]
+                  ,[YOT1_PAY]
+                  ,[YOT2_PAY]
+                  ,[YOT3_PAY]
+                  ,[YOT4_PAY]
+                  ,[YOT5_PAY]
+                  ,[NWEEK_REG]
+                  ,[NWEEK_OT1]
+                  ,[NWEEK_OT2]
+                  ,[NWEEK_OT3]
+                  ,[NWEEK_OT4]
+                  ,[NWEEK_OT5]
+                  ,[CREASON]
+                  ,[CGROUP1]
+                  ,[CGROUP2]
+                  ,[CGROUP3]
+                  ,[CGROUP4]
+                  ,[CGROUP5]
+                  ,[CGROUP6]
+                  ,[CGROUP7]
+                  ,[CGROUP8]
+                  ,CAST([LSHIFT_OR] AS int) ""LSHIFT_OR""
+                  ,CAST([LDIFF_OR] AS int) ""LDIFF_OR""
+                  ,CAST([LDIFF] AS int) ""LDIFF""
+                  ,CAST([LDIFF_SEG] AS int) ""LDIFF_SEG""
+                  ,[NLONG_BRK]
+                  ,CAST([LBRK_CHK] AS int) ""LBRK_CHK""
+                  ,[NBRK_END]
+                  ,[NBRK_VAL]
+                  ,[NBRK_PAY]
+                  ,[NAUTO_MEAL]
+                  ,[NLONG_MEAL]
+                  ,CAST([LMEAL_CHK] AS int) ""LMEAL_CHK""
+                  ,[NMEAL_END]
+                  ,[NMEAL_VAL]
+                  ,[NMEAL_DEDU]
+                  ,[NDAYCNT]
+                  ,[NCONSEC_TH]
+                  ,[NPERIOD_TH]
+                  ,[NPREMDOW]
+                  ,CAST([LPRE_OR] AS int) ""LPRE_OR""
+                  ,[NPRE_REG]
+                  ,[NPRE_OT1]
+                  ,[NPRE_OT2]
+                  ,[NPRE_OT3]
+                  ,[NPRE_OT4]
+                  ,[NPRE_OT5]
+                  ,[YPRE_REGPY]
+                  ,[YPRE_OT1PY]
+                  ,[YPRE_OT2PY]
+                  ,[YPRE_OT3PY]
+                  ,[YPRE_OT4PY]
+                  ,[YPRE_OT5PY]
+                  ,[IPREMBEG]
+                  ,[IPREMEND]
+                  ,[CRECTYPE]
+                  ,CAST([LGRP_TOT] AS int) ""LGRP_TOT""
+                  ,CAST([LACCDAYOT] AS int) ""LACCDAYOT""
+                  ,CAST([LACCWKOT] AS int) ""LACCWKOT""
+                  ,CAST([LSPLIT2OT] AS int) ""LSPLIT2OT""
+                  ,CAST([LCNTATTEND] AS int) ""LCNTATTEND""
+                  ,CAST([LMODFLAG] AS int) ""LMODFLAG""
+                  ,[CLSTCHGUSR]
+                  ,[TLSTCHGDAY]
+                  ,[CSITEIN]
+                  ,[CSITEOUT]
+                  ,[NBILLHR]
+                  ,[CRATETYPE]
+                  ,[NRATE]
+                  ,[NCHGRATE]
+                  ,[CGRP3SRC]
+                  ,[IQUANGOOD]
+                  ,[IQUANSCRAP]
+                  ,[CBEGSCHED]
+                  ,[CENDSCHED]
+                  ,[NOUT_CORE]
+                  ,[NFTCARRY]
+                  ,[NFTNETBAL]
+                  ,[NTARGETHRS]
+                  ,[NADJ_FLEXI]
+                  ,[NWOTYPE]
+                  ,[IEMPSEQ]
+                  ,CAST([LCLOSED] AS int) ""LCLOSED""
+                  ,CAST([LAPPROVE] AS int) ""LAPPROVE""
+                  ,[NSTATUS]
+                  ,[MTIMEINFO]
+                  ,[DADJDATE]
+                  ,[CINOUTEXP]
+                  ,[CGROUP9]
+                  ,[CGROUP10]
+                  ,[CGROUP11]
+                  ,[CGROUP12]
+                  ,[CGROUP13]
+                  ,[CGROUP14]
+                  ,[CGROUP15]
+                  ,[CGROUP16]
+                  ,[CGROUP17]
+                  ,[CGROUP18]
+                  ,[CGROUP19]
+                  ,[CGROUP20]
+                  ,[NPIECERATE]
+                  ,[CEXCHEMPID]
+                  ,[IEXCHEMPSEQ]
+                  ,[INOTEID]
+                  ,[IACCRID]
+                  ,CAST([LPENDING] AS int) ""LPENDING""
+                  ,[ICOMPID]
+                  ,CAST([LREVERSE] AS int) ""LREVERSE""
+                  ,[DREVDATE]
+                  ,[NREVSTATUS]
+                  ,[UEXTREF]
+                  ,[IFMLACASE]
+                  ,[IFMLAREQ]
+                  ,[NTZIN]
+                  ,[NTZOUT]
+                  ,[TIN_COPY]
+                  ,[TOUT_COPY]
+                  ,[CEXCODE]
+                  ,[NEXMINS]
+                  ,[NPAYPOLICY]
+                  ,[NSCHEDSEQ]
+                  ,[NPBJMEALDED]
+                  ,[TIN_SEC]
+                  ,[TOUT_SEC]
+                  ,[CASSIGNID] FROM TIME", _conn);
+            using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn.Open();
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            var tran = targetConn.BeginTransaction();
+            var targetAdapter = new OracleAdapterBulkCommand(
+                "INSERT INTO TIME SELECT * FROM (@@@Params)",
+                new[] { 
+                  "IID"
+                  ,"CEMPID"
+                  ,"DWORKDATE"
+                  ,"TPDATE"
+                  ,"CDAY_EXP"
+                  ,"NPAYCODE"
+                  ,"CPCODE_EXP"
+                  ,"LPCTYPE"
+                  ,"CPAYTYPE"
+                  ,"YPAYAMT"
+                  ,"LCALCULATE"
+                  ,"TIN_ORG"
+                  ,"TOUT_ORG"
+                  ,"TIN"
+                  ,"TOUT"
+                  ,"LIN_MOD"
+                  ,"LOUT_MOD"
+                  ,"CIN_EXP"
+                  ,"COUT_EXP"
+                  ,"CIN_EXSAV"
+                  ,"COUT_EXSAV"
+                  ,"CSHIFT_EXP"
+                  ,"NSCHHRS"
+                  ,"LSCHWEEK"
+                  ,"LOUT_SCH"
+                  ,"LUOT"
+                  ,"LAUTHOTCHG"
+                  ,"LCOR"
+                  ,"NREGHR"
+                  ,"NOVERT1"
+                  ,"NOVERT2"
+                  ,"NOVERT3"
+                  ,"NOVERT4"
+                  ,"NOVERT5"
+                  ,"YREG_PAY"
+                  ,"YOT1_PAY"
+                  ,"YOT2_PAY"
+                  ,"YOT3_PAY"
+                  ,"YOT4_PAY"
+                  ,"YOT5_PAY"
+                  ,"NWEEK_REG"
+                  ,"NWEEK_OT1"
+                  ,"NWEEK_OT2"
+                  ,"NWEEK_OT3"
+                  ,"NWEEK_OT4"
+                  ,"NWEEK_OT5"
+                  ,"CREASON"
+                  ,"CGROUP1"
+                  ,"CGROUP2"
+                  ,"CGROUP3"
+                  ,"CGROUP4"
+                  ,"CGROUP5"
+                  ,"CGROUP6"
+                  ,"CGROUP7"
+                  ,"CGROUP8"
+                  ,"LSHIFT_OR"
+                  ,"LDIFF_OR"
+                  ,"LDIFF"
+                  ,"LDIFF_SEG"
+                  ,"NLONG_BRK"
+                  ,"LBRK_CHK"
+                  ,"NBRK_END"
+                  ,"NBRK_VAL"
+                  ,"NBRK_PAY"
+                  ,"NAUTO_MEAL"
+                  ,"NLONG_MEAL"
+                  ,"LMEAL_CHK"
+                  ,"NMEAL_END"
+                  ,"NMEAL_VAL"
+                  ,"NMEAL_DEDU"
+                  ,"NDAYCNT"
+                  ,"NCONSEC_TH"
+                  ,"NPERIOD_TH"
+                  ,"NPREMDOW"
+                  ,"LPRE_OR"
+                  ,"NPRE_REG"
+                  ,"NPRE_OT1"
+                  ,"NPRE_OT2"
+                  ,"NPRE_OT3"
+                  ,"NPRE_OT4"
+                  ,"NPRE_OT5"
+                  ,"YPRE_REGPY"
+                  ,"YPRE_OT1PY"
+                  ,"YPRE_OT2PY"
+                  ,"YPRE_OT3PY"
+                  ,"YPRE_OT4PY"
+                  ,"YPRE_OT5PY"
+                  ,"IPREMBEG"
+                  ,"IPREMEND"
+                  ,"CRECTYPE"
+                  ,"LGRP_TOT"
+                  ,"LACCDAYOT"
+                  ,"LACCWKOT"
+                  ,"LSPLIT2OT"
+                  ,"LCNTATTEND"
+                  ,"LMODFLAG"
+                  ,"CLSTCHGUSR"
+                  ,"TLSTCHGDAY"
+                  ,"CSITEIN"
+                  ,"CSITEOUT"
+                  ,"NBILLHR"
+                  ,"CRATETYPE"
+                  ,"NRATE"
+                  ,"NCHGRATE"
+                  ,"CGRP3SRC"
+                  ,"IQUANGOOD"
+                  ,"IQUANSCRAP"
+                  ,"CBEGSCHED"
+                  ,"CENDSCHED"
+                  ,"NOUT_CORE"
+                  ,"NFTCARRY"
+                  ,"NFTNETBAL"
+                  ,"NTARGETHRS"
+                  ,"NADJ_FLEXI"
+                  ,"NWOTYPE"
+                  ,"IEMPSEQ"
+                  ,"LCLOSED"
+                  ,"LAPPROVE"
+                  ,"NSTATUS"
+                  ,"MTIMEINFO"
+                  ,"DADJDATE"
+                  ,"CINOUTEXP"
+                  ,"CGROUP9"
+                  ,"CGROUP10"
+                  ,"CGROUP11"
+                  ,"CGROUP12"
+                  ,"CGROUP13"
+                  ,"CGROUP14"
+                  ,"CGROUP15"
+                  ,"CGROUP16"
+                  ,"CGROUP17"
+                  ,"CGROUP18"
+                  ,"CGROUP19"
+                  ,"CGROUP20"
+                  ,"NPIECERATE"
+                  ,"CEXCHEMPID"
+                  ,"IEXCHEMPSEQ"
+                  ,"INOTEID"
+                  ,"IACCRID"
+                  ,"LPENDING"
+                  ,"ICOMPID"
+                  ,"LREVERSE"
+                  ,"DREVDATE"
+                  ,"NREVSTATUS"
+                  ,"UEXTREF"
+                  ,"IFMLACASE"
+                  ,"IFMLAREQ"
+                  ,"NTZIN"
+                  ,"NTZOUT"
+                  ,"TIN_COPY"
+                  ,"TOUT_COPY"
+                  ,"CEXCODE"
+                  ,"NEXMINS"
+                  ,"NPAYPOLICY"
+                  ,"NSCHEDSEQ"
+                  ,"NPBJMEALDED"
+                  ,"TIN_SEC"
+                  ,"TOUT_SEC"
+                  ,"CASSIGNID" }, targetConn, 30) {Transaction = tran}; 
+            pipeline.Pump(cmd, targetAdapter);
+            tran.Commit();
+        }
+
+        [TestMethod]
+        public void TestSqlToOracle100KRowsWideTableUsingArrayBinding()
+        {
+            using var cmd = new SqlCommand(@"
+                  SELECT TOP 100000 [IID]
+                  ,[CEMPID]
+                  ,[DWORKDATE]
+                  ,[TPDATE]
+                  ,[CDAY_EXP]
+                  ,[NPAYCODE]
+                  ,[CPCODE_EXP]
+                  ,CAST([LPCTYPE] AS int) ""LPCTYPE""
+                  ,[CPAYTYPE]
+                  ,[YPAYAMT]
+                  ,CAST([LCALCULATE] AS int) ""LCALCULATE""
+                  ,[TIN_ORG]
+                  ,[TOUT_ORG]
+                  ,[TIN]
+                  ,[TOUT]
+                  ,CAST([LIN_MOD] AS int) ""LIN_MOD""
+                  ,CAST([LOUT_MOD] AS int) ""LOUT_MOD""
+                  ,[CIN_EXP]
+                  ,[COUT_EXP]
+                  ,[CIN_EXSAV]
+                  ,[COUT_EXSAV]
+                  ,[CSHIFT_EXP]
+                  ,[NSCHHRS]
+                  ,CAST([LSCHWEEK] AS int) ""LSCHWEEK""
+                  ,CAST([LOUT_SCH] AS int) ""LOUT_SCH""
+                  ,CAST([LUOT] AS int) ""LUOT""
+                  ,CAST([LAUTHOTCHG] AS int) ""LAUTHOTCHG""
+                  ,CAST([LCOR] AS int) ""LCOR""
+                  ,[NREGHR]
+                  ,[NOVERT1]
+                  ,[NOVERT2]
+                  ,[NOVERT3]
+                  ,[NOVERT4]
+                  ,[NOVERT5]
+                  ,[YREG_PAY]
+                  ,[YOT1_PAY]
+                  ,[YOT2_PAY]
+                  ,[YOT3_PAY]
+                  ,[YOT4_PAY]
+                  ,[YOT5_PAY]
+                  ,[NWEEK_REG]
+                  ,[NWEEK_OT1]
+                  ,[NWEEK_OT2]
+                  ,[NWEEK_OT3]
+                  ,[NWEEK_OT4]
+                  ,[NWEEK_OT5]
+                  ,[CREASON]
+                  ,[CGROUP1]
+                  ,[CGROUP2]
+                  ,[CGROUP3]
+                  ,[CGROUP4]
+                  ,[CGROUP5]
+                  ,[CGROUP6]
+                  ,[CGROUP7]
+                  ,[CGROUP8]
+                  ,CAST([LSHIFT_OR] AS int) ""LSHIFT_OR""
+                  ,CAST([LDIFF_OR] AS int) ""LDIFF_OR""
+                  ,CAST([LDIFF] AS int) ""LDIFF""
+                  ,CAST([LDIFF_SEG] AS int) ""LDIFF_SEG""
+                  ,[NLONG_BRK]
+                  ,CAST([LBRK_CHK] AS int) ""LBRK_CHK""
+                  ,[NBRK_END]
+                  ,[NBRK_VAL]
+                  ,[NBRK_PAY]
+                  ,[NAUTO_MEAL]
+                  ,[NLONG_MEAL]
+                  ,CAST([LMEAL_CHK] AS int) ""LMEAL_CHK""
+                  ,[NMEAL_END]
+                  ,[NMEAL_VAL]
+                  ,[NMEAL_DEDU]
+                  ,[NDAYCNT]
+                  ,[NCONSEC_TH]
+                  ,[NPERIOD_TH]
+                  ,[NPREMDOW]
+                  ,CAST([LPRE_OR] AS int) ""LPRE_OR""
+                  ,[NPRE_REG]
+                  ,[NPRE_OT1]
+                  ,[NPRE_OT2]
+                  ,[NPRE_OT3]
+                  ,[NPRE_OT4]
+                  ,[NPRE_OT5]
+                  ,[YPRE_REGPY]
+                  ,[YPRE_OT1PY]
+                  ,[YPRE_OT2PY]
+                  ,[YPRE_OT3PY]
+                  ,[YPRE_OT4PY]
+                  ,[YPRE_OT5PY]
+                  ,[IPREMBEG]
+                  ,[IPREMEND]
+                  ,[CRECTYPE]
+                  ,CAST([LGRP_TOT] AS int) ""LGRP_TOT""
+                  ,CAST([LACCDAYOT] AS int) ""LACCDAYOT""
+                  ,CAST([LACCWKOT] AS int) ""LACCWKOT""
+                  ,CAST([LSPLIT2OT] AS int) ""LSPLIT2OT""
+                  ,CAST([LCNTATTEND] AS int) ""LCNTATTEND""
+                  ,CAST([LMODFLAG] AS int) ""LMODFLAG""
+                  ,[CLSTCHGUSR]
+                  ,[TLSTCHGDAY]
+                  ,[CSITEIN]
+                  ,[CSITEOUT]
+                  ,[NBILLHR]
+                  ,[CRATETYPE]
+                  ,[NRATE]
+                  ,[NCHGRATE]
+                  ,[CGRP3SRC]
+                  ,[IQUANGOOD]
+                  ,[IQUANSCRAP]
+                  ,[CBEGSCHED]
+                  ,[CENDSCHED]
+                  ,[NOUT_CORE]
+                  ,[NFTCARRY]
+                  ,[NFTNETBAL]
+                  ,[NTARGETHRS]
+                  ,[NADJ_FLEXI]
+                  ,[NWOTYPE]
+                  ,[IEMPSEQ]
+                  ,CAST([LCLOSED] AS int) ""LCLOSED""
+                  ,CAST([LAPPROVE] AS int) ""LAPPROVE""
+                  ,[NSTATUS]
+                  ,[MTIMEINFO]
+                  ,[DADJDATE]
+                  ,[CINOUTEXP]
+                  ,[CGROUP9]
+                  ,[CGROUP10]
+                  ,[CGROUP11]
+                  ,[CGROUP12]
+                  ,[CGROUP13]
+                  ,[CGROUP14]
+                  ,[CGROUP15]
+                  ,[CGROUP16]
+                  ,[CGROUP17]
+                  ,[CGROUP18]
+                  ,[CGROUP19]
+                  ,[CGROUP20]
+                  ,[NPIECERATE]
+                  ,[CEXCHEMPID]
+                  ,[IEXCHEMPSEQ]
+                  ,[INOTEID]
+                  ,[IACCRID]
+                  ,CAST([LPENDING] AS int) ""LPENDING""
+                  ,[ICOMPID]
+                  ,CAST([LREVERSE] AS int) ""LREVERSE""
+                  ,[DREVDATE]
+                  ,[NREVSTATUS]
+                  ,[UEXTREF]
+                  ,[IFMLACASE]
+                  ,[IFMLAREQ]
+                  ,[NTZIN]
+                  ,[NTZOUT]
+                  ,[TIN_COPY]
+                  ,[TOUT_COPY]
+                  ,[CEXCODE]
+                  ,[NEXMINS]
+                  ,[NPAYPOLICY]
+                  ,[NSCHEDSEQ]
+                  ,[NPBJMEALDED]
+                  ,[TIN_SEC]
+                  ,[TOUT_SEC]
+                  ,[CASSIGNID] FROM TIME", _conn);
+            using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn.Open();
+            var tran = targetConn.BeginTransaction();
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
+            var targetAdapter = new OracleAdapterBulkCommand(
+                "INSERT INTO TIME VALUES (@@@Params)",
+                new[] {
+                  "IID"
+                  ,"CEMPID"
+                  ,"DWORKDATE"
+                  ,"TPDATE"
+                  ,"CDAY_EXP"
+                  ,"NPAYCODE"
+                  ,"CPCODE_EXP"
+                  ,"LPCTYPE"
+                  ,"CPAYTYPE"
+                  ,"YPAYAMT"
+                  ,"LCALCULATE"
+                  ,"TIN_ORG"
+                  ,"TOUT_ORG"
+                  ,"TIN"
+                  ,"TOUT"
+                  ,"LIN_MOD"
+                  ,"LOUT_MOD"
+                  ,"CIN_EXP"
+                  ,"COUT_EXP"
+                  ,"CIN_EXSAV"
+                  ,"COUT_EXSAV"
+                  ,"CSHIFT_EXP"
+                  ,"NSCHHRS"
+                  ,"LSCHWEEK"
+                  ,"LOUT_SCH"
+                  ,"LUOT"
+                  ,"LAUTHOTCHG"
+                  ,"LCOR"
+                  ,"NREGHR"
+                  ,"NOVERT1"
+                  ,"NOVERT2"
+                  ,"NOVERT3"
+                  ,"NOVERT4"
+                  ,"NOVERT5"
+                  ,"YREG_PAY"
+                  ,"YOT1_PAY"
+                  ,"YOT2_PAY"
+                  ,"YOT3_PAY"
+                  ,"YOT4_PAY"
+                  ,"YOT5_PAY"
+                  ,"NWEEK_REG"
+                  ,"NWEEK_OT1"
+                  ,"NWEEK_OT2"
+                  ,"NWEEK_OT3"
+                  ,"NWEEK_OT4"
+                  ,"NWEEK_OT5"
+                  ,"CREASON"
+                  ,"CGROUP1"
+                  ,"CGROUP2"
+                  ,"CGROUP3"
+                  ,"CGROUP4"
+                  ,"CGROUP5"
+                  ,"CGROUP6"
+                  ,"CGROUP7"
+                  ,"CGROUP8"
+                  ,"LSHIFT_OR"
+                  ,"LDIFF_OR"
+                  ,"LDIFF"
+                  ,"LDIFF_SEG"
+                  ,"NLONG_BRK"
+                  ,"LBRK_CHK"
+                  ,"NBRK_END"
+                  ,"NBRK_VAL"
+                  ,"NBRK_PAY"
+                  ,"NAUTO_MEAL"
+                  ,"NLONG_MEAL"
+                  ,"LMEAL_CHK"
+                  ,"NMEAL_END"
+                  ,"NMEAL_VAL"
+                  ,"NMEAL_DEDU"
+                  ,"NDAYCNT"
+                  ,"NCONSEC_TH"
+                  ,"NPERIOD_TH"
+                  ,"NPREMDOW"
+                  ,"LPRE_OR"
+                  ,"NPRE_REG"
+                  ,"NPRE_OT1"
+                  ,"NPRE_OT2"
+                  ,"NPRE_OT3"
+                  ,"NPRE_OT4"
+                  ,"NPRE_OT5"
+                  ,"YPRE_REGPY"
+                  ,"YPRE_OT1PY"
+                  ,"YPRE_OT2PY"
+                  ,"YPRE_OT3PY"
+                  ,"YPRE_OT4PY"
+                  ,"YPRE_OT5PY"
+                  ,"IPREMBEG"
+                  ,"IPREMEND"
+                  ,"CRECTYPE"
+                  ,"LGRP_TOT"
+                  ,"LACCDAYOT"
+                  ,"LACCWKOT"
+                  ,"LSPLIT2OT"
+                  ,"LCNTATTEND"
+                  ,"LMODFLAG"
+                  ,"CLSTCHGUSR"
+                  ,"TLSTCHGDAY"
+                  ,"CSITEIN"
+                  ,"CSITEOUT"
+                  ,"NBILLHR"
+                  ,"CRATETYPE"
+                  ,"NRATE"
+                  ,"NCHGRATE"
+                  ,"CGRP3SRC"
+                  ,"IQUANGOOD"
+                  ,"IQUANSCRAP"
+                  ,"CBEGSCHED"
+                  ,"CENDSCHED"
+                  ,"NOUT_CORE"
+                  ,"NFTCARRY"
+                  ,"NFTNETBAL"
+                  ,"NTARGETHRS"
+                  ,"NADJ_FLEXI"
+                  ,"NWOTYPE"
+                  ,"IEMPSEQ"
+                  ,"LCLOSED"
+                  ,"LAPPROVE"
+                  ,"NSTATUS"
+                  ,"MTIMEINFO"
+                  ,"DADJDATE"
+                  ,"CINOUTEXP"
+                  ,"CGROUP9"
+                  ,"CGROUP10"
+                  ,"CGROUP11"
+                  ,"CGROUP12"
+                  ,"CGROUP13"
+                  ,"CGROUP14"
+                  ,"CGROUP15"
+                  ,"CGROUP16"
+                  ,"CGROUP17"
+                  ,"CGROUP18"
+                  ,"CGROUP19"
+                  ,"CGROUP20"
+                  ,"NPIECERATE"
+                  ,"CEXCHEMPID"
+                  ,"IEXCHEMPSEQ"
+                  ,"INOTEID"
+                  ,"IACCRID"
+                  ,"LPENDING"
+                  ,"ICOMPID"
+                  ,"LREVERSE"
+                  ,"DREVDATE"
+                  ,"NREVSTATUS"
+                  ,"UEXTREF"
+                  ,"IFMLACASE"
+                  ,"IFMLAREQ"
+                  ,"NTZIN"
+                  ,"NTZOUT"
+                  ,"TIN_COPY"
+                  ,"TOUT_COPY"
+                  ,"CEXCODE"
+                  ,"NEXMINS"
+                  ,"NPAYPOLICY"
+                  ,"NSCHEDSEQ"
+                  ,"NPBJMEALDED"
+                  ,"TIN_SEC"
+                  ,"TOUT_SEC"
+                  ,"CASSIGNID" }, targetConn, 100)
+            {
+                UseArrayBinding = true,
+                Transaction = tran
+            };
+            pipeline.Pump(cmd, targetAdapter);
+            tran.Commit();
+        }
+
+        [TestMethod]
+        public void TestOracleToOracleBasic()
+        {
+            using var srcConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            srcConn.Open();
+            using var cmd = new OracleCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE ROWNUM <= 100", srcConn);
+            using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
+            targetConn.Open();
+            using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME2", targetConn);
+            truncateCmd.ExecuteNonQuery();
+            using var targetCmd = new OracleCommand("INSERT INTO TIME2 (CPCODE_EXP, NPAYCODE) VALUES (:CPCODE_EXP, :NPAYCODE)", targetConn);
+            var pipeline = new OracleDataPipeline { AbortOnTargetAdapterException = true };
+            var targetAdapter = new OracleTargetAdapterCommand(targetCmd) { AnsiStringParameters = new[] { "CPCODE_EXP" } };
+            pipeline.Pump(cmd, targetAdapter);
         }
     }
 }

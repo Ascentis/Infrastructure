@@ -15,6 +15,7 @@
     <dependencies>
       <dependency id="System.Data.SQLite" version="1.0.113.1" />
       <dependency id="Ascentis.Infrastructure" version="2.9.0.22" />
+      <dependency id="Oracle.ManagedDataAccess" version="19.8.0" />
     </dependencies>
     <contentFiles>
     </contentFiles>

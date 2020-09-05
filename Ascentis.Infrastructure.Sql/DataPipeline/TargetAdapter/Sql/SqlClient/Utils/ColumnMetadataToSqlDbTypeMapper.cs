@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils
 {
     public class ColumnMetadataToSqlDbTypeMapper : ColumnMetadataToDbTypeMapper
     {

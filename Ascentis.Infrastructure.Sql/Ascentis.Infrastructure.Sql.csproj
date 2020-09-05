@@ -42,6 +42,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.19.8.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
@@ -57,10 +60,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataPipeline\SourceAdapter\Sql\Oracle\OracleSourceAdapter.cs" />
+    <Compile Include="DataPipeline\SourceAdapter\Sql\Oracle\OracleDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SqlClient\SqlClientSourceAdapter.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteDataPipeline.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Sql\SQLite\SQLiteSourceAdapter.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Bulk\OracleAdapterBulkCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Bulk\OracleAdapterBulkInsert.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Bulk\OracleArrayBindingHelper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\ITargetAdapterOracle.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Single\OracleTargetAdapterCommand.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Utils\ColumnMetadataToOracleDbTypeMapper.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Oracle\Utils\OracleUtils.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\SqlClientAdapterBulkCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\Bulk\SqlClientAdapterBulkInsert.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SqlClient\ITargetAdapterSqlClient.cs" />
@@ -76,6 +88,7 @@
     <Compile Include="DataReplicator\SqlClient\SqlClientDataReplicator.cs" />
     <Compile Include="DataReplicator\SQLite\SQLiteDataReplicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Sql\Oracle\TypeToOracleDbType.cs" />
     <Compile Include="Utils\Sql\SqlClient\SqlConnectionExtensions.cs" />
     <Compile Include="Utils\Sql\SqlClient\TypeToSqlDbType.cs" />
     <Compile Include="Utils\Sql\SQLite\SQLiteTypeMappings.cs" />
@@ -91,6 +104,7 @@
       <Name>Ascentis.Infrastructure</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

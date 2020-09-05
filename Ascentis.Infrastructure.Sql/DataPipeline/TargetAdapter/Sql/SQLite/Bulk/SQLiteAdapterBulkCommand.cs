@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Bulk
 {
     // ReSharper disable once InconsistentNaming
     public class SQLiteAdapterBulkCommand : TargetAdapterSqlBulkBase<SQLiteCommand, SQLiteTransaction, SQLiteConnection>, 

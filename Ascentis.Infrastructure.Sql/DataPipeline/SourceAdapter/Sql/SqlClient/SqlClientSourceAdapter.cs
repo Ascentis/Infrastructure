@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic;
 
-namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient
+namespace Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient
 {
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
     public class SqlClientSourceAdapter : SourceAdapterSqlBase

@@ -44,6 +44,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 ColumnNameToMetadataIndexMap = ColumnNameToMetadataIndexMap,
                 ColumnNames = ColumnNames
             };
+            ConfigureBulkCommandBuilder(builder);
             return builder.BuildBulkInsertSql(rows);
         }
 

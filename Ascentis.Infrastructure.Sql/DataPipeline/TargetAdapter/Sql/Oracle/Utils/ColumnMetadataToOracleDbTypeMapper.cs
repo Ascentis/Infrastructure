@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SQLite;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
+using Oracle.ManagedDataAccess.Client;
 
-namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Utils
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Utils
 {
     // ReSharper disable once InconsistentNaming
-    public class ColumnMetadataToSQLiteDbTypeMapper : ColumnMetadataToDbTypeMapper
+    public class ColumnMetadataToOracleDbTypeMapper : ColumnMetadataToDbTypeMapper
     {
         protected override int SqlTypeFromType(Type type)
         {
-            return (int)TypeToSQLiteDbType.From(type);
+            return (int)TypeToOracleDbType.From(type);
         }
 
         protected override DbParameter AddParam(DbParameterCollection target, string name, int type)
         {
-            return ((SQLiteParameterCollection) target).Add(name, (DbType)type);
+            return ((OracleParameterCollection) target).Add(name, (OracleDbType)type, ParameterDirection.Input);
         }
     }
 }

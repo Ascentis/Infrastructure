@@ -40,5 +40,16 @@ namespace Ascentis.Infrastructure.Test.Properties {
                 return ((string)(this["SqlConnectionString2ndDatabase"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = ORC" +
+            "LDB1.ASCENTIS-CLOUD.COM)(PORT = 1521))) (CONNECT_DATA = (SERVER = DEDICATED) (SI" +
+            "D = ORCL))); User Id=SBATTIG; Password=Classic123;")]
+        public string OracleConnectionString {
+            get {
+                return ((string)(this["OracleConnectionString"]));
+            }
+        }
     }
 }

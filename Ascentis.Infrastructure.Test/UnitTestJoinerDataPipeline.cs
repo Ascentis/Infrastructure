@@ -1,5 +1,5 @@
 ﻿using Ascentis.Infrastructure.DataPipeline;
-using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable once CheckNamespace

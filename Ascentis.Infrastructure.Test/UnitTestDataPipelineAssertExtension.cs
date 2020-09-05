@@ -1,4 +1,4 @@
-﻿using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SqlClient;
+﻿using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

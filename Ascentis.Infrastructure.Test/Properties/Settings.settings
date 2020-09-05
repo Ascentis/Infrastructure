@@ -8,5 +8,8 @@
     <Setting Name="SqlConnectionString2ndDatabase" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Server=vm-pc-sql02;Database=sbattig_test;Trusted_Connection=True; </Value>
     </Setting>
+    <Setting Name="OracleConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Data Source=(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = ORCLDB1.ASCENTIS-CLOUD.COM)(PORT = 1521))) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL))); User Id=SBATTIG; Password=Classic123;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

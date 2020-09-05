@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
-using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
-namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.SqlClient.Single
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Single
 {
     public class SqlClientTargetAdapterCommand : TargetAdapterSqlBase<SqlCommand, SqlTransaction, SqlConnection> , ITargetAdapterSqlClient
     {

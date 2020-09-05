@@ -1,16 +1,16 @@
 ﻿using System;
 
-namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Utils
+namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Utils
 {
     // ReSharper disable once InconsistentNaming
-    public class SQLiteUtils
+    public class OracleUtils
     {
         public const int DefaultBatchSize = 100;
         // ReSharper disable once InconsistentNaming
-        public const int DefaultMaxSQLiteParams = 2100;
+        public const int DefaultMaxOracleParams = 65536;
 
-        public static readonly ColumnMetadataToSQLiteDbTypeMapper ParamMapper =
-            new ColumnMetadataToSQLiteDbTypeMapper
+        public static readonly ColumnMetadataToOracleDbTypeMapper ParamMapper =
+            new ColumnMetadataToOracleDbTypeMapper
             {
                 UseShortParam = true
             };
