@@ -82,8 +82,8 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
 
         public override void UnPrepare()
         {
-            _oracleArrayBindingHelper = null;
             base.UnPrepare();
+            _oracleArrayBindingHelper = null;
         }
 
         public override void BindParameters()

@@ -1016,9 +1016,9 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestSqlToOracleUseArrayBinding()
+        public void TestSqlToOracleUseArrayBinding500KRows()
         {
-            using var cmd = new SqlCommand("SELECT TOP 200000 IID, CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var cmd = new SqlCommand("SELECT TOP 500000 IID, CPCODE_EXP, NPAYCODE FROM TIME", _conn);
             using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
             targetConn.Open();
             using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
@@ -1026,8 +1026,8 @@ namespace Ascentis.Infrastructure.Test
             var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
             var targetAdapter = new OracleAdapterBulkCommand(
                 "INSERT INTO TIME (IID, CPCODE_EXP, NPAYCODE) VALUES (@@@Params)",
-                new[] { "IID", "CPCODE_EXP", "NPAYCODE" }, targetConn, 1000) {UseArrayBinding = true};
-            pipeline.Pump(cmd, targetAdapter);
+                new[] { "IID", "CPCODE_EXP", "NPAYCODE" }, targetConn, 2000) {UseArrayBinding = true};
+            pipeline.Pump(cmd, targetAdapter, 10000);
         }
 
         [TestMethod]
