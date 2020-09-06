@@ -9,8 +9,6 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
     public abstract class ColumnMetadataToDbTypeMapper
     {
-        public bool UseShortParam { get; set; }
-
         protected abstract DbParameter AddParam(DbParameterCollection target, string name, int type);
 
         protected abstract int SqlTypeFromType(Type type);
@@ -19,6 +17,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             ColumnMetadataList metadatas, 
             IEnumerable<string> ansiStringParameters, 
             DbParameterCollection target, 
+            bool useShortParam,
             string paramSuffix = "")
         {
             var index = 0;
@@ -30,7 +29,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             {
                 var meta = column.Value >= 0 ? metadatas[column.Value] : ColumnMetadata.NullMeta;
 
-                var param = AddParam(target, (UseShortParam ? $"P{index++}" : column.Key) + paramSuffix, SqlTypeFromType(meta.DataType));
+                var param = AddParam(target, (useShortParam ? $"P{index++}" : column.Key) + paramSuffix, SqlTypeFromType(meta.DataType));
                 if (!string.IsNullOrEmpty(meta.ColumnName) && (param.DbType == DbType.String || param.DbType == DbType.StringFixedLength) && ansiParameters.ContainsKey(meta.ColumnName))
                     param.DbType = param.DbType == DbType.String ? DbType.AnsiString : DbType.AnsiStringFixedLength;
 
@@ -57,11 +56,13 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             ColumnMetadataList metadatas, 
             IEnumerable<string> ansiStringParameters, 
             DbParameterCollection target, 
-            int batchCount)
+            int batchCount,
+            bool useShortParam,
+            bool useSuffix = true)
         {
             for (var i = 0; i < batchCount; i++)
                 // ReSharper disable once PossibleMultipleEnumeration
-                Map(columns, metadatas, ansiStringParameters, target, $"_{i}");
+                Map(columns, metadatas, ansiStringParameters, target, useShortParam, useSuffix ? $"_{i}" : "");
         }
     }
 }

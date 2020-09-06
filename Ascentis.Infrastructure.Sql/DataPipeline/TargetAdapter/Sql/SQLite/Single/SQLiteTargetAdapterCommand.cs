@@ -19,7 +19,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Sing
 
         protected override void MapParams(Dictionary<string, int> paramToMetaIndex)
         {
-            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters);
+            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters, false);
         }
 
         public override object GetNativeValue(object value)

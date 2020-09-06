@@ -26,7 +26,8 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref OracleCommand sqlCommand, int rowCount)
         {
-            OracleUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, LiteralParamBinding ? rowCount : 1);
+            OracleUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, 
+                sqlCommand.Parameters, LiteralParamBinding ? rowCount : 1, true);
         }
 
         public override string ValueToSqlLiteralText(object obj)
@@ -66,13 +67,18 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
             
             if (LiteralParamBinding)
                 return;
-            _oracleArrayBindingHelper = new OracleArrayBindingHelper(BatchSize, ColumnNameToMetadataIndexMap, SourceValueToParamValue);
+            _oracleArrayBindingHelper = new OracleArrayBindingHelper(BatchSize, ColumnNameToMetadataIndexMap, SourceValueToParamValue) {UseNativeTypeConvertor = UseNativeTypeConvertor};
         }
 
         public override void UnPrepare()
         {
             base.UnPrepare();
             _oracleArrayBindingHelper = null;
+        }
+
+        public override object GetNativeValue(object value)
+        {
+            return OracleUtils.GetNativeValue(value);
         }
     }
 }

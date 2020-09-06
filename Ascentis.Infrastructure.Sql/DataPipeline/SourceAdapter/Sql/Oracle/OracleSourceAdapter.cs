@@ -25,7 +25,8 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.Oracle
 
         public static DbCommand BuildCommand(string oracleCommandText, DbConnection connection)
         {
-            return new OracleCommand(oracleCommandText, (OracleConnection)connection);
+            var oraCmd = new OracleCommand(oracleCommandText, (OracleConnection) connection) {UseEdmMapping = true};
+            return oraCmd;
         }
     }
 }

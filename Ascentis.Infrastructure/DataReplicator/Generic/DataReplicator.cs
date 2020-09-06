@@ -39,6 +39,7 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
         public bool UseNativeTypeConvertor { get; set; }
         public bool LiteralParamBinding { get; set; }
         public int SourceCommandCount => _sourceCmds?.Count ?? 0;
+        protected bool IgnoreDropTableException { get; set; }
 
         private IndexedProperty<int, DbCommand> _sourceCommandsIndexer;
         public IndexedProperty<int, DbCommand> SourceCommand =>
@@ -165,7 +166,15 @@ namespace Ascentis.Infrastructure.DataReplicator.Generic
             {
                 var dropTableStatement = BuildDropTableStatement(tableName);
                 using var dropTableCmd = GenericObjectBuilder.Build<TTargetCmd>(dropTableStatement, _targetConnections[tableNumber]);
-                dropTableCmd.ExecuteNonQuery();
+                try
+                {
+                    dropTableCmd.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                    if (!IgnoreDropTableException)
+                        throw;
+                }
 
                 var createTableStatement = BuildCreateTableStatement(tableName, tableDef);
                 using var createTableCmd = GenericObjectBuilder.Build<TTargetCmd>(createTableStatement, _targetConnections[tableNumber]);

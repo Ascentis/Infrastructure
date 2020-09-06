@@ -1018,23 +1018,23 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToOracleUseArrayBinding()
         {
-            using var cmd = new SqlCommand("SELECT TOP 200000 CPCODE_EXP, NPAYCODE FROM TIME", _conn);
+            using var cmd = new SqlCommand("SELECT TOP 200000 IID, CPCODE_EXP, NPAYCODE FROM TIME", _conn);
             using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
             targetConn.Open();
             using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME", targetConn);
             truncateCmd.ExecuteNonQuery();
             var pipeline = new SqlClientDataPipeline { AbortOnTargetAdapterException = true };
             var targetAdapter = new OracleAdapterBulkCommand(
-                "INSERT INTO TIME (CPCODE_EXP, NPAYCODE) VALUES (@@@Params)",
-                new[] { "CPCODE_EXP", "NPAYCODE" }, targetConn, 1000) {UseArrayBinding = true};
+                "INSERT INTO TIME (IID, CPCODE_EXP, NPAYCODE) VALUES (@@@Params)",
+                new[] { "IID", "CPCODE_EXP", "NPAYCODE" }, targetConn, 1000) {UseArrayBinding = true};
             pipeline.Pump(cmd, targetAdapter);
         }
 
         [TestMethod]
-        public void TestSqlToOracle100KRowsWideTable()
+        public void TestSqlToOracle10KRowsWideTable()
         {
             using var cmd = new SqlCommand(@"
-                  SELECT TOP 100000 [IID]
+                  SELECT TOP 10000 [IID]
                   ,[CEMPID]
                   ,[DWORKDATE]
                   ,[TPDATE]
@@ -1366,10 +1366,10 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestSqlToOracle100KRowsWideTableUsingArrayBinding()
+        public void TestSqlToOracle50KRowsWideTableUsingArrayBinding()
         {
             using var cmd = new SqlCommand(@"
-                  SELECT TOP 100000 [IID]
+                  SELECT TOP 50000 [IID]
                   ,[CEMPID]
                   ,[DWORKDATE]
                   ,[TPDATE]
@@ -1709,12 +1709,12 @@ namespace Ascentis.Infrastructure.Test
         {
             using var srcConn = new OracleConnection(Settings.Default.OracleConnectionString);
             srcConn.Open();
-            using var cmd = new OracleCommand("SELECT CPCODE_EXP, NPAYCODE FROM TIME WHERE ROWNUM <= 100", srcConn);
+            using var cmd = new OracleCommand("SELECT IID, NPAYCODE, CPCODE_EXP FROM TIME WHERE ROWNUM <= 100 ORDER BY IID", srcConn);
             using var targetConn = new OracleConnection(Settings.Default.OracleConnectionString);
             targetConn.Open();
             using var truncateCmd = new OracleCommand("TRUNCATE TABLE TIME2", targetConn);
             truncateCmd.ExecuteNonQuery();
-            using var targetCmd = new OracleCommand("INSERT INTO TIME2 (CPCODE_EXP, NPAYCODE) VALUES (:CPCODE_EXP, :NPAYCODE)", targetConn);
+            using var targetCmd = new OracleCommand("INSERT INTO TIME2 (IID, CPCODE_EXP, NPAYCODE) VALUES (:IID, :CPCODE_EXP, :NPAYCODE)", targetConn);
             var pipeline = new OracleDataPipeline { AbortOnTargetAdapterException = true };
             var targetAdapter = new OracleTargetAdapterCommand(targetCmd) { AnsiStringParameters = new[] { "CPCODE_EXP" } };
             pipeline.Pump(cmd, targetAdapter);
@@ -1723,7 +1723,7 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestSqlToOracleBulkInsertBasic()
         {
-            using var cmd = new SqlCommand("SELECT TOP 100205 CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
+            using var cmd = new SqlCommand("SELECT TOP 100205 IID, CEMPID, NPAYCODE, DWORKDATE, TIN, TOUT FROM TIME", _conn);
 
             using var targetConn0 = new OracleConnection(Settings.Default.OracleConnectionString);
             targetConn0.Open();
@@ -1735,7 +1735,7 @@ namespace Ascentis.Infrastructure.Test
 
             var outPipes = new[]
             {
-                new OracleAdapterBulkInsert("TIME2", new [] {"CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 2000) {UseTakeSemantics = false}
+                new OracleAdapterBulkInsert("TIME2", new [] {"IID", "CEMPID", "NPAYCODE", "DWORKDATE", "CPAYTYPE", "TIN", "TOUT"}, targetConn0, 2000) {UseTakeSemantics = false}
             };
             // ReSharper disable once RedundantArgumentDefaultValue
             pipeline.Pump(cmd, outPipes, 5000);

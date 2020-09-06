@@ -18,7 +18,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.S
 
         protected override void MapParams(Dictionary<string, int> paramToMetaIndex)
         {
-            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters);
+            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters, false);
         }
     }
 }

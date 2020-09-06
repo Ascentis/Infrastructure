@@ -2,10 +2,11 @@
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.SQLite;
-using Ascentis.Infrastructure.DataReplicator.Generic;
 using Ascentis.Infrastructure.DataReplicator.SqlClient;
+using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.Oracle;
 using Ascentis.Infrastructure.Sql.DataPipeline.SourceAdapter.Sql.SqlClient;
 using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk;
+using Ascentis.Infrastructure.Sql.DataReplicator.Oracle;
 using Ascentis.Infrastructure.Sql.DataReplicator.SQLite;
 using Ascentis.Infrastructure.Test.Properties;
 using Ascentis.Infrastructure.TestHelpers.AssertExtension;
@@ -30,6 +31,7 @@ namespace Ascentis.Infrastructure.Test
         private const string SelectTop10000FromApprovprOrderByIid = "SELECT TOP 10000 * FROM APPROVPR ORDER BY IID";
         private const string SelectVersionAsSqlServerVersion = "SELECT @@VERSION AS 'SQL Server Version'";
         private const string SelectTop1000FromTimeOrderByIid = "SELECT TOP 1000 * FROM TIME ORDER BY IID";
+        private const string SelectTop1000FromTime2OrderByIidOracle = "SELECT * FROM TIME2 WHERE ROWNUM <= 1000 ORDER BY IID";
         private const string SelectTop1000FromPayrollOrderByIid = "SELECT TOP 1000 * FROM PAYROLL ORDER BY IID";
         private const string SelectTop1000FromATimesheetOrderBySeq = "SELECT TOP 1000 * FROM A_TIMESHEET ORDER BY SEQ";
         private const string SelectTop1000FromAScheduleOrderBySeq = "SELECT TOP 1000 * FROM A_SCHEDULE ORDER BY SEQ";
@@ -200,7 +202,7 @@ namespace Ascentis.Infrastructure.Test
                 Settings.Default.SqlConnectionString, SelectFromSitesOrderByIid,
                 SQLiteConnectionString, SelectFromSitesOrderByIid);
         }
-
+        
         [TestMethod]
         // ReSharper disable once InconsistentNaming
         public void TestBasicReplicateMSSQLToMSSQLTimeTable()
@@ -218,6 +220,26 @@ namespace Ascentis.Infrastructure.Test
             Assert.That.AreEqual<SqlClientSourceAdapter, SqlClientSourceAdapter>(
                 Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,
                 Settings.Default.SqlConnectionString2ndDatabase, SelectAllFromTimeOrderByIid);
+        }
+
+        [TestMethod]
+        // ReSharper disable once InconsistentNaming
+        public void TestBasicReplicateMSSQLToOracleTime2Table()
+        {
+            using var replicator = new OracleDataReplicator<SqlClientSourceAdapter>(
+                    Settings.Default.SqlConnectionString,
+                    Settings.Default.OracleConnectionString)
+            { ParallelismLevel = 2 };
+            replicator.AddSourceTable("TIME2", SelectTop1000FromTimeOrderByIid);
+            replicator.UseTransaction = true;
+            replicator.UseNativeTypeConvertor = true;
+            replicator.ReplicateMode = OracleDataReplicator<SqlClientSourceAdapter>.ReplicateModes.DropTableAndPump;
+            replicator.Prepare();
+            replicator.Replicate(3000, 100);
+            replicator.UnPrepare();
+            Assert.That.AreEqual<SqlClientSourceAdapter, OracleSourceAdapter>(
+                Settings.Default.SqlConnectionString, SelectTop1000FromTimeOrderByIid,
+                Settings.Default.OracleConnectionString, SelectTop1000FromTime2OrderByIidOracle);
         }
 
         [TestMethod]

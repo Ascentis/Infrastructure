@@ -10,11 +10,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.U
         public const int MaxMSSQLParams = 2100;
         public const int MaxMSSQLInsertRows = 1000;
 
-        public static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper =
-            new ColumnMetadataToSqlDbTypeMapper
-            {
-                UseShortParam = true
-            };
+        public static readonly ColumnMetadataToSqlDbTypeMapper ParamMapper = new ColumnMetadataToSqlDbTypeMapper();
 
         public static string ValueToSqlLiteralText(object obj)
         {

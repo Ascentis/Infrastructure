@@ -11,7 +11,7 @@ namespace Ascentis.Infrastructure
         public static DbType From(Type sourceType)
         {
             static OracleDbType GetDbType(Type type) => new OracleParameter("Test", type.IsValueType ? Activator.CreateInstance(type) : null).OracleDbType;
-            return (DbType)GetDbType(sourceType);
+            return (DbType)GetDbType(sourceType != typeof(bool) ? sourceType : typeof(short));
         }
 
         public static DbType From(object value)

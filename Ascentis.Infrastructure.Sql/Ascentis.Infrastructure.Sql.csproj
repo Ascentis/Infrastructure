@@ -57,7 +57,6 @@
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.113.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataPipeline\SourceAdapter\Sql\Oracle\OracleSourceAdapter.cs" />
@@ -85,6 +84,7 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Single\SQLiteTargetAdapterCommand.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\ColumnMetadataToSQLiteDbTypeMapper.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\SQLite\Utils\SQLiteUtils.cs" />
+    <Compile Include="DataReplicator\Oracle\OracleDataReplicator.cs" />
     <Compile Include="DataReplicator\SqlClient\SqlClientDataReplicator.cs" />
     <Compile Include="DataReplicator\SQLite\SQLiteDataReplicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -19,13 +19,12 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Sing
 
         protected override void MapParams(Dictionary<string, int> paramToMetaIndex)
         {
-            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters);
+            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters, false);
         }
 
-        public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
+        public override object GetNativeValue(object value)
         {
-            base.Prepare(source);
-            Cmd.BindByName = true;
+            return OracleUtils.GetNativeValue(value);
         }
     }
 }

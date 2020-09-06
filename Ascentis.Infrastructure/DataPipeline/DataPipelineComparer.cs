@@ -57,10 +57,17 @@ namespace Ascentis.Infrastructure.DataPipeline
                     {
                         var firstValueOriginal = rowsRowsList[0].Value[i];
                         var firstValueDownConverted = source1.DownConvertToText(rowsRowsList[0].Value[i]);
+                        var firstValueCanBeDecimal = decimal.TryParse(firstValueOriginal.ToString(), out var firstValueAsDecimal);
                         for (var j = 1; j < rowsRowsList.Count; j++)
-                            if (!(firstValueOriginal.GetType() == rowsRowsList[j].Value[i].GetType() && firstValueOriginal == rowsRowsList[j].Value[i] ||
-                                firstValueDownConverted == source2.DownConvertToText(rowsRowsList[j].Value[i])))
-                                throw new DataPipelineComparerDataMismatch(firstValueDownConverted, rowsRowsList[j].Value[i]);
+                        {
+                            var secondValueCanBeDecimal = decimal.TryParse(rowsRowsList[j].Value[i].ToString(), out var secondValueAsDecimal);
+                            if (!(firstValueOriginal.GetType() == rowsRowsList[j].Value[i].GetType() &&
+                                  firstValueOriginal == rowsRowsList[j].Value[i] ||
+                                  firstValueDownConverted == source2.DownConvertToText(rowsRowsList[j].Value[i]) ||
+                                  firstValueCanBeDecimal && secondValueCanBeDecimal && firstValueAsDecimal == secondValueAsDecimal))
+                                throw new DataPipelineComparerDataMismatch(firstValueOriginal, rowsRowsList[j].Value[i],
+                                    source1.ColumnMetadatas[i].ColumnName);
+                        }
                     }
 
                     RowCount++;

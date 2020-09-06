@@ -9,11 +9,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SQLite.Util
         // ReSharper disable once InconsistentNaming
         public const int DefaultMaxSQLiteParams = 2100;
 
-        public static readonly ColumnMetadataToSQLiteDbTypeMapper ParamMapper =
-            new ColumnMetadataToSQLiteDbTypeMapper
-            {
-                UseShortParam = true
-            };
+        public static readonly ColumnMetadataToSQLiteDbTypeMapper ParamMapper = new ColumnMetadataToSQLiteDbTypeMapper();
 
         public static object GetNativeValue(object value)
         {

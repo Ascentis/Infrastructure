@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Utils;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
@@ -6,9 +7,11 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
     public class OracleArrayBindingHelper
     {
         public delegate object SourceValueToParamValueDelegate(int columnIndex, IReadOnlyList<object> row);
+
         private readonly List<object[]> _cachedParamsArrayList;
         private readonly IDictionary<string, int> _columnNameToMetadataIndexMap;
         private readonly SourceValueToParamValueDelegate _sourceValueToParamValueDelegate;
+        public bool UseNativeTypeConvertor { get; set; }
 
         public OracleArrayBindingHelper(int batchSize, IDictionary<string, int> columnNameToMetadataIndexMap, SourceValueToParamValueDelegate sourceValueToParamValueDelegate)
         {
@@ -31,7 +34,11 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
                     arr = _cachedParamsArrayList[column.Value];
                     var rowIndex = 0;
                     foreach (var row in rows)
-                        arr[rowIndex++] = _sourceValueToParamValueDelegate(column.Value, row.Value);
+                    {
+                        arr[rowIndex++] = UseNativeTypeConvertor
+                            ? OracleUtils.GetNativeValue(_sourceValueToParamValueDelegate(column.Value, row.Value))
+                            : _sourceValueToParamValueDelegate(column.Value, row.Value);
+                    }
                 }
                 else
                     arr = null;

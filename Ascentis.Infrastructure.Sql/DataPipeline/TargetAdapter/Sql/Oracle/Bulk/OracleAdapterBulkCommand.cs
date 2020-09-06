@@ -77,7 +77,7 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
                     $"Number of columns in target adapter buffer size ({ColumnNameToMetadataIndexMap.Count * BatchSize}) exceeds ORACLE limit of {OracleUtils.DefaultMaxOracleParams} parameters in a query");
             if (!UseArrayBinding)
                 return;
-            _oracleArrayBindingHelper = new OracleArrayBindingHelper(BatchSize, ColumnNameToMetadataIndexMap, SourceValueToParamValue);
+            _oracleArrayBindingHelper = new OracleArrayBindingHelper(BatchSize, ColumnNameToMetadataIndexMap, SourceValueToParamValue) {UseNativeTypeConvertor = UseNativeTypeConvertor};
         }
 
         public override void UnPrepare()
@@ -103,7 +103,12 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref OracleCommand sqlCommand, int rowCount)
         {
             OracleUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, 
-                sqlCommand.Parameters, !UseArrayBinding ? rowCount : 1);
+                sqlCommand.Parameters, !UseArrayBinding ? rowCount : 1, !UseArrayBinding, !UseArrayBinding);
+        }
+
+        public override object GetNativeValue(object value)
+        {
+            return OracleUtils.GetNativeValue(value);
         }
     }
 }
