@@ -26,8 +26,16 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref OracleCommand sqlCommand, int rowCount)
         {
-            OracleUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, 
-                sqlCommand.Parameters, LiteralParamBinding ? rowCount : 1, true);
+            var metaToParamSettings = new MetaToParamSettings
+            {
+                Columns = ColumnNames,
+                Metadatas = Source.ColumnMetadatas,
+                AnsiStringParameters = AnsiStringParameters,
+                ColumnToIndexMap = ColumnNameToMetadataIndexMap,
+                Target = Cmd.Parameters,
+                UseShortParam = true
+            };
+            OracleUtils.ParamMapper.Map(metaToParamSettings, LiteralParamBinding ? rowCount : 1);
         }
 
         public override string ValueToSqlLiteralText(object obj)

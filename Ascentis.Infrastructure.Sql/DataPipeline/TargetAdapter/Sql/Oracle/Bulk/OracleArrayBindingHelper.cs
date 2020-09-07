@@ -13,7 +13,10 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.Oracle.Bulk
         private readonly SourceValueToParamValueDelegate _sourceValueToParamValueDelegate;
         public bool UseNativeTypeConvertor { get; set; }
 
-        public OracleArrayBindingHelper(int batchSize, IDictionary<string, int> columnNameToMetadataIndexMap, SourceValueToParamValueDelegate sourceValueToParamValueDelegate)
+        public OracleArrayBindingHelper(
+            int batchSize, 
+            IDictionary<string, int> columnNameToMetadataIndexMap, 
+            SourceValueToParamValueDelegate sourceValueToParamValueDelegate)
         {
             _columnNameToMetadataIndexMap = columnNameToMetadataIndexMap;
             _sourceValueToParamValueDelegate = sourceValueToParamValueDelegate;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Single
@@ -16,9 +17,18 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.S
             return Cmd.ParseParameters();
         }
 
-        protected override void MapParams(Dictionary<string, int> paramToMetaIndex)
+        protected override void MapParams(IEnumerable<string> columnNames, Dictionary<string, int> paramToMetaIndex)
         {
-            ParamMapper.Map(paramToMetaIndex, Source.ColumnMetadatas, AnsiStringParameters, Cmd.Parameters, false);
+            var metaToParamSettings = new MetaToParamSettings
+            {
+                Columns = columnNames,
+                Metadatas = Source.ColumnMetadatas,
+                AnsiStringParameters = AnsiStringParameters,
+                ColumnToIndexMap = paramToMetaIndex,
+                Target = Cmd.Parameters,
+                UseShortParam = false
+            };
+            ParamMapper.Map(metaToParamSettings);
         }
     }
 }

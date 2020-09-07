@@ -71,6 +71,7 @@
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataList.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromClass.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromDbReader.cs" />
+    <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\MetaToParamSettings.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\IOnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArrayEqualityComparer.cs" />

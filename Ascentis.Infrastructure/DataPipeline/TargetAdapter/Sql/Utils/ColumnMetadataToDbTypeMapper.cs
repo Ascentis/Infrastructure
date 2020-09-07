@@ -2,36 +2,46 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public abstract class ColumnMetadataToDbTypeMapper
     {
         protected abstract DbParameter AddParam(DbParameterCollection target, string name, int type);
 
         protected abstract int SqlTypeFromType(Type type);
 
-        public void Map(IDictionary<string, int> columns, 
-            ColumnMetadataList metadatas, 
-            IEnumerable<string> ansiStringParameters, 
-            DbParameterCollection target, 
-            bool useShortParam,
-            string paramSuffix = "")
+        public void Map(MetaToParamSettings settings)
         {
+            ArgsChecker.CheckForNull<ArgumentNullException>(new []
+            {
+                ArgsChecker.Arg(settings.Metadatas, nameof(settings.Metadatas)),
+                ArgsChecker.Arg(settings.Columns, nameof(settings.Columns)),
+                ArgsChecker.Arg(settings.ColumnToIndexMap, nameof(settings.ColumnToIndexMap)),
+                ArgsChecker.Arg(settings.Target, nameof(settings.Target))
+            });
             var index = 0;
-            var ansiParameters = ansiStringParameters?.ToDictionary(
+            var ansiParameters = settings.AnsiStringParameters?.ToDictionary(
                 ansiParam => ansiParam, 
                 ansiParam => 0) ?? new Dictionary<string, int>();
             // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach(var column in columns)
+            foreach(var columnName in settings.Columns)
             {
-                var meta = column.Value >= 0 ? metadatas[column.Value] : ColumnMetadata.NullMeta;
+                if (!settings.ColumnToIndexMap.TryGetValue(columnName, out var columnIndex))
+                    columnIndex = -1;
+                var meta = columnIndex >= 0 ? settings.Metadatas[columnIndex] : ColumnMetadata.NullMeta;
 
-                var param = AddParam(target, (useShortParam ? $"P{index++}" : column.Key) + paramSuffix, SqlTypeFromType(meta.DataType));
-                if (!string.IsNullOrEmpty(meta.ColumnName) && (param.DbType == DbType.String || param.DbType == DbType.StringFixedLength) && ansiParameters.ContainsKey(meta.ColumnName))
+                var param = AddParam(settings.Target, (settings.UseShortParam ? $"P{index++}" : columnName) + (settings.ParamSuffix ?? ""), SqlTypeFromType(meta.DataType));
+                if (!string.IsNullOrEmpty(meta.ColumnName)
+                    && (param.DbType == DbType.String || param.DbType == DbType.StringFixedLength)
+                    && ansiParameters.ContainsKey(meta.ColumnName))
+                {
                     param.DbType = param.DbType == DbType.String ? DbType.AnsiString : DbType.AnsiStringFixedLength;
+                }
 
                 // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (param.DbType)
@@ -52,17 +62,14 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             }
         }
 
-        public void Map(IDictionary<string, int> columns, 
-            ColumnMetadataList metadatas, 
-            IEnumerable<string> ansiStringParameters, 
-            DbParameterCollection target, 
-            int batchCount,
-            bool useShortParam,
-            bool useSuffix = true)
+        public void Map(MetaToParamSettings settings, int batchCount)
         {
             for (var i = 0; i < batchCount; i++)
-                // ReSharper disable once PossibleMultipleEnumeration
-                Map(columns, metadatas, ansiStringParameters, target, useShortParam, useSuffix ? $"_{i}" : "");
+            {
+                if (settings.UseDefaultSuffix)
+                    settings.ParamSuffix = $"_{i}";
+                Map(settings);
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
 
         protected abstract IList<string> ParseParameters();
 
-        protected abstract void MapParams(Dictionary<string, int> paramToMetaIndex);
+        protected abstract void MapParams(IEnumerable<string> columnNames, Dictionary<string, int> paramToMetaIndex);
 
         public override void Prepare(ISourceAdapter<PoolEntry<object[]>> source)
         {
@@ -52,7 +52,7 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic
                 _paramToMetaMap[i++] = metaIndex;
             }
 
-            MapParams(paramToMetaIndex);
+            MapParams(parameters, paramToMetaIndex);
             InvokeBeforeCommandPrepare(Cmd);
             Cmd.Prepare();
         }

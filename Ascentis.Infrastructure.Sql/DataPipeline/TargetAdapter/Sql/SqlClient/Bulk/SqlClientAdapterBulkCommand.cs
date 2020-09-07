@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using Ascentis.Infrastructure.DataPipeline;
 using Ascentis.Infrastructure.DataPipeline.Exceptions;
 using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Generic;
+using Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils;
 using Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Utils;
 
 namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.Bulk
@@ -52,7 +53,16 @@ namespace Ascentis.Infrastructure.Sql.DataPipeline.TargetAdapter.Sql.SqlClient.B
 
         protected override void MapParams(IDictionary<string, int> paramToMetaIndex, ref SqlCommand sqlCommand, int rowCount)
         {
-            SqlClientUtils.ParamMapper.Map(ColumnNameToMetadataIndexMap, Source.ColumnMetadatas, AnsiStringParameters, sqlCommand.Parameters, rowCount, true);
+            var metaToParamSettings = new MetaToParamSettings
+            {
+                Columns = ColumnNames,
+                Metadatas = Source.ColumnMetadatas,
+                AnsiStringParameters = AnsiStringParameters,
+                ColumnToIndexMap = paramToMetaIndex,
+                Target = sqlCommand.Parameters,
+                UseShortParam = true
+            };
+            SqlClientUtils.ParamMapper.Map(metaToParamSettings, rowCount);
         }
     }
 }
