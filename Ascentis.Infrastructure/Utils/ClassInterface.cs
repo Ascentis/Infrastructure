@@ -30,12 +30,19 @@ namespace Ascentis.Infrastructure
     [SuppressMessage("ReSharper", "ConvertToLambdaExpression")]
     public class ClassInterface
     {
-        private static readonly ConcurrentDictionary<Tuple<Type, string>, Delegate> StaticMethodDelegatesCache;
+        private sealed class TypeNamePair : Tuple<Type, string>
+        {
+            internal TypeNamePair(Type type, string name) : base(type, name) {}
+            internal Type Type => Item1;
+            internal string Name => Item2;
+        }
+
+        private static readonly ConcurrentDictionary<TypeNamePair, Delegate> StaticMethodDelegatesCache;
         private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> ClassInterfaceDelegatePropertiesCache;
 
         static ClassInterface()
         {
-            StaticMethodDelegatesCache = new ConcurrentDictionary<Tuple<Type, string>, Delegate>();
+            StaticMethodDelegatesCache = new ConcurrentDictionary<TypeNamePair, Delegate>();
             ClassInterfaceDelegatePropertiesCache = new ConcurrentDictionary<Type, List<PropertyInfo>>();
         }
 
@@ -43,17 +50,15 @@ namespace Ascentis.Infrastructure
         {
             const BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy;
 
-            var properties = ClassInterfaceDelegatePropertiesCache.GetOrAdd(GetType(), 
-                type =>
+            var properties = ClassInterfaceDelegatePropertiesCache.GetOrAdd(GetType(), type =>
             {
                 return type.GetProperties().Where(prop => typeof(Delegate).IsAssignableFrom(prop.PropertyType)).ToList();
             });
             foreach (var prop in properties)
             {
-                var method = StaticMethodDelegatesCache.GetOrAdd(new Tuple<Type, string>(targetType, prop.Name), 
-                    cacheKey =>
+                var method = StaticMethodDelegatesCache.GetOrAdd(new TypeNamePair(targetType, prop.Name), cacheKey =>
                 {
-                    return GenericMethod.BuildMethodDelegate(cacheKey.Item2, cacheKey.Item1, prop.PropertyType, bindingFlags);
+                    return GenericMethod.BuildMethodDelegate(cacheKey.Name, cacheKey.Type, prop.PropertyType, bindingFlags);
                 });
                 prop.SetValue(this, method);
             }
