@@ -7,6 +7,12 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Sql.Generic
        This class represents an static "interface" providing sql command and connection
        building capabilities.
 
+       Overloaded cast operator from Type reference added to mimic process of obtaining
+       an interface from an object typically done by casting the object to the desired
+       interface. Here we "cast" from the class Type reference to the class IClassSqlBuilder.
+       The operation will create an instance of the class IClassSqlBuilder ready to be used
+       to access the BuildConnection() and BuildCommand() static methods in the target class.
+
        See comments in base class ClassInterface
     */
 

@@ -16,8 +16,8 @@ using System.Reflection;
    the target classes by assigning delegates in descendant classes of ClassInterface that
    match public static methods in the target class (or parents) by name.
 
-   In order to implement a few such as "overridden" static methods simply declare methods 
-   in the descendant class using the "new" modified and the new version of the method will be
+   In order to implement a few such "overridden" static methods simply declare methods 
+   in the descendant class using the "new" modifier and the new version of the method will be
    picked up by ClassInterface.
    
    If the prototype of the delegates don't match the target class public static methods
