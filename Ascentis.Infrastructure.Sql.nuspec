@@ -2,19 +2,19 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure.Sql</id>
-    <version>1.0.0.2</version>
+    <version>1.1.0.3</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>SqlClient and SQLite specific set of classes extending behavior of DataPipeline and DataReplicator classes provided in Ascentis.Infrastructure base package</description>
-    <releaseNotes>First Release</releaseNotes>
+    <releaseNotes>Added support for Oracle database</releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>threading Parallel SQLite MSSQL batch bulk</tags>
     <dependencies>
       <dependency id="System.Data.SQLite" version="1.0.113.1" />
-      <dependency id="Ascentis.Infrastructure" version="2.9.0.22" />
+      <dependency id="Ascentis.Infrastructure" version="2.10.0.23" />
       <dependency id="Oracle.ManagedDataAccess" version="19.8.0" />
     </dependencies>
     <contentFiles>
