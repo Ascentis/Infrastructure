@@ -19,8 +19,8 @@ namespace Ascentis.Infrastructure
         }
     }
 
-    public class ConcurrentBagSlim<T> : ConcurrentStackedBagSlim<T> where T : IComparable {}
-    public class ConcurrentStackSlim<T> : ConcurrentStackedBagSlim<T> where T : IComparable {}
+    public class ConcurrentBagSlim<T> : ConcurrentStackedBagSlim<T> {}
+    public class ConcurrentStackSlim<T> : ConcurrentStackedBagSlim<T> {}
 
     public class ConcurrentStackedBagSlim<T> : 
         IProducerConsumerCollection<T>, 
@@ -28,7 +28,6 @@ namespace Ascentis.Infrastructure
         IReadOnlyCollection<T>,
         IConcurrentBag<T>,
         IConcurrentStack<T>
-        where T : IComparable
     {
         private volatile StackedBagSlimNode<T> _head;
 
