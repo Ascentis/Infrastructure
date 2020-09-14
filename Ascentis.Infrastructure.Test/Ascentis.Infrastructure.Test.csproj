@@ -92,6 +92,7 @@
     <Compile Include="UnitTestConcurrentObjectAccessor.cs" />
     <Compile Include="UnitTestRetrier.cs" />
     <Compile Include="UnitTestSerializerToValuesArray.cs" />
+    <Compile Include="UnitTestConcurrentBagSlim.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

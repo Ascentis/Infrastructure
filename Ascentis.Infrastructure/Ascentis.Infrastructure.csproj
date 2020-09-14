@@ -72,6 +72,9 @@
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromClass.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromDbReader.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\MetaToParamSettings.cs" />
+    <Compile Include="Patterns\Concurrent\StackedBag\ConcurrentStackedBagSlim.cs" />
+    <Compile Include="Patterns\Concurrent\StackedBag\IConcurrentBag.cs" />
+    <Compile Include="Patterns\Concurrent\StackedBag\IConcurrentStack.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\IOnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArrayEqualityComparer.cs" />
