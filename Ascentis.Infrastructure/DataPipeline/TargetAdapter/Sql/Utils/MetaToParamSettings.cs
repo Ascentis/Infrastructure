@@ -2,6 +2,8 @@
 using System.Data.Common;
 using Ascentis.Infrastructure.DataPipeline.SourceAdapter.Utils;
 
+#nullable enable
+
 namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 {
     public class MetaToParamSettings
