@@ -92,11 +92,11 @@ namespace Ascentis.Infrastructure
             if (!found)
                 return false;
 
-            var tmpBag = new ConcurrentStackedBagSlim<T>();
+            StackedBagSlimNode<T> tmpHeadNode = null;
             for (var i = tmpList.Count - 1; i >= 0; i--)
-                tmpBag.Add(tmpList[i]);
+                tmpHeadNode = new StackedBagSlimNode<T>(tmpList[i]) {Next = tmpHeadNode};
 
-            _head = tmpBag._head;
+            _head = tmpHeadNode;
 
             return true;
         }
