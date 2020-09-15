@@ -8,19 +8,19 @@ namespace Ascentis.Infrastructure
 
     public class ConcurrentStackedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentStack<T>
     {
-        private volatile StackedBagSlimNode<T> _head;
+        private volatile StackedBagNodeSlim<T> _head;
 
         public override bool Empty => _head == null;
 
         public override void Add(T value)
         {
-            var node = new StackedBagSlimNode<T>(value);
+            var node = new StackedBagNodeSlim<T>(value);
             Add(node, node);
         }
 
-        private void Add(StackedBagSlimNode<T> newHead, StackedBagSlimNode<T> tail)
+        private void Add(StackedBagNodeSlim<T> newHead, StackedBagNodeSlim<T> tail)
         {
-            StackedBagSlimNode<T> localRoot;
+            StackedBagNodeSlim<T> localRoot;
             do
             {
                 localRoot = _head;
@@ -30,10 +30,10 @@ namespace Ascentis.Infrastructure
 
         protected override void AddRangeInternal(T[] items, int startIndex, int count)
         {
-            var tail = new StackedBagSlimNode<T>(items[0]);
+            var tail = new StackedBagNodeSlim<T>(items[0]);
             var newHead = tail;
             for (var i = 1; i < count; i++)
-                newHead = new StackedBagSlimNode<T>(items[i]) { Next = newHead };
+                newHead = new StackedBagNodeSlim<T>(items[i]) { Next = newHead };
             Add(newHead, tail);
         }
 
@@ -65,7 +65,7 @@ namespace Ascentis.Infrastructure
 
         public override bool TryTake(out T retVal)
         {
-            StackedBagSlimNode<T> localRoot;
+            StackedBagNodeSlim<T> localRoot;
             do
             {
                 localRoot = _head;
@@ -103,7 +103,7 @@ namespace Ascentis.Infrastructure
         }
 
         /* This algorithm is thread safe even though there's no locking of any sort
-           Once we link nodes the Next property of StackedBagSlimNode is immutable. Once storing _head in node local var
+           Once we link nodes the Next property of StackedBagNodeSlim is immutable. Once storing _head in node local var
            GetEnumerator() walks a "snapshot" in time of the contents of the structure */
         public override IEnumerator<T> GetEnumerator()
         {

@@ -9,8 +9,8 @@ namespace Ascentis.Infrastructure
     public class ConcurrentQueuedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentQueue<T>
        
     {
-        private volatile QueuedBagSlimNode<T> _head;
-        private volatile QueuedBagSlimNode<T> _tail;
+        private volatile QueuedBagNodeSlim<T> _head;
+        private volatile QueuedBagNodeSlim<T> _tail;
 
         public ConcurrentQueuedBagSlim()
         {
@@ -19,7 +19,7 @@ namespace Ascentis.Infrastructure
 
         private void Init()
         {
-            _tail = new QueuedBagSlimNode<T>(default);
+            _tail = new QueuedBagNodeSlim<T>();
             _head = _tail;
         }
 
@@ -47,11 +47,11 @@ namespace Ascentis.Infrastructure
 
         public override void Add(T value)
         {
-            var node = new QueuedBagSlimNode<T>(default);
+            var node = new QueuedBagNodeSlim<T>();
             Add(value, node, node);
         }
 
-        private void Add(T value, QueuedBagSlimNode<T> newTailHead, QueuedBagSlimNode<T> newTail)
+        private void Add(T value, QueuedBagNodeSlim<T> newTailHead, QueuedBagNodeSlim<T> newTail)
         {
             do
             {
@@ -67,18 +67,18 @@ namespace Ascentis.Infrastructure
 
         protected override void AddRangeInternal(T[] items, int startIndex, int count)
         {
-            QueuedBagSlimNode<T> newTailHead = null;
-            QueuedBagSlimNode<T> newNode = null;
+            QueuedBagNodeSlim<T> newTailHead = null;
+            QueuedBagNodeSlim<T> newNode = null;
             for (var i = 1; i < count; i++)
             {
                 var prevTail = newNode;
-                newNode = new QueuedBagSlimNode<T>(items[i]) {Ground = false};
+                newNode = new QueuedBagNodeSlim<T>(items[i]);
                 newTailHead ??= newNode;
                 if (prevTail != null)
                     prevTail.Next = newNode;
             }
 
-            var newTail = new QueuedBagSlimNode<T>(default);
+            var newTail = new QueuedBagNodeSlim<T>();
             if (newNode != null)
                 newNode.Next = newTail;
             else
@@ -104,7 +104,7 @@ namespace Ascentis.Infrastructure
 
         public override bool TryTake(out T retVal)
         {
-            QueuedBagSlimNode<T> localHead;
+            QueuedBagNodeSlim<T> localHead;
             do
             {
                 localHead = _head;

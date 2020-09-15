@@ -85,7 +85,7 @@ namespace Ascentis.Infrastructure
             return GetEnumerator();
         }
 
-        protected IEnumerator<T> GetEnumerator(SlimNodeBase<T> startNode)
+        protected IEnumerator<T> GetEnumerator(BaseNodeSlim<T> startNode)
         {
             var node = startNode;
             do
