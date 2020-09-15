@@ -14,7 +14,7 @@ namespace Ascentis.Infrastructure
 
         internal QueuedBagNodeSlim() : base(default)
         {
-            Ground = true; // Default to grounded nodes
+            Ground = true;
         }
 
         internal void EnsureUngrounded()
