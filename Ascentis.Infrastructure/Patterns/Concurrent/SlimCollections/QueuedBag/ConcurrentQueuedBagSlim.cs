@@ -7,7 +7,6 @@ namespace Ascentis.Infrastructure
     public class ConcurrentQueueSlim<T> : ConcurrentQueuedBagSlim<T> {}
 
     public class ConcurrentQueuedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentQueue<T>
-       
     {
         private volatile QueuedBagNodeSlim<T> _head;
         private volatile QueuedBagNodeSlim<T> _tail;
