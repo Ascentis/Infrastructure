@@ -18,11 +18,10 @@ namespace Ascentis.Infrastructure
 
         private void Init()
         {
-            _tail = new QueuedBagNodeSlim<T>();
-            _head = _tail;
+            _head = _tail = new QueuedBagNodeSlim<T>();
         }
 
-        public override bool Empty => _head.Next == null;
+        public override bool IsEmpty => _head.Next == null;
 
         public void Enqueue(T value)
         {

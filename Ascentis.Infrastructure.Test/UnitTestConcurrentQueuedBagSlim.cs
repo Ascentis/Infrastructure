@@ -29,7 +29,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(14, queue.Take());
             Assert.AreEqual(16, queue.Take());
             Assert.IsFalse(queue.TryTake(out var _));
-            Assert.IsTrue(queue.Empty);
+            Assert.IsTrue(queue.IsEmpty);
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(10, bag.Take());
             Assert.AreEqual(12, bag.Take());
             Assert.AreEqual(14, bag.Take());
-            Assert.IsTrue(bag.Empty);
+            Assert.IsTrue(bag.IsEmpty);
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace Ascentis.Infrastructure.Test
             bag.AddRange(arr);
             Assert.AreEqual(5, bag.Take());
             Assert.AreEqual(10, bag.Take());
-            Assert.IsTrue(bag.Empty);
+            Assert.IsTrue(bag.IsEmpty);
         }
 
         [TestMethod]
@@ -95,15 +95,18 @@ namespace Ascentis.Infrastructure.Test
         [TestMethod]
         public void TestThreadedConcurrentQueueSlim()
         {
-            const int loopCount = 50000;
+            const int loopCount = 200000;
 
             var done = false;
             var sum = 0;
             var bag = new ConcurrentQueueSlim<int>();
             var threadInserter = new Thread(_ =>
             {
-                for (var i = 1; i <= loopCount; i++)
-                    bag.Enqueue(i);
+                var parallel = new BoundedParallel(2, 4);
+                parallel.For(1, loopCount + 1, (i) =>
+                {
+                    bag.Enqueue(i > 50000 ? 0 : i);
+                });
                 done = true;
             });
             threadInserter.Start();
@@ -112,7 +115,7 @@ namespace Ascentis.Infrastructure.Test
             {
                 while (true)
                 {
-                    if (done && bag.Empty)
+                    if (done && bag.IsEmpty)
                         break;
                     if (!bag.TryDequeue(out var n))
                         continue;

@@ -10,6 +10,6 @@ namespace Ascentis.Infrastructure
         bool TryPeek(out T result);
         T Dequeue();
         void Clear();
-        bool Empty { get; }
+        bool IsEmpty { get; }
     }
 }

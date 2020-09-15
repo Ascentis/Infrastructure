@@ -10,7 +10,7 @@ namespace Ascentis.Infrastructure
     {
         private volatile StackedBagNodeSlim<T> _head;
 
-        public override bool Empty => _head == null;
+        public override bool IsEmpty => _head == null;
 
         public override void Add(T value)
         {

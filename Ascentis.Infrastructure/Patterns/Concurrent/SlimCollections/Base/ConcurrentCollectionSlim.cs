@@ -105,7 +105,7 @@ namespace Ascentis.Infrastructure
 
         public abstract void Add(T item);
         public abstract void Clear();
-        public abstract bool Empty { get; }
+        public abstract bool IsEmpty { get; }
         public abstract bool TryAdd(T item);
         public abstract bool TryTake(out T item);
         public abstract bool TryPeek(out T retVal);
