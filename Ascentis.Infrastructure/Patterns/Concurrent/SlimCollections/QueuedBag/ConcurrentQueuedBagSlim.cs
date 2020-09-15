@@ -6,17 +6,38 @@ namespace Ascentis.Infrastructure
 {
     public class ConcurrentQueueSlim<T> : ConcurrentQueuedBagSlim<T> {}
 
-    public class ConcurrentQueuedBagSlim<T> : SlimCollection<T>
+    public class ConcurrentQueuedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentQueue<T>
        
     {
-        private volatile SlimNode<T> _head;
-        private volatile SlimNode<T> _tail;
+        private volatile QueuedBagSlimNode<T> _head;
+        private volatile QueuedBagSlimNode<T> _tail;
 
-        public override bool Empty => _head == null;
+        public ConcurrentQueuedBagSlim()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
+            _tail = new QueuedBagSlimNode<T>(default);
+            _head = _tail;
+        }
+
+        public override bool Empty => _head.Next == null;
 
         public void Enqueue(T value)
         {
             Add(value);
+        }
+
+        public void EnqueueRange(T[] items)
+        {
+            AddRange(items);
+        }
+
+        public void EnqueueRange(T[] items, int startIndex, int count)
+        {
+            AddRange(items, startIndex, count);
         }
 
         public bool TryDequeue(out T retVal)
@@ -26,40 +47,53 @@ namespace Ascentis.Infrastructure
 
         public override void Add(T value)
         {
-            SlimNode<T> firstNode = null;
-            var node = new SlimNode<T>(value);
+            var node = new QueuedBagSlimNode<T>(default);
+            Add(value, node, node);
+        }
+
+        private void Add(T value, QueuedBagSlimNode<T> newTailHead, QueuedBagSlimNode<T> newTail)
+        {
             do
             {
                 var localTail = _tail;
-
-                if (localTail != null && Interlocked.CompareExchange(ref localTail.Next, node, null) != null)
+                if (Interlocked.CompareExchange(ref localTail.Next, newTailHead, null) != null)
                     continue;
-
-                if (localTail == null)
-                {
-                    if (Interlocked.CompareExchange(ref _tail, node, null) != null)
-                        continue;
-
-                    _head = node;
-                    break;
-                }
-
-                _tail = node;
-                break;
+                localTail.Value = value;
+                _tail = newTail;
+                localTail.Ground = false;
+                return;
             } while (true);
         }
 
-        public override void AddRange(T[] items, int startIndex, int count)
+        protected override void AddRangeInternal(T[] items, int startIndex, int count)
         {
-            ValidatePushPopRangeInput(items, startIndex, count);
-            if (count <= 0)
-                return;
+            QueuedBagSlimNode<T> newTailHead = null;
+            QueuedBagSlimNode<T> newNode = null;
+            for (var i = 1; i < count; i++)
+            {
+                var prevTail = newNode;
+                newNode = new QueuedBagSlimNode<T>(items[i]) {Ground = false};
+                newTailHead ??= newNode;
+                if (prevTail != null)
+                    prevTail.Next = newNode;
+            }
+
+            var newTail = new QueuedBagSlimNode<T>(default);
+            if (newNode != null)
+                newNode.Next = newTail;
+            else
+                newTailHead = newTail;
+            Add(items[0], newTailHead, newTail);
+        }
+
+        public T Dequeue()
+        {
+            return Take();
         }
 
         public override void Clear()
         {
-            _head = null;
-            _tail = null;
+            Init();
         }
         
         public override bool TryAdd(T item)
@@ -68,33 +102,34 @@ namespace Ascentis.Infrastructure
             return true;
         }
 
-        public override bool Remove(T item)
-        {
-            return false;
-        }
-        
         public override bool TryTake(out T retVal)
         {
-            SlimNode<T> localHead;
+            QueuedBagSlimNode<T> localHead;
             do
             {
                 localHead = _head;
-                if (localHead != null)
+                if (localHead.Next != null)
                     continue;
                 retVal = default;
                 return false;
             } while (Interlocked.CompareExchange(ref _head, localHead.Next, localHead) != localHead);
 
-            if (localHead.Next == null)
-                Interlocked.CompareExchange(ref _tail, null, localHead);
-
+            localHead.EnsureUngrounded();
             retVal = localHead.Value;
             return true;
         }
         
         public override bool TryPeek(out T retVal)
         {
-            retVal = default;
+            var localHead = _head;
+            if (localHead.Next == null)
+            {
+                retVal = default;
+                return false;
+            }
+
+            localHead.EnsureUngrounded();
+            retVal = localHead.Value;
             return true;
         }
 

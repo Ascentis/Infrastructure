@@ -7,7 +7,7 @@ using System.Linq;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public abstract class SlimCollection<T> : 
+    public abstract class ConcurrentCollectionSlim<T> : 
         ICollection<T>, 
         IReadOnlyCollection<T>, 
         IProducerConsumerCollection<T>,
@@ -23,6 +23,14 @@ namespace Ascentis.Infrastructure
             if (items == null)
                 throw new ArgumentNullException(nameof(items));
             AddRange(items, 0, items.Length);
+        }
+
+        public void AddRange(T[] items, int startIndex, int count)
+        {
+            ValidatePushPopRangeInput(items, startIndex, count);
+            if (count <= 0)
+                return;
+            AddRangeInternal(items, startIndex, count);
         }
 
         protected static void ValidatePushPopRangeInput(T[] items, int startIndex, int count)
@@ -77,7 +85,7 @@ namespace Ascentis.Infrastructure
             return GetEnumerator();
         }
 
-        protected IEnumerator<T> GetEnumerator(SlimNode<T> startNode)
+        protected IEnumerator<T> GetEnumerator(SlimNodeBase<T> startNode)
         {
             var node = startNode;
             do
@@ -86,18 +94,22 @@ namespace Ascentis.Infrastructure
                     yield return node.Value;
                 else
                     break;
-                node = node.Next;
+                node = node.GetNext();
             } while (true);
         }
 
+        public bool Remove(T item)
+        {
+            throw new NotSupportedException("Remove() not supported");
+        }
+
         public abstract void Add(T item);
-        public abstract bool Remove(T item);
         public abstract void Clear();
         public abstract bool Empty { get; }
         public abstract bool TryAdd(T item);
         public abstract bool TryTake(out T item);
         public abstract bool TryPeek(out T retVal);
-        public abstract void AddRange(T[] items, int startIndex, int count);
+        protected abstract void AddRangeInternal(T[] items, int startIndex, int count);
         public abstract IEnumerator<T> GetEnumerator();
     }
 }

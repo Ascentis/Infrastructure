@@ -41,21 +41,6 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestRemove()
-        {
-            var bag = new ConcurrentStackedBagSlim<int>();
-            bag.Add(10);
-            bag.Add(11);
-            bag.Add(12);
-            Assert.IsTrue(bag.Remove(11));
-            Assert.IsTrue(bag.TryPop(out var n));
-            Assert.AreEqual(12, n);
-            Assert.IsTrue(bag.TryPop(out n));
-            Assert.AreEqual(10, n);
-            Assert.IsTrue(bag.Empty);
-        }
-
-        [TestMethod]
         public void TestToArray()
         {
             var bag = new ConcurrentStackedBagSlim<int>();

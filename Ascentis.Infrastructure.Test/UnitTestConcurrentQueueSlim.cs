@@ -43,6 +43,54 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(36, sum);
         }
 
+        [TestMethod]
+        public void TestPushRange()
+        {
+            var bag = new ConcurrentQueueSlim<int>();
+            bag.Add(5);
+            var arr = new[] { 10, 12, 14 };
+            bag.AddRange(arr);
+            Assert.AreEqual(5, bag.Take());
+            Assert.AreEqual(10, bag.Take());
+            Assert.AreEqual(12, bag.Take());
+            Assert.AreEqual(14, bag.Take());
+            Assert.IsTrue(bag.Empty);
+        }
+
+        [TestMethod]
+        public void TestPushRangeOneElement()
+        {
+            var bag = new ConcurrentQueueSlim<int>();
+            bag.Add(5);
+            var arr = new[] { 10 };
+            bag.AddRange(arr);
+            Assert.AreEqual(5, bag.Take());
+            Assert.AreEqual(10, bag.Take());
+            Assert.IsTrue(bag.Empty);
+        }
+
+        [TestMethod]
+        public void TestPushRangeInParallel()
+        {
+            const int itemCount = 10000;
+            var bag = new ConcurrentQueueSlim<int>();
+            var threadAdd = new Thread(_ =>
+            {
+                for (var i = 1; i <= itemCount; i++)
+                {
+                    bag.Add(i);
+                    Thread.Yield();
+                }
+            });
+            threadAdd.Start();
+            var arr = new[] { itemCount + 1, itemCount + 2, itemCount + 3, itemCount + 4, itemCount + 5 };
+            bag.AddRange(arr);
+            threadAdd.Join();
+            Assert.AreEqual(itemCount + arr.Length, bag.Count);
+            var sum = bag.Sum();
+            Assert.AreEqual(50055015, sum);
+        }
+
 
         [TestMethod]
         public void TestThreadedConcurrentQueueSlim()
