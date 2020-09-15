@@ -8,18 +8,6 @@ using System.Threading;
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    internal class StackedBagSlimNode<T>
-    {
-        internal T Value { get; }
-        internal StackedBagSlimNode<T> Next;
-
-        internal StackedBagSlimNode(T value)
-        {
-            Value = value;
-        }
-    }
-
-    public class ConcurrentBagSlim<T> : ConcurrentStackedBagSlim<T> {}
     public class ConcurrentStackSlim<T> : ConcurrentStackedBagSlim<T> {}
 
     public class ConcurrentStackedBagSlim<T> : 
@@ -29,7 +17,7 @@ namespace Ascentis.Infrastructure
         IConcurrentBag<T>,
         IConcurrentStack<T>
     {
-        private volatile StackedBagSlimNode<T> _head;
+        private volatile SlimNode<T> _head;
 
         public bool Empty => _head == null;
         public int Count => this.Count(_ => true);
@@ -39,18 +27,65 @@ namespace Ascentis.Infrastructure
 
         public void Add(T value)
         {
-            var node = new StackedBagSlimNode<T>(value);
-            StackedBagSlimNode<T> localRoot;
+            var node = new SlimNode<T>(value);
+            AddNode(node, node);
+        }
+
+        private void AddNode(SlimNode<T> newHead, SlimNode<T> tail)
+        {
+            SlimNode<T> localRoot;
             do
             {
                 localRoot = _head;
-                node.Next = localRoot;
-            } while (Interlocked.CompareExchange(ref _head, node, localRoot) != localRoot);
+                tail.Next = localRoot;
+            } while (Interlocked.CompareExchange(ref _head, newHead, localRoot) != localRoot);
+        }
+
+        public void AddRange(T[] items, int startIndex, int count)
+        {
+            ValidatePushPopRangeInput(items, startIndex, count);
+            if (count <= 0)
+                return;
+            var tail = new SlimNode<T>(items[0]);
+            var newHead = tail;
+            for (var i = 1; i < count; i++)
+                newHead = new SlimNode<T>(items[i]) { Next = newHead };
+            AddNode(newHead, tail);
+        }
+
+        public void AddRange(T[] items)
+        {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
+            PushRange(items, 0, items.Length);
         }
 
         public void Push(T item)
         {
             Add(item);
+        }
+
+        public void PushRange(T[] items, int startIndex, int count)
+        {
+            AddRange(items, startIndex, count);
+        }
+
+        public void PushRange(T[] items)
+        {
+            AddRange(items);
+        }
+
+        private static void ValidatePushPopRangeInput(T[] items, int startIndex, int count)
+        {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count), "Count out of range calling PushRange()");
+            var length = items.Length;
+            if (startIndex >= length || startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex), "StartIndex out of range calling PushRange()");
+            if (length - count < startIndex)
+                throw new ArgumentException("Invalid count calling PushRange()");
         }
 
         public void Clear()
@@ -65,6 +100,8 @@ namespace Ascentis.Infrastructure
 
         public void CopyTo(T[] array, int arrayIndex)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
             foreach (var value in this)
                 array[arrayIndex++] = value;
         }
@@ -92,9 +129,9 @@ namespace Ascentis.Infrastructure
             if (!found)
                 return false;
 
-            StackedBagSlimNode<T> tmpHeadNode = null;
+            SlimNode<T> tmpHeadNode = null;
             for (var i = tmpList.Count - 1; i >= 0; i--)
-                tmpHeadNode = new StackedBagSlimNode<T>(tmpList[i]) {Next = tmpHeadNode};
+                tmpHeadNode = new SlimNode<T>(tmpList[i]) {Next = tmpHeadNode};
 
             _head = tmpHeadNode;
 
@@ -103,13 +140,15 @@ namespace Ascentis.Infrastructure
 
         public void CopyTo(Array array, int index)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
             foreach (var value in this)
                 array.SetValue(value, index++);
         }
 
         public bool TryTake(out T retVal)
         {
-            StackedBagSlimNode<T> localRoot;
+            SlimNode<T> localRoot;
             do
             {
                 localRoot = _head;
@@ -160,7 +199,7 @@ namespace Ascentis.Infrastructure
         }
 
         /* This algorithm is thread safe even though there's no locking of any sort
-           Once we link nodes the Next property of StackedBagSlimNode is immutable. Once storing _head in node local var
+           Once we link nodes the Next property of SlimNode is immutable. Once storing _head in node local var
            GetEnumerator() walks a "snapshot" in time of the contents of the structure */
         public IEnumerator<T> GetEnumerator()
         {

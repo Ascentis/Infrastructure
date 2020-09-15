@@ -29,6 +29,18 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestPushRange()
+        {
+            var bag = new ConcurrentStackedBagSlim<int>();
+            var arr = new [] {10, 12, 14};
+            bag.PushRange(arr);
+            Assert.AreEqual(14, bag.Take());
+            Assert.AreEqual(12, bag.Take());
+            Assert.AreEqual(10, bag.Take());
+            Assert.IsTrue(bag.Empty);
+        }
+
+        [TestMethod]
         public void TestRemove()
         {
             var bag = new ConcurrentStackedBagSlim<int>();
@@ -185,6 +197,35 @@ namespace Ascentis.Infrastructure.Test
                     if (done && bag.Count <= 0)
                         break;
                     if (!bag.TryTake(out var n))
+                        continue;
+                    Interlocked.Add(ref sum, n);
+                }
+            });
+            Assert.AreEqual(1250025000, sum);
+        }
+
+        [TestMethod]
+        public void TestThreadedRegularConcurrentQueue()
+        {
+            const int loopCount = 50000;
+
+            var done = false;
+            var sum = 0;
+            var bag = new ConcurrentQueue<int>();
+            var threadInserter = new Thread(_ =>
+            {
+                for (var i = 1; i <= loopCount; i++)
+                    bag.Enqueue(i);
+                done = true;
+            });
+            threadInserter.Start();
+            _parallel.For(0, loopCount, i =>
+            {
+                while (true)
+                {
+                    if (done && bag.Count <= 0)
+                        break;
+                    if (!bag.TryDequeue(out var n))
                         continue;
                     Interlocked.Add(ref sum, n);
                 }

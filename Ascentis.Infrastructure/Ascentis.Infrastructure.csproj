@@ -25,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>0</WarningLevel>
     <LangVersion>preview</LangVersion>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +35,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>preview</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -72,9 +74,12 @@
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromClass.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromDbReader.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\MetaToParamSettings.cs" />
-    <Compile Include="Patterns\Concurrent\StackedBag\ConcurrentStackedBagSlim.cs" />
-    <Compile Include="Patterns\Concurrent\StackedBag\IConcurrentBag.cs" />
-    <Compile Include="Patterns\Concurrent\StackedBag\IConcurrentStack.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\Base\SlimCollection.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\QueuedBag\ConcurrentQueuedBagSlim.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\SlimNode.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\StackedBag\ConcurrentStackedBagSlim.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\IConcurrentBag.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\StackedBag\IConcurrentStack.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\IOnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArrayEqualityComparer.cs" />

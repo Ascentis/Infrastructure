@@ -74,6 +74,7 @@
     <Compile Include="UnitTestBitArrayAsDictionaryKey.cs" />
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
     <Compile Include="UnitTestClassInterface.cs" />
+    <Compile Include="UnitTestConcurrentQueueSlim.cs" />
     <Compile Include="UnitTestDataPipelineAssertExtension.cs" />
     <Compile Include="UnitTestDataReplicator.cs" />
     <Compile Include="UnitTestDbConnectionExtensions.cs" />
