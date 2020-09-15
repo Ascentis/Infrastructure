@@ -13,7 +13,10 @@ namespace Ascentis.Infrastructure.Test
         public UnitTestConcurrentQueuedBagSlim()
         {
             _parallel = new BoundedParallel(2, 2);
-            _parallel.For(0, 1000, i => { }); // warm-up
+            _parallel.For(0, 1000, i =>
+            {
+                Thread.Yield();
+            }); // warm-up
         }
 
         [TestMethod]
