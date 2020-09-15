@@ -74,7 +74,7 @@
     <Compile Include="UnitTestBitArrayAsDictionaryKey.cs" />
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
     <Compile Include="UnitTestClassInterface.cs" />
-    <Compile Include="UnitTestConcurrentQueueSlim.cs" />
+    <Compile Include="UnitTestConcurrentQueuedBagSlim.cs" />
     <Compile Include="UnitTestDataPipelineAssertExtension.cs" />
     <Compile Include="UnitTestDataReplicator.cs" />
     <Compile Include="UnitTestDbConnectionExtensions.cs" />
@@ -93,7 +93,7 @@
     <Compile Include="UnitTestConcurrentObjectAccessor.cs" />
     <Compile Include="UnitTestRetrier.cs" />
     <Compile Include="UnitTestSerializerToValuesArray.cs" />
-    <Compile Include="UnitTestConcurrentBagSlim.cs" />
+    <Compile Include="UnitTestConcurrentStackedBagSlim.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

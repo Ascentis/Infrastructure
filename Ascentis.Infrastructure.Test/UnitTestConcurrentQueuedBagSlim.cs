@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,10 +7,10 @@ namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     [SuppressMessage("ReSharper", "UseObjectOrCollectionInitializer")]
-    public class UnitTestConcurrentQueueSlim
+    public class UnitTestConcurrentQueuedBagSlim
     {
         private readonly BoundedParallel _parallel;
-        public UnitTestConcurrentQueueSlim()
+        public UnitTestConcurrentQueuedBagSlim()
         {
             _parallel = new BoundedParallel(2, 2);
             _parallel.For(0, 1000, i => { }); // warm-up
@@ -29,6 +28,7 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(12, queue.Take());
             Assert.AreEqual(14, queue.Take());
             Assert.AreEqual(16, queue.Take());
+            Assert.IsFalse(queue.TryTake(out var _));
             Assert.IsTrue(queue.Empty);
         }
 

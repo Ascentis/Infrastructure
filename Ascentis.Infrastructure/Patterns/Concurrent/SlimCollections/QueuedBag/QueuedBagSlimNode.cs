@@ -9,7 +9,7 @@ namespace Ascentis.Infrastructure
 
         internal QueuedBagSlimNode(T value) : base(value)
         {
-            Ground = true;
+            Ground = true; // Default to grounded nodes
         }
 
         internal void EnsureUngrounded()
@@ -23,6 +23,12 @@ namespace Ascentis.Infrastructure
                 // ReSharper disable once ConstantConditionalAccessQualifier
                 spinner?.SpinOnce();
             }
+        }
+
+        internal T GetUngroundedValue()
+        {
+            EnsureUngrounded();
+            return Value;
         }
 
         internal override SlimNodeBase<T> GetNext()

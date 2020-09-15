@@ -9,10 +9,10 @@ namespace Ascentis.Infrastructure.Test
 {
     [TestClass]
     [SuppressMessage("ReSharper", "UseObjectOrCollectionInitializer")]
-    public class UnitTestConcurrentBagSlim
+    public class UnitTestConcurrentStackedBagSlim
     {
         private readonly BoundedParallel _parallel;
-        public UnitTestConcurrentBagSlim()
+        public UnitTestConcurrentStackedBagSlim()
         {
             _parallel = new BoundedParallel(2, 4);
             _parallel.For(0, 1000, i => { }); // warm-up

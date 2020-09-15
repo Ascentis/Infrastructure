@@ -114,8 +114,7 @@ namespace Ascentis.Infrastructure
                 return false;
             } while (Interlocked.CompareExchange(ref _head, localHead.Next, localHead) != localHead);
 
-            localHead.EnsureUngrounded();
-            retVal = localHead.Value;
+            retVal = localHead.GetUngroundedValue();
             return true;
         }
         
@@ -128,8 +127,7 @@ namespace Ascentis.Infrastructure
                 return false;
             }
 
-            localHead.EnsureUngrounded();
-            retVal = localHead.Value;
+            retVal = localHead.GetUngroundedValue();
             return true;
         }
 
