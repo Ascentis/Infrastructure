@@ -29,7 +29,7 @@ namespace Ascentis.Infrastructure
         {
             if (Next?.Next != null)
                 Next.EnsureUngrounded();
-            return !Next!.Ground ? Next : null;
+            return (!Next?.Ground ?? false) ? Next : null;
         }
     }
 }
