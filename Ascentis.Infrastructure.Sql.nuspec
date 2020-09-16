@@ -2,10 +2,11 @@
 <package >
   <metadata>
     <id>Ascentis.Infrastructure.Sql</id>
-    <version>1.1.0.3</version>
+    <version>1.1.0.4</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
+    <icon>Ascentis.png</icon>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>SqlClient and SQLite specific set of classes extending behavior of DataPipeline and DataReplicator classes provided in Ascentis.Infrastructure base package</description>
@@ -26,5 +27,6 @@
   <files>
     <file src="bin\Release\Ascentis.Infrastructure.Sql.dll" target="lib\net40" />
     <file src="bin\Release\Ascentis.Infrastructure.Sql.pdb" target="lib\net40" />
+    <file src="Ascentis.png" target="" />
   </files>
 </package>

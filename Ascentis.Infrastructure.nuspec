@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<package >
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.13.0.27</version>
+    <version>2.13.1.28</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
+    <icon>Ascentis.png</icon>
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer, BoundedParallel, DataPipeline and DataReplicator</description>
@@ -25,5 +26,6 @@
     <file src="bin\Release\Ascentis.Infrastructure.pdb" target="lib\net40" />
     <file src="bin\Release\Ascentis.Infrastructure.TestHelpers.dll" target="lib\net40" />
     <file src="bin\Release\Ascentis.Infrastructure.TestHelpers.pdb" target="lib\net40" />
+    <file src="Ascentis.png" target="" />
   </files>
 </package>
