@@ -132,9 +132,6 @@ namespace Ascentis.Infrastructure
             return true;
         }
 
-        /* This algorithm is thread safe even though there's no locking of any sort
-           Once we link nodes the Next property of StackedBagNodeSlim is immutable. Once storing _head in node local var
-           GetEnumerator() walks a "snapshot" in time of the contents of the structure */
         public override IEnumerator<T> GetEnumerator()
         {
             return GetEnumerator(_head);
