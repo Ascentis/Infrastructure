@@ -122,7 +122,7 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
-        public void TestThreadedConcurrentBagSlim()
+        public void TestThreadedConcurrentStackedBagSlim()
         {
             const int loopCount = 50000;
 
