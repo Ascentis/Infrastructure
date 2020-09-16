@@ -35,26 +35,26 @@ namespace Ascentis.Infrastructure
                 Interlocked.Increment(ref _count);
         }
 
-        private void Add(StackedBagNodeSlim<T> newHead, StackedBagNodeSlim<T> tail)
+        private void Add(StackedBagNodeSlim<T> rangeHead, StackedBagNodeSlim<T> rangeTail)
         {
             SpinWait? spinner = null;
-            StackedBagNodeSlim<T> localRoot = null;
+            StackedBagNodeSlim<T> localHead = null;
             do
             {
-                if (localRoot != null)
+                if (localHead != null)
                     StackedBagNodeSlim<T>.Spin(ref spinner);
-                localRoot = _head;
-                tail.Next = localRoot;
-            } while (Interlocked.CompareExchange(ref _head, newHead, localRoot) != localRoot);
+                localHead = _head;
+                rangeTail.Next = localHead;
+            } while (Interlocked.CompareExchange(ref _head, rangeHead, localHead) != localHead);
         }
 
         protected override void AddRangeInternal(T[] items, int startIndex, int count)
         {
-            var tail = new StackedBagNodeSlim<T>(items[0]);
-            var newHead = tail;
+            var rangeTail = new StackedBagNodeSlim<T>(items[0]);
+            var rangeHead = rangeTail;
             for (var i = 1; i < count; i++)
-                newHead = new StackedBagNodeSlim<T>(items[i]) { Next = newHead };
-            Add(newHead, tail);
+                rangeHead = new StackedBagNodeSlim<T>(items[i]) { Next = rangeHead };
+            Add(rangeHead, rangeTail);
             if (_keepCount)
                 Interlocked.Add(ref _count, count);
         }
@@ -89,11 +89,11 @@ namespace Ascentis.Infrastructure
         public override bool TryTake(out T retVal)
         {
             SpinWait? spinner = null;
-            StackedBagNodeSlim<T> localRoot;
+            StackedBagNodeSlim<T> localHead;
             do
             {
-                localRoot = _head;
-                if (localRoot != null)
+                localHead = _head;
+                if (localHead != null)
                 {
                     StackedBagNodeSlim<T>.Spin(ref spinner);
                     continue;
@@ -101,11 +101,11 @@ namespace Ascentis.Infrastructure
 
                 retVal = default;
                 return false;
-            } while (Interlocked.CompareExchange(ref _head, localRoot.Next, localRoot) != localRoot);
+            } while (Interlocked.CompareExchange(ref _head, localHead.Next, localHead) != localHead);
 
             if (_keepCount)
                 Interlocked.Decrement(ref _count);
-            retVal = localRoot.Value;
+            retVal = localHead.Value;
             return true;
         }
 

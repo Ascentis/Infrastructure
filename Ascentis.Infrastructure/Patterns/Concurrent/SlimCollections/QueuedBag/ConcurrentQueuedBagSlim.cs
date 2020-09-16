@@ -64,37 +64,37 @@ namespace Ascentis.Infrastructure
                 Interlocked.Increment(ref _count);
         }
 
-        private void Add(T value, QueuedBagNodeSlim<T> newTailHead, QueuedBagNodeSlim<T> newTail)
+        private void Add(T value, QueuedBagNodeSlim<T> rangeHead, QueuedBagNodeSlim<T> rangeTail)
         {
             SpinWait? spinner = null;
-            while (Interlocked.CompareExchange(ref _tail.Next, newTailHead, null) != null)
+            while (Interlocked.CompareExchange(ref _tail.Next, rangeHead, null) != null)
                 QueuedBagNodeSlim<T>.Spin(ref spinner);
 
             var oldTail = _tail;
             oldTail.Value = value;
-            _tail = newTail;
+            _tail = rangeTail;
             oldTail.Ground = false;
         }
 
         protected override void AddRangeInternal(T[] items, int startIndex, int count)
         {
-            QueuedBagNodeSlim<T> newTailHead = null;
+            QueuedBagNodeSlim<T> rangeHead = null;
             QueuedBagNodeSlim<T> newNode = null;
             for (var i = 1; i < count; i++)
             {
                 var prevTail = newNode;
                 newNode = new QueuedBagNodeSlim<T>(items[i]);
-                newTailHead ??= newNode;
+                rangeHead ??= newNode;
                 if (prevTail != null)
                     prevTail.Next = newNode;
             }
 
-            var newTail = new QueuedBagNodeSlim<T>();
+            var rangeTail = new QueuedBagNodeSlim<T>();
             if (newNode != null)
-                newNode.Next = newTail;
+                newNode.Next = rangeTail;
             else
-                newTailHead = newTail;
-            Add(items[0], newTailHead, newTail);
+                rangeHead = rangeTail;
+            Add(items[0], rangeHead, rangeTail);
             if (_keepCount)
                 Interlocked.Add(ref _count, count);
         }
@@ -118,16 +118,14 @@ namespace Ascentis.Infrastructure
         public override bool TryTake(out T retVal)
         {
             SpinWait? spinner = null;
-            QueuedBagNodeSlim<T> localHead;
+            QueuedBagNodeSlim<T> localHead = null;
             do
             {
-                localHead = _head;
-                if (localHead.Next != null)
-                {
+                if (localHead != null)
                     QueuedBagNodeSlim<T>.Spin(ref spinner);
+                localHead = _head;
+                if (localHead.Next != null) 
                     continue;
-                }
-
                 retVal = default;
                 return false;
             } while (Interlocked.CompareExchange(ref _head, localHead.Next, localHead) != localHead);
