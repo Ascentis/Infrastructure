@@ -12,7 +12,7 @@ namespace Ascentis.Infrastructure
             Ground = false;
         }
 
-        internal QueuedBagNodeSlim() : base(default)
+        public QueuedBagNodeSlim() : base(default)
         {
             Ground = true;
         }
@@ -23,11 +23,7 @@ namespace Ascentis.Infrastructure
                 return;
             SpinWait? spinner = null;
             while (Ground)
-            {
-                spinner ??= new SpinWait();
-                // ReSharper disable once ConstantConditionalAccessQualifier
-                spinner?.SpinOnce();
-            }
+                Spin(ref spinner);
         }
 
         internal T GetUngroundedValue()

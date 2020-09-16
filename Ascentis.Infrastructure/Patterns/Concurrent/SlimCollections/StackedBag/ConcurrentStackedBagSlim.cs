@@ -1,28 +1,48 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class ConcurrentStackSlim<T> : ConcurrentStackedBagSlim<T> {}
+    public class ConcurrentStackSlim<T> : ConcurrentStackedBagSlim<T>
+    {
+        public ConcurrentStackSlim(bool keepCount = false) : base(keepCount) {}
+    }
 
     public class ConcurrentStackedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentStack<T>
     {
+        private volatile int _count;
+        private readonly bool _keepCount;
         private volatile StackedBagNodeSlim<T> _head;
 
+        public ConcurrentStackedBagSlim(bool keepCount = false)
+        {
+            _keepCount = keepCount;
+        }
+
         public override bool IsEmpty => _head == null;
+        public override int Count => _keepCount ? _count : base.Count;
+        public override int Length => _keepCount
+            ? _count
+            : throw new InvalidOperationException("KeepCount must be enabled to use Length property. You could fall back to Count at a cost of a full scan");
 
         public override void Add(T value)
         {
             var node = new StackedBagNodeSlim<T>(value);
             Add(node, node);
+            if (_keepCount)
+                Interlocked.Increment(ref _count);
         }
 
         private void Add(StackedBagNodeSlim<T> newHead, StackedBagNodeSlim<T> tail)
         {
-            StackedBagNodeSlim<T> localRoot;
+            SpinWait? spinner = null;
+            StackedBagNodeSlim<T> localRoot = null;
             do
             {
+                if (localRoot != null)
+                    StackedBagNodeSlim<T>.Spin(ref spinner);
                 localRoot = _head;
                 tail.Next = localRoot;
             } while (Interlocked.CompareExchange(ref _head, newHead, localRoot) != localRoot);
@@ -35,6 +55,8 @@ namespace Ascentis.Infrastructure
             for (var i = 1; i < count; i++)
                 newHead = new StackedBagNodeSlim<T>(items[i]) { Next = newHead };
             Add(newHead, tail);
+            if (_keepCount)
+                Interlocked.Add(ref _count, count);
         }
 
         public void Push(T item)
@@ -55,6 +77,7 @@ namespace Ascentis.Infrastructure
         public override void Clear()
         {
             _head = null;
+            _count = 0;
         }
 
         public override bool TryAdd(T item)
@@ -65,16 +88,23 @@ namespace Ascentis.Infrastructure
 
         public override bool TryTake(out T retVal)
         {
+            SpinWait? spinner = null;
             StackedBagNodeSlim<T> localRoot;
             do
             {
                 localRoot = _head;
-                if (localRoot != null) 
+                if (localRoot != null)
+                {
+                    StackedBagNodeSlim<T>.Spin(ref spinner);
                     continue;
+                }
+
                 retVal = default;
                 return false;
             } while (Interlocked.CompareExchange(ref _head, localRoot.Next, localRoot) != localRoot);
 
+            if (_keepCount)
+                Interlocked.Decrement(ref _count);
             retVal = localRoot.Value;
             return true;
         }

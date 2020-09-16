@@ -11,5 +11,7 @@ namespace Ascentis.Infrastructure
         T Take();
         void Clear();
         bool IsEmpty { get; }
+        int Count { get; }
+        int Length { get; }
     }
 }

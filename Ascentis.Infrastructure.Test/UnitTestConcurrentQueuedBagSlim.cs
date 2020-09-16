@@ -16,7 +16,7 @@ namespace Ascentis.Infrastructure.Test
             _parallel.For(0, 1000, i =>
             {
                 Thread.Yield();
-            }); // warm-up
+            }); // thread-pool warm-up
         }
 
         [TestMethod]
@@ -33,6 +33,17 @@ namespace Ascentis.Infrastructure.Test
             Assert.AreEqual(16, queue.Take());
             Assert.IsFalse(queue.TryTake(out var _));
             Assert.IsTrue(queue.IsEmpty);
+        }
+
+        [TestMethod]
+        public void TestBasicKeepCount()
+        {
+            var queue = new ConcurrentQueueSlim<int>(true);
+            queue.Add(10);
+            queue.Add(12);
+            queue.Add(14);
+            queue.Add(16);
+            Assert.AreEqual(4, queue.Count);
         }
 
         [TestMethod]
@@ -113,7 +124,6 @@ namespace Ascentis.Infrastructure.Test
                 done = true;
             });
             threadInserter.Start();
-            
             _parallel.For(0, loopCount, i =>
             {
                 while (true)
@@ -127,6 +137,15 @@ namespace Ascentis.Infrastructure.Test
             });
             threadInserter.Join();
             Assert.AreEqual(1250025000, sum);
+        }
+
+        [TestMethod]
+        public void TestNodeAllocations()
+        {
+            for (var i = 0; i < 200000; i++)
+            {
+                var _ = new QueuedBagNodeSlim<int>();
+            }
         }
     }
 }

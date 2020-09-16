@@ -1,27 +1,40 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public class ConcurrentQueueSlim<T> : ConcurrentQueuedBagSlim<T> {}
+    public class ConcurrentQueueSlim<T> : ConcurrentQueuedBagSlim<T>
+    {
+        public ConcurrentQueueSlim(bool keepCount = false) : base(keepCount) {}
+    }
 
     public class ConcurrentQueuedBagSlim<T> : ConcurrentCollectionSlim<T>, IConcurrentQueue<T>
     {
+        private volatile int _count;
+        private readonly bool _keepCount;
         private volatile QueuedBagNodeSlim<T> _head;
         private volatile QueuedBagNodeSlim<T> _tail;
 
-        public ConcurrentQueuedBagSlim()
+        public ConcurrentQueuedBagSlim(bool keepCount = false)
         {
             Init();
+            _keepCount = keepCount;
         }
 
         private void Init()
         {
             _head = _tail = new QueuedBagNodeSlim<T>();
+            _count = 0;
         }
 
         public override bool IsEmpty => _head.Next == null;
+        public override int Count => _keepCount ? _count : base.Count;
+
+        public override int Length => _keepCount
+            ? _count
+            : throw new InvalidOperationException("KeepCount must be enabled to use Length property. You could fall back to Count at a cost of a full scan");
 
         public void Enqueue(T value)
         {
@@ -47,20 +60,20 @@ namespace Ascentis.Infrastructure
         {
             var node = new QueuedBagNodeSlim<T>();
             Add(value, node, node);
+            if (_keepCount)
+                Interlocked.Increment(ref _count);
         }
 
         private void Add(T value, QueuedBagNodeSlim<T> newTailHead, QueuedBagNodeSlim<T> newTail)
         {
-            do
-            {
-                var localTail = _tail;
-                if (Interlocked.CompareExchange(ref localTail.Next, newTailHead, null) != null)
-                    continue;
-                localTail.Value = value;
-                _tail = newTail;
-                localTail.Ground = false;
-                return;
-            } while (true);
+            SpinWait? spinner = null;
+            while (Interlocked.CompareExchange(ref _tail.Next, newTailHead, null) != null)
+                QueuedBagNodeSlim<T>.Spin(ref spinner);
+
+            var oldTail = _tail;
+            oldTail.Value = value;
+            _tail = newTail;
+            oldTail.Ground = false;
         }
 
         protected override void AddRangeInternal(T[] items, int startIndex, int count)
@@ -82,6 +95,8 @@ namespace Ascentis.Infrastructure
             else
                 newTailHead = newTail;
             Add(items[0], newTailHead, newTail);
+            if (_keepCount)
+                Interlocked.Add(ref _count, count);
         }
 
         public T Dequeue()
@@ -102,16 +117,23 @@ namespace Ascentis.Infrastructure
 
         public override bool TryTake(out T retVal)
         {
+            SpinWait? spinner = null;
             QueuedBagNodeSlim<T> localHead;
             do
             {
                 localHead = _head;
                 if (localHead.Next != null)
+                {
+                    QueuedBagNodeSlim<T>.Spin(ref spinner);
                     continue;
+                }
+
                 retVal = default;
                 return false;
             } while (Interlocked.CompareExchange(ref _head, localHead.Next, localHead) != localHead);
 
+            if (_keepCount)
+                Interlocked.Decrement(ref _count);
             retVal = localHead.GetUngroundedValue();
             return true;
         }

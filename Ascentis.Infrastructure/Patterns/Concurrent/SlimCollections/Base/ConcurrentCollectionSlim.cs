@@ -13,7 +13,7 @@ namespace Ascentis.Infrastructure
         IProducerConsumerCollection<T>,
         IConcurrentBag<T>
     {
-        public int Count => this.Count(_ => true);
+        public virtual int Count => this.Count(_ => true);
         public object SyncRoot => throw new NotSupportedException("SyncRoot not supported");
         public bool IsSynchronized => false;
         public bool IsReadOnly => false;
@@ -102,7 +102,7 @@ namespace Ascentis.Infrastructure
         {
             throw new NotSupportedException("Remove() not supported");
         }
-
+        
         public abstract void Add(T item);
         public abstract void Clear();
         public abstract bool IsEmpty { get; }
@@ -111,5 +111,6 @@ namespace Ascentis.Infrastructure
         public abstract bool TryPeek(out T retVal);
         protected abstract void AddRangeInternal(T[] items, int startIndex, int count);
         public abstract IEnumerator<T> GetEnumerator();
+        public abstract int Length { get; }
     }
 }

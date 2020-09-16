@@ -29,6 +29,15 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestBasicKeepCount()
+        {
+            var bag = new ConcurrentStackedBagSlim<int>(true);
+            bag.Add(10);
+            bag.Add(12);
+            Assert.AreEqual(2, bag.Count);
+        }
+
+        [TestMethod]
         public void TestPushRange()
         {
             var bag = new ConcurrentStackedBagSlim<int>();
@@ -218,6 +227,7 @@ namespace Ascentis.Infrastructure.Test
                     Interlocked.Add(ref sum, n);
                 }
             });
+            threadInserter.Join();
             Assert.AreEqual(1250025000, sum);
         }
 
