@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
 
 // ReSharper disable once CheckNamespace
@@ -9,7 +8,7 @@ namespace Ascentis.Infrastructure
     {
         public delegate PoolEntry<T> Builder(Pool<T> pool);
 
-        private readonly ConcurrentBag<PoolEntry<T>> _bag;
+        private readonly IConcurrentBag<PoolEntry<T>> _bag;
         private readonly ManualResetEventSlim _releasedEvent;
         private readonly Builder _builder;
         private volatile int _allowance;
@@ -43,7 +42,7 @@ namespace Ascentis.Infrastructure
         {
             _maxCapacityLock = new object();
             _allowance = maxCapacity;
-            _bag = new ConcurrentBag<PoolEntry<T>>();
+            _bag = new ConcurrentQueueSlim<PoolEntry<T>>(true);
             _releasedEvent = new ManualResetEventSlim(false);
             _builder = builder;
             _maxCapacity = maxCapacity;
@@ -84,7 +83,7 @@ namespace Ascentis.Infrastructure
         {
             if (!obj.ReleaseOne())
                 return;
-            if (_allowance < 0 && _bag.Count >= _maxCapacity)
+            if (_allowance < 0 && _bag.Length >= _maxCapacity)
             {
                 int allowance;
                 /* We will loop as long as allowance is negative. If another thread returns objects back to the pool so that
