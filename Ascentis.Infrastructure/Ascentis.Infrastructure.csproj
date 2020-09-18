@@ -74,8 +74,8 @@
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromClass.cs" />
     <Compile Include="DataPipeline\SourceAdapter\Utils\ColumnMetadataListFromDbReader.cs" />
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\MetaToParamSettings.cs" />
-    <Compile Include="Patterns\Concurrent\SlimCollections\Base\BaseNodeSlim.cs" />
-    <Compile Include="Patterns\Concurrent\SlimCollections\Base\ConcurrentCollectionSlim.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\Base\BaseLinkedNode.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\Base\ConcurrentLinkedNodeCollection.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\QueuedBag\ConcurrentQueuedBagSlim.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\IConcurrentQueue.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\QueuedBag\QueuedBagNodeSlim.cs" />

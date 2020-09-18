@@ -50,6 +50,40 @@ namespace Ascentis.Infrastructure.Test
         }
 
         [TestMethod]
+        public void TestPushRangeOfFourElements()
+        {
+            var bag = new ConcurrentStackedBagSlim<int>();
+            var arr = new[] { 10, 12, 14, 16 };
+            bag.PushRange(arr);
+            Assert.AreEqual(16, bag.Take());
+            Assert.AreEqual(14, bag.Take());
+            Assert.AreEqual(12, bag.Take());
+            Assert.AreEqual(10, bag.Take());
+            Assert.IsTrue(bag.IsEmpty);
+        }
+
+        [TestMethod]
+        public void TestPushRangeOfOneElement()
+        {
+            var bag = new ConcurrentStackedBagSlim<int>();
+            var arr = new[] { 10 };
+            bag.PushRange(arr);
+            Assert.AreEqual(10, bag.Take());
+            Assert.IsTrue(bag.IsEmpty);
+        }
+
+        [TestMethod]
+        public void TestPushRangeOfTwoElements()
+        {
+            var bag = new ConcurrentStackedBagSlim<int>();
+            var arr = new[] { 10, 11 };
+            bag.PushRange(arr);
+            Assert.AreEqual(11, bag.Take());
+            Assert.AreEqual(10, bag.Take());
+            Assert.IsTrue(bag.IsEmpty);
+        }
+
+        [TestMethod]
         public void TestToArray()
         {
             var bag = new ConcurrentStackedBagSlim<int>();

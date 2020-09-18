@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Ascentis.Infrastructure</id>
-    <version>2.13.1.28</version>
+    <version>2.13.2.29</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/Ascentis/infrastructure</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Set of small low level utilitarian classes: Retrier, ConcurrentObjectAccessor, SolidComPlus, AsyncDisposer, BoundedParallel, DataPipeline and DataReplicator</description>
-    <releaseNotes>Finished ConcurrentCollectionSlim classes (Stack and Queue)</releaseNotes>
+    <releaseNotes>Refactored new Concurrent Queue and Stack for simplicity anc cleanness </releaseNotes>
     <copyright>Copyright 2020, Ascentis Corporation</copyright>
     <tags>caching MemoryCache COM COM+ threading Parallel SQLite MSSQL batch bulk</tags>
     <dependencies>
