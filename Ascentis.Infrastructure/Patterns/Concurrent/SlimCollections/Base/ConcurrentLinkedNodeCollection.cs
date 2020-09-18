@@ -155,12 +155,8 @@ namespace Ascentis.Infrastructure
 
         public IEnumerator<T> GetEnumerator()
         {
-            var node = Head;
-            while (node.Next != null)
-            {
+            for (var node = Head; node.Next != null; node = node.Next)
                 yield return node.Value;
-                node = node.Next;
-            }
         }
 
         protected abstract void AddRangeInternal(T[] items, int startIndex, int count);
