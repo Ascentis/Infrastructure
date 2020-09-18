@@ -17,13 +17,15 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
 
         public void Map(MetaToParamSettings settings)
         {
-            ArgsChecker.CheckForNull<ArgumentNullException>(new []
-            {
-                ArgsChecker.Arg(settings.Metadatas, nameof(settings.Metadatas)),
-                ArgsChecker.Arg(settings.Columns, nameof(settings.Columns)),
-                ArgsChecker.Arg(settings.ColumnToIndexMap, nameof(settings.ColumnToIndexMap)),
-                ArgsChecker.Arg(settings.Target, nameof(settings.Target))
-            });
+            if (settings.Metadatas == null)
+                throw new ArgumentNullException(nameof(settings.Metadatas));
+            if (settings.Columns == null)
+                throw new ArgumentNullException(nameof(settings.Columns));
+            if (settings.ColumnToIndexMap == null)
+                throw new ArgumentNullException(nameof(settings.ColumnToIndexMap));
+            if (settings.Target == null)
+                throw new ArgumentNullException(nameof(settings.Target));
+
             var index = 0;
             var ansiParameters = settings.AnsiStringParameters?.ToDictionary(
                 ansiParam => ansiParam, 

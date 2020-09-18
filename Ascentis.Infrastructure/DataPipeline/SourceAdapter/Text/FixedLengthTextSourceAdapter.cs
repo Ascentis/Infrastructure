@@ -16,7 +16,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
         [SuppressMessage("ReSharper", "PossibleInvalidOperationException")]
         public override void Prepare()
         {
-            ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
+            ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, () => ArgsChecker.EArgs(nameof(ColumnMetadatas)));
 
             base.Prepare();
 
@@ -27,7 +27,8 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
             foreach (var columnMeta in ColumnMetadatas)
             {
-                ArgsChecker.CheckForNull<NullReferenceException>(columnMeta.ColumnSize, $"{nameof(columnMeta.ColumnSize)}[{currentColumnId}]");
+                if (columnMeta.ColumnSize == null)
+                    throw new NullReferenceException($"{nameof(columnMeta.ColumnSize)}[{currentColumnId}]");
 
                 var currentPosition = columnMeta.StartPosition ?? prevPosition + prevColumnSize;
                 if (currentPosition < prevPosition + prevColumnSize)

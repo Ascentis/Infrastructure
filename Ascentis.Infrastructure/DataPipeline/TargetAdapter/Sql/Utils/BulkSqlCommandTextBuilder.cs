@@ -35,12 +35,12 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
         {
             const string rowSeparator = ",\r\n";
 
-            ArgsChecker.CheckForNull<ArgumentNullException>(rows, nameof(rows));
-            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, "ColumnNames can't be null");
+            ArgsChecker.CheckForNull<ArgumentNullException>(rows, () => ArgsChecker.EArgs(nameof(rows)));
+            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, () => ArgsChecker.EArgs("ColumnNames can't be null"));
             if (TableName == string.Empty)
                 throw new InvalidOperationException("TableName can't be blank");
-            if (LiteralParamBinding)
-                ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNameToMetadataIndexMap, "ColumnNameToMetadataIndexMap can't be null");
+            if (LiteralParamBinding && ColumnNameToMetadataIndexMap == null)
+                throw new InvalidOperationException("ColumnNameToMetadataIndexMap can't be null");
 
             var stringBuilder = new StringBuilder($"INSERT INTO {TableName}\r\n(");
 
@@ -78,10 +78,10 @@ namespace Ascentis.Infrastructure.DataPipeline.TargetAdapter.Sql.Utils
             List<PoolEntry<object[]>> rows, 
             bool paramsAsList)
         {
-            ArgsChecker.CheckForNull<ArgumentNullException>(rows, nameof(rows));
-            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, "ColumnNames can't be null");
-            if (LiteralParamBinding)
-                ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNameToMetadataIndexMap, "ColumnNameToMetadataIndexMap can't be null");
+            ArgsChecker.CheckForNull<ArgumentNullException>(rows, () => ArgsChecker.EArgs(nameof(rows)));
+            ArgsChecker.CheckForNull<InvalidOperationException>(ColumnNames, () => ArgsChecker.EArgs("ColumnNames can't be null"));
+            if (LiteralParamBinding && ColumnNameToMetadataIndexMap == null)
+                throw new InvalidOperationException("ColumnNameToMetadataIndexMap can't be null");
 
             var stringBuilder = new StringBuilder(!paramsAsList ? "SELECT " : "");
 

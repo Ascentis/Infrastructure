@@ -14,7 +14,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Base
         {
             get
             {
-                ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
+                ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, () => ArgsChecker.EArgs(nameof(ColumnMetadatas)));
                 return ColumnMetadatas.Count;
             }
         }

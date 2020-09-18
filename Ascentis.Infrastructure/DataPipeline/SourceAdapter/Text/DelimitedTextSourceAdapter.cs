@@ -18,7 +18,7 @@ namespace Ascentis.Infrastructure.DataPipeline.SourceAdapter.Text
 
         public override void Prepare()
         {
-            ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, nameof(ColumnMetadatas));
+            ArgsChecker.CheckForNull<NullReferenceException>(ColumnMetadatas, () => ArgsChecker.EArgs(nameof(ColumnMetadatas)));
 
             base.Prepare();
 

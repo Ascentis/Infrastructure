@@ -19,10 +19,9 @@ namespace Ascentis.Infrastructure
 
         public Conveyor(ProcessPacketDelegate processPacketDelegate, object context = null)
         {
-            ArgsChecker.CheckForNull<NullReferenceException>(processPacketDelegate, nameof(processPacketDelegate));
             _dataAvailable = new ManualResetEventSlim(false);
             _packetsQueue = new ConcurrentQueue<T>();
-            _processPacketDelegate = processPacketDelegate;
+            _processPacketDelegate = processPacketDelegate ?? throw new ArgumentNullException(nameof(processPacketDelegate));
             _threadStatus = ThreadStatus.NotStarted;
             _context = context;
         }

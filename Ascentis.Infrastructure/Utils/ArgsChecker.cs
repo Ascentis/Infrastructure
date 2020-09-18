@@ -7,34 +7,17 @@ namespace Ascentis.Infrastructure
 {
     public static class ArgsChecker
     {
-        public static ArgNamePair Arg(object arg, params object[] args)
+        public delegate object[] ExceptionParamsBuilder();
+
+        public static object[] EArgs(params object[] exceptionArgs)
         {
-            return new ArgNamePair(arg, args);
+            return exceptionArgs;
         }
 
-        public static void CheckForNull<TE>(IEnumerable<ArgNamePair> args) where TE : Exception
-        {
-            foreach (var arg in args)
-                if (arg.Arg == null)
-                    throw GenericObjectBuilder.Build<TE>(arg.ExceptionArgs);
-        }
-
-        public static void CheckForNull<TE>(IEnumerable<object> args, params object[] exceptionArgs) where TE : Exception
+        public static void CheckForNull<TE>(IEnumerable<object> args, ExceptionParamsBuilder exceptionArgsBuilder) where TE : Exception
         {
             if (args.Any(arg => arg == null))
-                throw GenericObjectBuilder.Build<TE>(exceptionArgs);
-        }
-
-        public static void CheckForNull<TE>(object arg, params object[] exceptionArgs) where TE : Exception
-        {
-            if (arg == null)
-                throw GenericObjectBuilder.Build<TE>(exceptionArgs);
-        }
-
-        public static void Check<TE>(bool condition, params object[] exceptionArgs) where TE : Exception
-        {
-            if (!condition)
-                throw GenericObjectBuilder.Build<TE>(exceptionArgs);
+                throw GenericObjectBuilder.Build<TE>(exceptionArgsBuilder());
         }
     }
 }

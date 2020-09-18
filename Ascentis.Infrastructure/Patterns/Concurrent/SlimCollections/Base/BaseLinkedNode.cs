@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
     public abstract class BaseLinkedNode<T, TNext> where TNext : class

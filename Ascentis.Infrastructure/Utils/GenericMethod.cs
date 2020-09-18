@@ -23,7 +23,8 @@ namespace Ascentis.Infrastructure
             if (!typeof(Delegate).IsAssignableFrom(delegateType))
                 throw new InvalidOperationException($"{nameof(delegateType)} must be of type Delegate");
             var methodInfo = targetType.GetMethod(methodName, bindingFlags);
-            ArgsChecker.CheckForNull<NullReferenceException>(methodInfo, $"Method {methodName} not found in {targetType.Name} class");
+            if (methodInfo == null)
+                throw new NullReferenceException($"Method {methodName} not found in {targetType.Name} class");
             // ReSharper disable once PossibleNullReferenceException
             return methodInfo.CreateDelegate(delegateType);
         }

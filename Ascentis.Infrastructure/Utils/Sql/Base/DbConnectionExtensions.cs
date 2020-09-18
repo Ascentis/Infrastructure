@@ -23,14 +23,17 @@ namespace Ascentis.Infrastructure
             SourceAdapterBuilderDelegate sourceAdapterBuilder,
             TargetAdapterBuilderDelegate adapterBuilder)
         {
-            ArgsChecker.CheckForNull<ArgumentNullException>(new[]
-            {
-                ArgsChecker.Arg(parameters, nameof(parameters)),
-                ArgsChecker.Arg(connection, nameof(connection)),
-                ArgsChecker.Arg(metadata, nameof(metadata)),
-                ArgsChecker.Arg(sourceAdapterBuilder, nameof(sourceAdapterBuilder)),
-                ArgsChecker.Arg(adapterBuilder, nameof(adapterBuilder))
-            });
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters));
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata)); 
+            if (sourceAdapterBuilder == null)
+                throw new ArgumentNullException(nameof(sourceAdapterBuilder));
+            if (adapterBuilder == null)
+                throw new ArgumentNullException(nameof(adapterBuilder));
+
             var sourceAdapter = sourceAdapterBuilder(parameters, metadata);
             var adapter = adapterBuilder(sqlStatement, metadata, connection, paramsAsList);
             adapter.Prepare(sourceAdapter);

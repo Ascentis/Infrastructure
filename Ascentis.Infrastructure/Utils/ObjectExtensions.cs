@@ -216,8 +216,10 @@ namespace Ascentis.Infrastructure
 
         public static void SetPropertyValue(PropertyInfo prop, object target, object value)
         {
-            ArgsChecker.CheckForNull<ArgumentNullException>(target, nameof(target));
-            ArgsChecker.CheckForNull<ArgumentNullException>(prop, nameof(prop));
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (prop == null)
+                throw new ArgumentNullException(nameof(prop));
             switch (value)
             {
                 case string s:
@@ -270,7 +272,8 @@ namespace Ascentis.Infrastructure
 
         public static void SetPropertyValue(string propName, object target, object value)
         {
-            ArgsChecker.CheckForNull<ArgumentNullException>(target, nameof(target));
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
             var propInfo = target.GetType().GetProperty(propName);
             SetPropertyValue(propInfo, target, value);
         }

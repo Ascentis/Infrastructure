@@ -128,7 +128,6 @@
     <Compile Include="DataPipeline\DataPipeline.cs" />
     <Compile Include="Patterns\Pool\Pool.cs" />
     <Compile Include="Threading\Conveyor\ConveyorException.cs" />
-    <Compile Include="Utils\ArgNamePair.cs" />
     <Compile Include="Utils\ArgsChecker.cs" />
     <Compile Include="Patterns\ObjectLifecycle\AsyncDisposer.cs" />
     <Compile Include="Patterns\ObjectLifecycle\AutoInit.cs" />
