@@ -45,8 +45,7 @@ namespace Ascentis.Infrastructure
 
         public void AddRange(T[] items)
         {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
+            ArgsChecker.CheckForNull<ArgumentNullException>(items, nameof(items));
             AddRange(items, 0, items.Length);
         }
 
@@ -64,33 +63,35 @@ namespace Ascentis.Infrastructure
             return true;
         }
 
+        public void Add(T value)
+        {
+            var node = BuildNode();
+            Add(value, node, node);
+            if (KeepCount)
+                Interlocked.Increment(ref _count);
+        }
+
         private static void ValidatePushPopRangeInput(T[] items, int startIndex, int count)
         {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count), "Count out of range calling PushRange()");
-            var length = items.Length;
-            if (startIndex >= length || startIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(startIndex), "StartIndex out of range calling PushRange()");
-            if (length - count < startIndex)
-                throw new ArgumentException("Invalid count calling PushRange()");
+            ArgsChecker.CheckForNull<ArgumentNullException>(items, nameof(items));
+            ArgsChecker.Check<ArgumentOutOfRangeException>(count >= 0, nameof(count), "Count out of range calling PushRange()");
+            var itemsLength = items.Length;
+            ArgsChecker.Check<ArgumentOutOfRangeException>(startIndex < itemsLength && startIndex >= 0, nameof(startIndex), "StartIndex out of range calling PushRange()");
+            ArgsChecker.Check<ArgumentException>(itemsLength - count >= startIndex, "Invalid count calling PushRange()");
         }
 
         public bool Contains(T item) => this.Any(value => value.Equals(item));
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[] array, int index)
         {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array));
+            ArgsChecker.CheckForNull<ArgumentNullException>(array, nameof(array));
             foreach (var value in this)
-                array[arrayIndex++] = value;
+                array[index++] = value;
         }
 
         public void CopyTo(Array array, int index)
         {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array));
+            ArgsChecker.CheckForNull<ArgumentNullException>(array, nameof(array));
             foreach (var value in this)
                 array.SetValue(value, index++);
         }
@@ -111,7 +112,7 @@ namespace Ascentis.Infrastructure
             do
             {
                 if (localHead != null)
-                    BaseLinkedNode<T>.Spin(ref spinner);
+                    Spinner.Spin(ref spinner);
                 if ((localHead = Head).Next != null)
                     continue;
 
@@ -139,14 +140,6 @@ namespace Ascentis.Infrastructure
         }
 
         public bool Remove(T item) => throw new NotSupportedException("Remove() not supported");
-
-        public void Add(T value)
-        {
-            var node = BuildNode();
-            Add(value, node, node);
-            if (KeepCount)
-                Interlocked.Increment(ref _count);
-        }
 
         IEnumerator IEnumerable.GetEnumerator()
         {

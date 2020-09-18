@@ -76,6 +76,7 @@
     <Compile Include="DataPipeline\TargetAdapter\Sql\Utils\MetaToParamSettings.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\Base\BaseLinkedNode.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\Base\ConcurrentLinkedNodeCollection.cs" />
+    <Compile Include="Patterns\Concurrent\SlimCollections\Base\IConcurrentLinkedNodeCollectionBase.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\QueuedBag\ConcurrentQueuedBagSlim.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\IConcurrentQueue.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\QueuedBag\QueuedBagNodeSlim.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Patterns\Concurrent\SlimCollections\IConcurrentBag.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\IConcurrentStack.cs" />
     <Compile Include="Patterns\Concurrent\SlimCollections\StackedBag\StackedBagNodeSlim.cs" />
+    <Compile Include="Threading\Spinner.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\IOnOffArray.cs" />
     <Compile Include="Utils\Sql\ValueArraySerializer\OnOffArrayEqualityComparer.cs" />

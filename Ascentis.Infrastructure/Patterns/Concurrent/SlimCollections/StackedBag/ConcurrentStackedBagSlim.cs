@@ -28,7 +28,7 @@ namespace Ascentis.Infrastructure
             do
             {
                 if (localHead != null)
-                    StackedBagNodeSlim<T>.Spin(ref spinner);
+                    Spinner.Spin(ref spinner);
                 rangeTail.Next = localHead = Head;
             } while (Interlocked.CompareExchange(ref Head, rangeHead, localHead) != localHead);
         }

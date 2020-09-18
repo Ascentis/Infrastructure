@@ -32,7 +32,7 @@ namespace Ascentis.Infrastructure
         {
             SpinWait? spinner = null;
             while (Interlocked.CompareExchange(ref _tail.Next, rangeHead, null) != null)
-                QueuedBagNodeSlim<T>.Spin(ref spinner);
+                Spinner.Spin(ref spinner);
 
             var oldTail = _tail;
             oldTail.Value = value;

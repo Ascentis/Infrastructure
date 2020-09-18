@@ -8,7 +8,7 @@ namespace Ascentis.Infrastructure
     {
         internal volatile bool Ground;
 
-        public QueuedBagNodeSlim()
+        internal QueuedBagNodeSlim()
         {
             Ground = true;
         }
@@ -20,7 +20,7 @@ namespace Ascentis.Infrastructure
                 return;
             SpinWait? spinner = null;
             while (Ground)
-                Spin(ref spinner);
+                Spinner.Spin(ref spinner);
         }
 
         internal override T Value

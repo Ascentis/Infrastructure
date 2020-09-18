@@ -4,12 +4,12 @@ namespace Ascentis.Infrastructure
     public class ArgNamePair
     {
         public object Arg { get; }
-        public string ArgName { get; }
+        public object[] ExceptionArgs { get; }
 
-        public ArgNamePair(object arg, string argName)
+        public ArgNamePair(object arg, params object[] exceptionArgs)
         {
             Arg = arg;
-            ArgName = argName;
+            ExceptionArgs = exceptionArgs;
         }
     }
 }

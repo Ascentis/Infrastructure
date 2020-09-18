@@ -138,14 +138,5 @@ namespace Ascentis.Infrastructure.Test
             threadInserter.Join();
             Assert.AreEqual(1250025000, sum);
         }
-
-        [TestMethod]
-        public void TestNodeAllocations()
-        {
-            for (var i = 0; i < 200000; i++)
-            {
-                var _ = new QueuedBagNodeSlim<int>();
-            }
-        }
     }
 }

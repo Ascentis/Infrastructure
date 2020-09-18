@@ -3,20 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Ascentis.Infrastructure
 {
-    public abstract class BaseLinkedNode<T, TNext> : BaseLinkedNode<T> where TNext : class
-    {
-        internal volatile TNext Next;
-    }
-
-    public abstract class BaseLinkedNode<T>
+    public abstract class BaseLinkedNode<T, TNext> where TNext : class
     {
         internal virtual T Value { get; set; }
-
-        public static void Spin(ref SpinWait? spinner)
-        {
-            spinner ??= new SpinWait();
-            // ReSharper disable once ConstantConditionalAccessQualifier
-            spinner?.SpinOnce();
-        }
+        internal volatile TNext Next;
     }
 }
