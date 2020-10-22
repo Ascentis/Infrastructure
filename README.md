@@ -94,3 +94,4 @@ a high performance way to move data between source and targets(s) and it sets th
 ## DataReplicator
 
 This class replicates tables into a SQLite database. Tables will be created automatically based on the metadata of a list of source queries
+
