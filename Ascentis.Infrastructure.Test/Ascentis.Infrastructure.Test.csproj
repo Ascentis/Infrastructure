@@ -71,7 +71,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="UnitTestArgsChecker.cs" />
     <Compile Include="UnitTestBitArrayAsDictionaryKey.cs" />
     <Compile Include="UnitTestBlockingQueueSourceAdapter.cs" />
     <Compile Include="UnitTestClassInterface.cs" />
